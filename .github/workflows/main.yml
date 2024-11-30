@@ -26,9 +26,6 @@
 #         env:
 #           VITE_REACT_APP_BACKEND_URL: ${{ secrets.VITE_REACT_APP_BACKEND_URL }}
 #           VITE_REACT_APP_DEBUG: ${{ secrets.VITE_REACT_APP_DEBUG }}
-#           VITE_REACT_APP_FMP_API_KEY: ${{ secrets.VITE_REACT_APP_FMP_API_KEY }}
-#           VITE_REACT_APP_MARKETSTACK_API_KEY: ${{ secrets.VITE_REACT_APP_MARKETSTACK_API_KEY }}
-#           VITE_REACT_APP_ALPHA_VANTAGE_API_KEY: ${{ secrets.VITE_REACT_APP_ALPHA_VANTAGE_API_KEY }}
 
 #         run: npm run build
 
