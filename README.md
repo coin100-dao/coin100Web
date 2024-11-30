@@ -92,10 +92,7 @@ A: You can purchase COIN100 on decentralized exchanges like Uniswap V2 by swappi
 Q5: Do I need a specific wallet to hold COIN100?
 
 A: Any Ethereum-compatible wallet that supports Polygon network tokens, such as MetaMask, can hold COIN100.
-Q6: Are there transaction fees when buying or selling COIN100?
 
-A: Yes, a 3% fee is applied to each transaction (excluding owner transfers), which is distributed as per the fee breakdown.
-Fees and Distribution
 Q7: What are the transaction fees used for?
 
 A:
