@@ -11,27 +11,22 @@ import {
   REGISTER,
 } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
-import { setTokenGetter } from '../services/api';
-import authReducer from './slices/authSlice';
-import plaidReducer from './slices/plaidSlice';
-import fincityReducer from './slices/fincitySlice';
+import web3Reducer from './slices/web3Slice';
 
 // Persist configuration for auth slice
 const persistConfig = {
-  key: 'auth',
+  key: 'web3',
   storage,
-  whitelist: ['token', 'user'], // Persist token and user data
+  whitelist: ['walletAddress', 'tokenBalance'], // Persist walletAddress and tokenBalance
 };
 
 // Persisted auth reducer
-const persistedAuthReducer = persistReducer(persistConfig, authReducer);
+const persistedWeb3Reducer = persistReducer(persistConfig, web3Reducer);
 
 // Configure the Redux store
 export const store = configureStore({
   reducer: {
-    auth: persistedAuthReducer,
-    plaid: plaidReducer,
-    fincity: fincityReducer,
+    web3: persistedWeb3Reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
@@ -44,9 +39,6 @@ export const store = configureStore({
 
 // Initialize persistor
 export const persistor = persistStore(store);
-
-// **Set the token getter for Axios**
-setTokenGetter(() => store.getState().auth.token);
 
 // Infer the `RootState` and `AppDispatch` types
 export type RootState = ReturnType<typeof store.getState>;

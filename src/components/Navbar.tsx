@@ -4,10 +4,7 @@ import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import { useAppSelector, useAppDispatch } from '../store/hooks';
-import { logout } from '../store/slices/authSlice';
+import { Link as RouterLink } from 'react-router-dom';
 import Link from '@mui/material/Link';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -17,16 +14,7 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 
 const Navbar: React.FC = () => {
-  const isAuthenticated = useAppSelector((state) => !!state.auth.token);
-  const dispatch = useAppDispatch();
-  const navigate = useNavigate();
-
   const [drawerOpen, setDrawerOpen] = React.useState(false);
-
-  const handleLogout = () => {
-    dispatch(logout());
-    navigate('/'); // Redirect to home after logout
-  };
 
   const toggleDrawer = (open: boolean) => () => {
     setDrawerOpen(open);
@@ -41,22 +29,8 @@ const Navbar: React.FC = () => {
     >
       <List>
         <ListItemButton component={RouterLink} to="/">
-          <ListItemText primary={isAuthenticated ? 'Dashboard' : 'Home'} />
+          <ListItemText primary={'Home'} />
         </ListItemButton>
-        {!isAuthenticated ? (
-          <>
-            <ListItemButton component={RouterLink} to="/signin">
-              <ListItemText primary="Login" />
-            </ListItemButton>
-            <ListItemButton component={RouterLink} to="/signup">
-              <ListItemText primary="Signup" />
-            </ListItemButton>
-          </>
-        ) : (
-          <ListItemButton onClick={handleLogout}>
-            <ListItemText primary="Logout" />
-          </ListItemButton>
-        )}
       </List>
     </Box>
   );
@@ -83,27 +57,9 @@ const Navbar: React.FC = () => {
               color="inherit"
               underline="none"
             >
-              {isAuthenticated ? 'Dashboard' : 'Home'}
+              {'Home'}
             </Link>
           </Typography>
-
-          {/* Desktop Links */}
-          <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
-            {!isAuthenticated ? (
-              <>
-                <Button color="inherit" component={RouterLink} to="/signin">
-                  Login
-                </Button>
-                <Button color="inherit" component={RouterLink} to="/signup">
-                  Signup
-                </Button>
-              </>
-            ) : (
-              <Button color="inherit" onClick={handleLogout}>
-                Logout
-              </Button>
-            )}
-          </Box>
         </Toolbar>
       </AppBar>
 
