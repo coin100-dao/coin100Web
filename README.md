@@ -95,9 +95,7 @@ A: Any Ethereum-compatible wallet that supports Polygon network tokens, such as 
 
 Q7: What are the transaction fees used for?
 
-A:
-Developer Fee (1.2%): Supports ongoing project development.
-Burn Fee (1.2%): Reduces the circulating supply, potentially increasing token value.
+A: Burn Fee (1.2%): Reduces the circulating supply, potentially increasing token value.
 Reward Fee (0.6%): Added to the rewards pool for liquidity providers.
 Q8: Can the transaction fees change over time?
 
