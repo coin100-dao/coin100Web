@@ -49,11 +49,6 @@ How COIN100 Works
 Initialization:
 
 The total supply is set at 1,000,000,000 C100 tokens.
-Tokens are distributed as follows:
-90%: Public sale and treasury.
-5%: Developer allocation.
-5%: Rewards pool.
-Market Cap Tracking:
 
 COIN100 fetches the combined market cap of the top 100 cryptocurrencies using Chainlink Functions.
 This data is used to adjust the token supply to mirror market movements.
