@@ -97,9 +97,7 @@ Q7: What are the transaction fees used for?
 
 A: Burn Fee (1.2%): Reduces the circulating supply, potentially increasing token value.
 Reward Fee (0.6%): Added to the rewards pool for liquidity providers.
-Q8: Can the transaction fees change over time?
 
-A: Yes, the fee percentages and distribution can be adjusted by the contract owner within certain limits.
 Rebase Mechanism
 Q9: What is a rebase, and how does it affect me?
 
