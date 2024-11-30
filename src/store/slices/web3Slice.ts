@@ -57,6 +57,26 @@ type ITokenContract = Contract<AbiItem[]> & {
   };
 };
 
+// Async thunk to connect to MetaMask and fetch token balance
+export const connectAndFetchBalance = createAsyncThunk<
+  string,
+  void,
+  { rejectValue: string }
+>('web3/connectAndFetchBalance', async (_, { dispatch, rejectWithValue }) => {
+  try {
+    const walletAddress = await dispatch(connectWallet()).unwrap();
+    await dispatch(fetchTokenBalance({ walletAddress })).unwrap();
+    return walletAddress;
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return rejectWithValue(
+        error.message || 'Failed to connect and fetch balance'
+      );
+    }
+    return rejectWithValue('Failed to connect and fetch balance');
+  }
+});
+
 // Async thunk to connect to MetaMask
 export const connectWallet = createAsyncThunk<
   string,
