@@ -1,0 +1,46 @@
+# name: Deploy Blue Apple Frontend Main to S3
+
+# on:
+#   push:
+#     branches:
+#       - main
+
+# jobs:
+#   build-and-deploy:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - uses: actions/checkout@v3
+
+#       - name: Set up Node.jsgit config --global credential.helper store
+
+#         uses: actions/setup-node@v3
+#         with:
+#           node-version: '20'
+#           cache: 'npm'
+
+#       - name: Install dependencies
+#         run: npm install
+
+#       - name: Build React App
+#         env:
+#           VITE_REACT_APP_BACKEND_URL: ${{ secrets.VITE_REACT_APP_BACKEND_URL }}
+#           VITE_REACT_APP_DEBUG: ${{ secrets.VITE_REACT_APP_DEBUG }}
+#           VITE_REACT_APP_FMP_API_KEY: ${{ secrets.VITE_REACT_APP_FMP_API_KEY }}
+#           VITE_REACT_APP_MARKETSTACK_API_KEY: ${{ secrets.VITE_REACT_APP_MARKETSTACK_API_KEY }}
+#           VITE_REACT_APP_ALPHA_VANTAGE_API_KEY: ${{ secrets.VITE_REACT_APP_ALPHA_VANTAGE_API_KEY }}
+
+#         run: npm run build
+
+#       - name: Configure AWS Credentials
+#         uses: aws-actions/configure-aws-credentials@v2
+#         with:
+#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           aws-region: us-east-1
+
+#       - name: Deploy to S3 bucket
+#         run: aws s3 sync ./dist/ s3://blue-apple-web-main --delete
+
+#       - name: Invalidate CloudFront Distribution
+#         run: aws cloudfront create-invalidation --distribution-id E1H0CXBNI7MT6 --paths "/*"
