@@ -141,13 +141,6 @@ Token Supply and Economics
 Q19: What is the total supply of COIN100 tokens?
 
 A: The total supply is 1,000,000,000 tokens, subject to change due to the rebase mechanism.
-Q20: How is the initial token supply distributed?
-
-A:
-90%: Public sale and treasury.
-5%: Developer allocation.
-5%: Rewards pool for liquidity providers.
-Q21: Will new tokens be minted beyond the initial supply?
 
 A: Tokens may be minted or burned during rebase events to adjust the supply in line with market cap changes, within the 5% per rebase limit.
 Security and Governance
