@@ -35,18 +35,12 @@ Below $1: Highest rewards to encourage buying and holding.
 $1 - $5: Moderate rewards.
 $5 - $10: Reduced rewards.
 Above $10: Lowest rewards, reflecting increased token value.
-7. Administrative Controls
-Owner Privileges:
-Update transaction fees and distribution percentages.
-Change developer wallet address.
-Adjust rebase intervals (between 30 and 365 days).
-Pause or unpause the contract in case of emergencies.
-8. Price Feed Mechanism
+7. Price Feed Mechanism
 Chainlink Price Feeds: Fetches real-time price data for accurate calculations.
 Flexible Source:
 Direct Price Feed: Uses direct COIN100/USD price data if available.
 Derived Price: Calculates price using Uniswap reserves and MATIC/USD price feed when direct data isn't available.
-9. Uniswap Integration
+8. Uniswap Integration
 Liquidity Pool: COIN100 is paired with WMATIC on Uniswap V2, enabling users to trade and provide liquidity.
 Benefits:
 Facilitates easy token swaps.
