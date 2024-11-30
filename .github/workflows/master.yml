@@ -1,9 +1,9 @@
-# name: Deploy Blue Apple Frontend Main to S3
+# name: Deploy Blue Apple Frontend master to S3
 
 # on:
 #   push:
 #     branches:
-#       - main
+#       - master
 
 # jobs:
 #   build-and-deploy:
