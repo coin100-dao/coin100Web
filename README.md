@@ -19,9 +19,8 @@ Limitation: The maximum change per rebase is capped at 5% to prevent drastic sup
 Chainlink Functions: Used to fetch real-time market cap data from trusted external sources like CoinGecko.
 Chainlink Automation: Automates the rebase process at predefined intervals (default is every 90 days).
 4. Transaction Fees and Distribution
-Total Fee: A 3% fee is applied to each transaction (excluding owner transfers).
+Total Fee: A fee is applied to each transaction.
 Fee Breakdown:
-Developer Fee (1.2%): Supports ongoing development and maintenance.
 Burn Fee (1.2%): Tokens are permanently removed from circulation, potentially increasing token value.
 Reward Fee (0.6%): Added to the rewards pool for distribution to liquidity providers.
 5. Rewards for Liquidity Providers
