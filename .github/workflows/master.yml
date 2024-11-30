@@ -37,7 +37,7 @@ jobs:
           aws-region: us-east-1
 
       - name: Deploy to S3 bucket
-        run: aws s3 sync ./dist/ s3://blue-apple-web-main --delete
+        run: aws s3 sync ./dist/ s3://coin100.link --delete
 
       - name: Invalidate CloudFront Distribution
-        run: aws cloudfront create-invalidation --distribution-id E1H0CXBNI7MT6 --paths "/*"
+        run: aws cloudfront create-invalidation --distribution-id EO9F22TDWM3FG --paths "/*"
