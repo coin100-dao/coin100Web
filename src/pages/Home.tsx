@@ -10,10 +10,8 @@ import {
   Button,
   Divider,
   useTheme,
-  useMediaQuery,
   Card,
   CardContent,
-  CardMedia,
 } from '@mui/material';
 import {
   TrendingUp as TrendingUpIcon,
@@ -23,9 +21,9 @@ import {
   Gavel as GavelIcon,
   Sync as SyncIcon,
   People as PeopleIcon,
-  Liquidity as LiquidityIcon,
-  Reward as RewardIcon,
-  Voting as VotingIcon,
+  AccountBalance as LiquidityIcon,
+  EmojiEvents as RewardIcon,
+  HowToVote as VotingIcon,
 } from '@mui/icons-material';
 import { styled } from '@mui/system';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
@@ -41,7 +39,9 @@ const FeatureBox = styled(Paper)(({ theme }) => ({
   transition: 'transform 0.3s, box-shadow 0.3s',
   '&:hover': {
     transform: 'translateY(-10px)',
-    boxShadow: theme.shadows[6],
+    boxShadow:
+      theme?.shadows?.[4 as keyof typeof theme.shadows] ||
+      '0px 4px 8px rgba(0, 0, 0, 0.2)', // Fallback shadow if theme.shadows is undefined
   },
 }));
 
@@ -49,8 +49,6 @@ const Home: React.FC = () => {
   const theme = useTheme();
   const dispatch = useAppDispatch();
   const { walletAddress, loading } = useAppSelector((state) => state.web3);
-
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // Handler for Buy Token button
   const handleBuyToken = () => {
@@ -161,8 +159,8 @@ const Home: React.FC = () => {
             {loading
               ? 'Connecting...'
               : walletAddress
-              ? 'Go to Dashboard'
-              : 'Buy Token'}
+                ? 'Go to Dashboard'
+                : 'Buy Token'}
           </Button>
         </Container>
       </Box>
@@ -172,8 +170,20 @@ const Home: React.FC = () => {
         <Typography variant="h4" align="center" gutterBottom>
           What is COIN100?
         </Typography>
-        <Typography variant="body1" color="textSecondary" align="center" paragraph>
-          **COIN100 (C100)** is a decentralized cryptocurrency index fund built on the Polygon network. It represents the top 100 cryptocurrencies by market capitalization, offering users a diversified portfolio that mirrors the performance of the overall crypto market. Inspired by traditional index funds like the S&P 500, our ultimate goal is to dynamically track and reflect the top 100 cryptocurrencies, ensuring COIN100 remains a relevant and accurate representation of the cryptocurrency market.
+        <Typography
+          variant="body1"
+          color="textSecondary"
+          align="center"
+          paragraph
+        >
+          **COIN100 (C100)** is a decentralized cryptocurrency index fund built
+          on the Polygon network. It represents the top 100 cryptocurrencies by
+          market capitalization, offering users a diversified portfolio that
+          mirrors the performance of the overall crypto market. Inspired by
+          traditional index funds like the S&P 500, our ultimate goal is to
+          dynamically track and reflect the top 100 cryptocurrencies, ensuring
+          COIN100 remains a relevant and accurate representation of the
+          cryptocurrency market.
         </Typography>
         <Divider sx={{ my: 4 }} />
         <Grid container spacing={4}>
@@ -182,7 +192,10 @@ const Home: React.FC = () => {
               Decentralization & Governance
             </Typography>
             <Typography variant="body1" color="textSecondary" paragraph>
-              Governed by our community, COIN100 ensures that every holder has a voice in the project's future. Participate in voting on key decisions, from asset inclusion to protocol upgrades, fostering a truly decentralized ecosystem.
+              Governed by our community, COIN100 ensures that every holder has a
+              voice in the projects future. Participate in voting on key
+              decisions, from asset inclusion to protocol upgrades, fostering a
+              truly decentralized ecosystem.
             </Typography>
           </Grid>
           <Grid item xs={12} md={6}>
@@ -190,7 +203,10 @@ const Home: React.FC = () => {
               Dynamic Supply Adjustment
             </Typography>
             <Typography variant="body1" color="textSecondary" paragraph>
-              Our dynamic supply adjustment mechanism responds to market movements, maintaining price stability and aligning with the overall market cap of the tracked index. This ensures that COIN100 remains a true reflection of the cryptocurrency market.
+              Our dynamic supply adjustment mechanism responds to market
+              movements, maintaining price stability and aligning with the
+              overall market cap of the tracked index. This ensures that COIN100
+              remains a true reflection of the cryptocurrency market.
             </Typography>
           </Grid>
         </Grid>
@@ -238,17 +254,17 @@ const Home: React.FC = () => {
                   </Typography>
                   <Typography variant="body1" color="textSecondary">
                     - <strong>Total Supply:</strong> 1,000,000,000 C100 tokens
-                    <br />
-                    - <strong>Decimals:</strong> 18
+                    <br />- <strong>Decimals:</strong> 18
                   </Typography>
                   <Divider sx={{ my: 2 }} />
                   <Typography variant="h6" gutterBottom>
                     Distribution
                   </Typography>
                   <Typography variant="body1" color="textSecondary">
-                    - <strong>Public Sale + Treasury:</strong> 90% (900,000,000 C100)
-                    <br />
-                    - <strong>Rewards Pool:</strong> 10% (100,000,000 C100)
+                    - <strong>Public Sale + Treasury:</strong> 90% (900,000,000
+                    C100)
+                    <br />- <strong>Rewards Pool:</strong> 10% (100,000,000
+                    C100)
                   </Typography>
                 </CardContent>
               </Card>
@@ -261,24 +277,29 @@ const Home: React.FC = () => {
                   </Typography>
                   <Typography variant="body1" color="textSecondary">
                     - <strong>Burn Fee:</strong> 1.2% (40% of total fees)
-                    <br />
-                    - <strong>Reward Fee:</strong> 1.8% (60% of total fees)
+                    <br />- <strong>Reward Fee:</strong> 1.8% (60% of total
+                    fees)
                   </Typography>
                   <Divider sx={{ my: 2 }} />
                   <Typography variant="h6" gutterBottom>
                     Fee Allocation
                   </Typography>
                   <Typography variant="body1" color="textSecondary">
-                    - <strong>Burn Fee:</strong> Tokens are burned, reducing the total supply and potentially increasing the value of remaining tokens.
-                    <br />
-                    - <strong>Reward Fee:</strong> Allocated to the rewards pool and distributed to token holders and liquidity providers.
+                    - <strong>Burn Fee:</strong> Tokens are burned, reducing the
+                    total supply and potentially increasing the value of
+                    remaining tokens.
+                    <br />- <strong>Reward Fee:</strong> Allocated to the
+                    rewards pool and distributed to token holders and liquidity
+                    providers.
                   </Typography>
                   <Divider sx={{ my: 2 }} />
                   <Typography variant="h6" gutterBottom>
                     Liquidity Pool
                   </Typography>
                   <Typography variant="body1" color="textSecondary">
-                    - <strong>5% Allocation:</strong> Five percent of each transaction is allocated to the liquidity pool, ensuring ample liquidity for smooth trading experiences.
+                    - <strong>5% Allocation:</strong> Five percent of each
+                    transaction is allocated to the liquidity pool, ensuring
+                    ample liquidity for smooth trading experiences.
                   </Typography>
                 </CardContent>
               </Card>
@@ -300,7 +321,9 @@ const Home: React.FC = () => {
                 Staking Rewards
               </Typography>
               <Typography variant="body2" color="textSecondary">
-                Earn passive income by staking your COIN100 tokens. Enjoy competitive yields while contributing to the stability of the ecosystem.
+                Earn passive income by staking your COIN100 tokens. Enjoy
+                competitive yields while contributing to the stability of the
+                ecosystem.
               </Typography>
             </FeatureBox>
           </Grid>
@@ -311,7 +334,8 @@ const Home: React.FC = () => {
                 Transaction Fees
               </Typography>
               <Typography variant="body2" color="textSecondary">
-                A portion of every transaction fee is redistributed to COIN100 holders, providing continuous rewards as the network grows.
+                A portion of every transaction fee is redistributed to COIN100
+                holders, providing continuous rewards as the network grows.
               </Typography>
             </FeatureBox>
           </Grid>
@@ -322,7 +346,9 @@ const Home: React.FC = () => {
                 UpKeepers Rewards
               </Typography>
               <Typography variant="body2" color="textSecondary">
-                UpKeepers who manually maintain the system are rewarded for their efforts, ensuring the smooth operation and integrity of the COIN100 ecosystem.
+                UpKeepers who manually maintain the system are rewarded for
+                their efforts, ensuring the smooth operation and integrity of
+                the COIN100 ecosystem.
               </Typography>
             </FeatureBox>
           </Grid>
@@ -348,7 +374,10 @@ const Home: React.FC = () => {
                   Decentralized Voting
                 </Typography>
                 <Typography variant="body2" color="textSecondary">
-                  Participate in voting on key decisions such as asset inclusion, protocol upgrades, and fee adjustments. Your vote ensures that COIN100 evolves in a direction that benefits the entire community.
+                  Participate in voting on key decisions such as asset
+                  inclusion, protocol upgrades, and fee adjustments. Your vote
+                  ensures that COIN100 evolves in a direction that benefits the
+                  entire community.
                 </Typography>
               </FeatureBox>
             </Grid>
@@ -359,7 +388,9 @@ const Home: React.FC = () => {
                   Transparent Operations
                 </Typography>
                 <Typography variant="body2" color="textSecondary">
-                  All governance actions and supply adjustments are executed transparently through smart contracts, ensuring trust and accountability within the ecosystem.
+                  All governance actions and supply adjustments are executed
+                  transparently through smart contracts, ensuring trust and
+                  accountability within the ecosystem.
                 </Typography>
               </FeatureBox>
             </Grid>
@@ -380,15 +411,24 @@ const Home: React.FC = () => {
                   Adjusting Supply Mechanism
                 </Typography>
                 <Typography variant="body1" color="textSecondary">
-                  COIN100 employs a dynamic rebase mechanism that automatically adjusts the token supply based on the total market capitalization of the top 100 cryptocurrencies. This ensures that the token remains a true reflection of the underlying index, maintaining its relevance and accuracy in tracking market movements.
+                  COIN100 employs a dynamic rebase mechanism that automatically
+                  adjusts the token supply based on the total market
+                  capitalization of the top 100 cryptocurrencies. This ensures
+                  that the token remains a true reflection of the underlying
+                  index, maintaining its relevance and accuracy in tracking
+                  market movements.
                 </Typography>
                 <Divider sx={{ my: 2 }} />
                 <Typography variant="h6" gutterBottom>
                   Burn & Reward Fees
                 </Typography>
                 <Typography variant="body1" color="textSecondary">
-                  - <strong>Burn Fee:</strong> 1.2% of each transaction is burned, reducing the total supply and potentially increasing the value of remaining tokens.<br />
-                  - <strong>Reward Fee:</strong> 1.8% of each transaction is allocated to the rewards pool, which is distributed to holders and liquidity providers.
+                  - <strong>Burn Fee:</strong> 1.2% of each transaction is
+                  burned, reducing the total supply and potentially increasing
+                  the value of remaining tokens.
+                  <br />- <strong>Reward Fee:</strong> 1.8% of each transaction
+                  is allocated to the rewards pool, which is distributed to
+                  holders and liquidity providers.
                 </Typography>
               </CardContent>
             </Card>
@@ -400,15 +440,21 @@ const Home: React.FC = () => {
                   Liquidity Pool Allocation
                 </Typography>
                 <Typography variant="body1" color="textSecondary">
-                  5% of each transaction is allocated to the liquidity pool, ensuring ample liquidity for smooth trading experiences. This allocation supports the token’s stability and facilitates seamless interactions on decentralized exchanges.
+                  5% of each transaction is allocated to the liquidity pool,
+                  ensuring ample liquidity for smooth trading experiences. This
+                  allocation supports the token’s stability and facilitates
+                  seamless interactions on decentralized exchanges.
                 </Typography>
                 <Divider sx={{ my: 2 }} />
                 <Typography variant="h6" gutterBottom>
                   Rewards Distribution
                 </Typography>
                 <Typography variant="body1" color="textSecondary">
-                  - <strong>Liquidity Providers:</strong> Earn rewards for providing liquidity to the COIN100 pool.<br />
-                  - <strong>UpKeepers:</strong> Individuals who manually run upkeep tasks are rewarded for maintaining the system’s integrity.
+                  - <strong>Liquidity Providers:</strong> Earn rewards for
+                  providing liquidity to the COIN100 pool.
+                  <br />- <strong>UpKeepers:</strong> Individuals who manually
+                  run upkeep tasks are rewarded for maintaining the system’s
+                  integrity.
                 </Typography>
               </CardContent>
             </Card>
@@ -434,10 +480,12 @@ const Home: React.FC = () => {
                   Q1 2024
                 </Typography>
                 <Typography variant="body2" color="textSecondary">
-                  - Smart contract development and internal testing.<br />
-                  - Community building and initial marketing campaigns.<br />
-                  - Deployment on the Polygon network.<br />
-                  - Listing on major DEXs.
+                  - Smart contract development and internal testing.
+                  <br />
+                  - Community building and initial marketing campaigns.
+                  <br />
+                  - Deployment on the Polygon network.
+                  <br />- Listing on major DEXs.
                 </Typography>
               </FeatureBox>
             </Grid>
@@ -447,9 +495,10 @@ const Home: React.FC = () => {
                   Q2 2024
                 </Typography>
                 <Typography variant="body2" color="textSecondary">
-                  - Integration with Chainlink oracles.<br />
-                  - Launch of liquidity pools and staking mechanisms.<br />
-                  - Initial governance setup.
+                  - Integration with Chainlink oracles.
+                  <br />
+                  - Launch of liquidity pools and staking mechanisms.
+                  <br />- Initial governance setup.
                 </Typography>
               </FeatureBox>
             </Grid>
@@ -459,9 +508,10 @@ const Home: React.FC = () => {
                   Q3 2024
                 </Typography>
                 <Typography variant="body2" color="textSecondary">
-                  - Implementation of advanced governance features.<br />
-                  - Expansion of reward distribution systems.<br />
-                  - Strategic partnerships and collaborations.
+                  - Implementation of advanced governance features.
+                  <br />
+                  - Expansion of reward distribution systems.
+                  <br />- Strategic partnerships and collaborations.
                 </Typography>
               </FeatureBox>
             </Grid>
@@ -471,9 +521,10 @@ const Home: React.FC = () => {
                   Q4 2024
                 </Typography>
                 <Typography variant="body2" color="textSecondary">
-                  - Launch of automated portfolio rebalancing.<br />
-                  - Continuous security audits and upgrades.<br />
-                  - Global marketing and user acquisition initiatives.
+                  - Launch of automated portfolio rebalancing.
+                  <br />
+                  - Continuous security audits and upgrades.
+                  <br />- Global marketing and user acquisition initiatives.
                 </Typography>
               </FeatureBox>
             </Grid>
@@ -523,8 +574,8 @@ const Home: React.FC = () => {
             {loading
               ? 'Connecting...'
               : walletAddress
-              ? 'Go to Dashboard'
-              : 'Buy Token'}
+                ? 'Go to Dashboard'
+                : 'Buy Token'}
           </Button>
         </Container>
       </Box>
