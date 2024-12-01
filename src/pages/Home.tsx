@@ -44,7 +44,7 @@ const FeatureBox = styled(Paper)(({ theme }) => ({
   minHeight: '350px',
   '&:hover': {
     transform: 'translateY(-10px)',
-    boxShadow: theme?.shadows?.[8] || '0px 8px 16px rgba(0, 0, 0, 0.2)', // Enhanced shadow on hover
+    boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.2)', // Enhanced shadow on hover
     background: theme.palette.primary.light,
     color: theme.palette.primary.contrastText,
   },
