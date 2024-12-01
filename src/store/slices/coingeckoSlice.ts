@@ -65,6 +65,7 @@ export const fetchTopCoins = createAsyncThunk<
         },
       }
     );
+    // console.log(response);
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {
@@ -94,6 +95,7 @@ export const fetchCoinDetails = createAsyncThunk<
         },
       }
     );
+    console.log(response);
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response) {
