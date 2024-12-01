@@ -5,7 +5,7 @@
 
 **Ultimate Goal:** To dynamically track and reflect the top 100 cryptocurrencies by market capitalization, ensuring that COIN100 remains a relevant and accurate representation of the cryptocurrency market.
 
-**Contract Address:** [0xa08a766169dfa9e2340953aeb65ee71d4b643a68](https://polygonscan.com/token/0xa08a766169dfa9e2340953aeb65ee71d4b643a68)
+**Contract Address:** [0x854d7193482d29d77ac46dae033569b7371557e3](https://polygonscan.com/token/0x854d7193482d29d77ac46dae033569b7371557e3)
 
 ---
 
