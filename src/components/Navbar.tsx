@@ -28,7 +28,7 @@ import {
   Brightness7,
   Close as CloseIcon,
 } from '@mui/icons-material';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { RootState } from '../store/store';
 import {
@@ -45,7 +45,6 @@ interface NavbarProps {
 const Navbar: React.FC<NavbarProps> = ({ toggleTheme }) => {
   const theme = useTheme();
   const dispatch = useAppDispatch();
-  const navigate = useNavigate();
   const { walletAddress, loading } = useAppSelector(
     (state: RootState) => state.web3
   );
@@ -107,64 +106,57 @@ const Navbar: React.FC<NavbarProps> = ({ toggleTheme }) => {
     </Drawer>
   );
 
-  React.useEffect(() => {
-    if (walletAddress) {
-      navigate('/dashboard');
-    }
-  }, [walletAddress, navigate]);
-
   return (
     <>
       <AppBar position="static" elevation={0}>
         <Toolbar>
-          {isMobile && (
-            <IconButton
-              color="inherit"
-              edge="start"
-              onClick={() => setMobileMenuOpen(true)}
-              sx={{ mr: 2 }}
+          {/* Left Side */}
+          <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
+            {isMobile && (
+              <IconButton
+                color="inherit"
+                edge="start"
+                onClick={() => setMobileMenuOpen(true)}
+                sx={{ mr: 2 }}
+              >
+                <MenuIcon />
+              </IconButton>
+            )}
+
+            <Typography
+              variant="h6"
+              component={RouterLink}
+              to="/"
+              sx={{
+                textDecoration: 'none',
+                color: 'inherit',
+                fontWeight: 'bold',
+                display: { xs: 'none', sm: 'block' },
+              }}
             >
-              <MenuIcon />
-            </IconButton>
-          )}
+              COIN100
+            </Typography>
 
-          <Typography
-            variant="h6"
-            component={RouterLink}
-            to="/"
-            sx={{
-              flexGrow: 1,
-              textDecoration: 'none',
-              color: 'inherit',
-              fontWeight: 'bold',
-              display: { xs: 'none', sm: 'block' },
-            }}
-          >
-            COIN100
-          </Typography>
-
-          {!isMobile && (
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <Button color="inherit" component={RouterLink} to="/">
-                Home
-              </Button>
-              {walletAddress && (
-                <Button color="inherit" component={RouterLink} to="/dashboard">
-                  Dashboard
+            {!isMobile && (
+              <Box sx={{ display: 'flex', gap: 2, ml: 2 }}>
+                <Button color="inherit" component={RouterLink} to="/">
+                  Home
                 </Button>
-              )}
-            </Box>
-          )}
+                {walletAddress && (
+                  <Button
+                    color="inherit"
+                    component={RouterLink}
+                    to="/dashboard"
+                  >
+                    Dashboard
+                  </Button>
+                )}
+              </Box>
+            )}
+          </Box>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <IconButton onClick={toggleTheme} color="inherit">
-              {theme.palette.mode === 'dark' ? (
-                <Brightness7 />
-              ) : (
-                <Brightness4 />
-              )}
-            </IconButton>
-
+          {/* Right Side */}
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Button
               variant="outlined"
               color="inherit"
@@ -182,6 +174,7 @@ const Navbar: React.FC<NavbarProps> = ({ toggleTheme }) => {
                 )
               }
               disabled={loading}
+              sx={{ ml: 1 }}
             >
               {loading ? (
                 <CircularProgress size={20} color="inherit" />
@@ -199,6 +192,13 @@ const Navbar: React.FC<NavbarProps> = ({ toggleTheme }) => {
                 'Connect Wallet'
               )}
             </Button>
+            <IconButton onClick={toggleTheme} color="inherit">
+              {theme.palette.mode === 'dark' ? (
+                <Brightness7 />
+              ) : (
+                <Brightness4 />
+              )}
+            </IconButton>
           </Box>
         </Toolbar>
       </AppBar>

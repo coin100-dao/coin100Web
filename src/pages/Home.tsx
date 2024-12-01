@@ -58,8 +58,8 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
   const { walletAddress, loading } = useAppSelector((state) => state.web3);
 
-  const handleBuyToken = () => {
-    dispatch(connectWallet());
+  const handleBuyToken = async () => {
+    await dispatch(connectWallet());
     // Navigate to dashboard after connecting wallet
     navigate('/dashboard');
   };
