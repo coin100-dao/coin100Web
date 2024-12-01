@@ -13,6 +13,7 @@ import {
 } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import web3Reducer from './slices/web3Slice';
+import coingeckoReducer from './slices/coingeckoSlice';
 
 // Persist configuration for web3 slice
 const persistConfig = {
@@ -28,6 +29,7 @@ const persistedWeb3Reducer = persistReducer(persistConfig, web3Reducer);
 export const store = configureStore({
   reducer: {
     web3: persistedWeb3Reducer,
+    coingecko: coingeckoReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
