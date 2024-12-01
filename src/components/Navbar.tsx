@@ -1,4 +1,5 @@
 // src/components/Navbar.tsx
+
 import React from 'react';
 import {
   AppBar,
@@ -13,6 +14,12 @@ import {
   DialogContentText,
   useTheme,
   useMediaQuery,
+  List,
+  ListItemText,
+  ListItemIcon,
+  CircularProgress,
+  Drawer,
+  ListItemButton,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -21,15 +28,15 @@ import {
   Brightness7,
   Close as CloseIcon,
 } from '@mui/icons-material';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { RootState } from '../store/store';
-import { connectWallet, disconnectWallet } from '../store/slices/web3Slice';
-import MetaMaskIcon from '../assets/MetaMask_Fox.svg';
-import Drawer from '@mui/material/Drawer';
-import List from '@mui/material/List';
-import ListItemText from '@mui/material/ListItemText';
-import { ListItemButton } from '@mui/material';
+import {
+  disconnectWallet,
+  connectAndFetchBalance,
+} from '../store/slices/web3Slice';
+import MetaMaskIcon from '../assets/MetaMask_Fox.png';
+import PolygonIcon from '../assets/polygon-matic-logo.svg';
 
 interface NavbarProps {
   toggleTheme: () => void;
@@ -38,12 +45,15 @@ interface NavbarProps {
 const Navbar: React.FC<NavbarProps> = ({ toggleTheme }) => {
   const theme = useTheme();
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const { walletAddress, loading } = useAppSelector(
     (state: RootState) => state.web3
   );
 
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [walletDialogOpen, setWalletDialogOpen] = React.useState(false);
+  const [walletSelectDialogOpen, setWalletSelectDialogOpen] =
+    React.useState(false);
 
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -51,8 +61,13 @@ const Navbar: React.FC<NavbarProps> = ({ toggleTheme }) => {
     if (walletAddress) {
       setWalletDialogOpen(true);
     } else {
-      dispatch(connectWallet());
+      setWalletSelectDialogOpen(true);
     }
+  };
+
+  const handleWalletSelect = async () => {
+    setWalletSelectDialogOpen(false);
+    await dispatch(connectAndFetchBalance());
   };
 
   const handleDisconnect = () => {
@@ -91,6 +106,12 @@ const Navbar: React.FC<NavbarProps> = ({ toggleTheme }) => {
       </Box>
     </Drawer>
   );
+
+  React.useEffect(() => {
+    if (walletAddress) {
+      navigate('/dashboard');
+    }
+  }, [walletAddress, navigate]);
 
   return (
     <>
@@ -162,11 +183,21 @@ const Navbar: React.FC<NavbarProps> = ({ toggleTheme }) => {
               }
               disabled={loading}
             >
-              {loading
-                ? 'Connecting...'
-                : walletAddress
-                  ? truncateAddress(walletAddress)
-                  : 'Connect Wallet'}
+              {loading ? (
+                <CircularProgress size={20} color="inherit" />
+              ) : walletAddress ? (
+                <>
+                  {truncateAddress(walletAddress)}
+                  <Box
+                    component="img"
+                    src={PolygonIcon}
+                    alt="Polygon"
+                    sx={{ width: 20, height: 20, ml: 1 }}
+                  />
+                </>
+              ) : (
+                'Connect Wallet'
+              )}
             </Button>
           </Box>
         </Toolbar>
@@ -174,7 +205,7 @@ const Navbar: React.FC<NavbarProps> = ({ toggleTheme }) => {
 
       {mobileMenu}
 
-      {/* Wallet Dialog */}
+      {/* Wallet Info Dialog */}
       <Dialog
         open={walletDialogOpen}
         onClose={() => setWalletDialogOpen(false)}
@@ -206,6 +237,39 @@ const Navbar: React.FC<NavbarProps> = ({ toggleTheme }) => {
               Disconnect Wallet
             </Button>
           </Box>
+        </DialogContent>
+      </Dialog>
+
+      {/* Wallet Selection Dialog */}
+      <Dialog
+        open={walletSelectDialogOpen}
+        onClose={() => setWalletSelectDialogOpen(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>
+          Select Wallet
+          <IconButton
+            onClick={() => setWalletSelectDialogOpen(false)}
+            sx={{ position: 'absolute', right: 8, top: 8 }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <List>
+            <ListItemButton onClick={handleWalletSelect}>
+              <ListItemIcon>
+                <Box
+                  component="img"
+                  src={MetaMaskIcon}
+                  alt="MetaMask"
+                  sx={{ width: 32, height: 32 }}
+                />
+              </ListItemIcon>
+              <ListItemText primary="MetaMask" />
+            </ListItemButton>
+          </List>
         </DialogContent>
       </Dialog>
     </>
