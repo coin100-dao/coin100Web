@@ -27,9 +27,11 @@ import {
 import { styled } from '@mui/system';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { connectWallet } from '../store/slices/web3Slice';
-import CoinLogo from '../assets/coin100-transp.png'; // Ensure CoinLogo is imported here if used elsewhere
-import CoinLogoWithBackground from '../components/CoinLogoWithBackground'; // Import the new component
 import { useNavigate } from 'react-router-dom';
+
+// Import light and dark SVG logos
+import CoinLogoLight from '../assets/c100-high-resolution-light-logo.svg';
+import CoinLogoDark from '../assets/c100-high-resolution-dark-logo.svg';
 
 // Styled component for feature boxes with modern hover effects and equal height
 const FeatureBox = styled(Paper)(({ theme }) => ({
@@ -62,6 +64,9 @@ const Home: React.FC = () => {
     // Navigate to dashboard after connecting wallet
     navigate('/dashboard');
   };
+
+  // Determine the appropriate logo based on the current theme mode
+  const logo = theme.palette.mode === 'light' ? CoinLogoLight : CoinLogoDark;
 
   const features = [
     {
@@ -118,7 +123,7 @@ const Home: React.FC = () => {
         {/* Coin Logo as Background Element */}
         <Box
           component="img"
-          src={CoinLogo}
+          src={logo}
           alt="COIN100 Logo"
           sx={{
             width: 300,
@@ -132,10 +137,16 @@ const Home: React.FC = () => {
         />
         <Container maxWidth="md" sx={{ position: 'relative', zIndex: 2 }}>
           {/* Logo Next to Heading */}
-          <CoinLogoWithBackground
-            size={120}
-            imgSize={100}
-            sx={{ mb: 4, mx: 'auto' }}
+          <Box
+            component="img"
+            src={logo}
+            alt="COIN100 Logo"
+            sx={{
+              width: 100,
+              height: 100,
+              margin: '0 auto',
+              mb: 4,
+            }}
           />
           <Fade in timeout={1000}>
             <Box>
@@ -159,10 +170,11 @@ const Home: React.FC = () => {
                 size="large"
                 onClick={handleBuyToken}
                 startIcon={
-                  <CoinLogoWithBackground
-                    size={24}
-                    imgSize={20}
-                    alt="COIN100 Icon"
+                  <Box
+                    component="img"
+                    src={logo}
+                    alt="COIN100 Logo"
+                    sx={{ width: 24, height: 24 }}
                   />
                 }
                 sx={{
@@ -302,7 +314,12 @@ const Home: React.FC = () => {
               <Card sx={{ borderRadius: 3, boxShadow: theme.shadows[4] }}>
                 <CardContent>
                   <Box sx={{ textAlign: 'center', mb: 4 }}>
-                    <CoinLogoWithBackground size={100} imgSize={80} />
+                    <Box
+                      component="img"
+                      src={logo}
+                      alt="COIN100 Logo"
+                      sx={{ width: 80, height: 80 }}
+                    />
                   </Box>
                   <Typography
                     variant="h5"
@@ -347,7 +364,12 @@ const Home: React.FC = () => {
               <Card sx={{ borderRadius: 3, boxShadow: theme.shadows[4] }}>
                 <CardContent>
                   <Box sx={{ textAlign: 'center', mb: 4 }}>
-                    <CoinLogoWithBackground size={100} imgSize={80} />
+                    <Box
+                      component="img"
+                      src={logo}
+                      alt="COIN100 Logo"
+                      sx={{ width: 80, height: 80 }}
+                    />
                   </Box>
                   <Typography
                     variant="h5"
@@ -550,10 +572,11 @@ const Home: React.FC = () => {
             size="large"
             onClick={handleBuyToken}
             startIcon={
-              <CoinLogoWithBackground
-                size={24}
-                imgSize={20}
-                alt="COIN100 Icon"
+              <Box
+                component="img"
+                src={logo}
+                alt="COIN100 Logo"
+                sx={{ width: 24, height: 24 }}
               />
             }
             sx={{
@@ -592,7 +615,7 @@ const Home: React.FC = () => {
         {/* Coin Logo as Background Element */}
         <Box
           component="img"
-          src={CoinLogo}
+          src={logo}
           alt="COIN100 Logo"
           sx={{
             width: 200,
@@ -606,11 +629,17 @@ const Home: React.FC = () => {
           }}
         />
         <Container maxWidth="md">
-          {/* Logo Next to CTA */}
-          <CoinLogoWithBackground
-            size={120}
-            imgSize={100}
-            sx={{ mb: 4, mx: 'auto' }}
+          {/* Coin Logo Next to CTA */}
+          <Box
+            component="img"
+            src={logo}
+            alt="COIN100 Logo"
+            sx={{
+              width: 100,
+              height: 100,
+              margin: '0 auto',
+              mb: 4,
+            }}
           />
           <Typography variant="h4" gutterBottom sx={{ fontWeight: 700 }}>
             Ready to Invest in the Future of Crypto?
@@ -621,10 +650,11 @@ const Home: React.FC = () => {
             size="large"
             onClick={handleBuyToken}
             startIcon={
-              <CoinLogoWithBackground
-                size={24}
-                imgSize={20}
-                alt="COIN100 Icon"
+              <Box
+                component="img"
+                src={logo}
+                alt="COIN100 Logo"
+                sx={{ width: 24, height: 24 }}
               />
             }
             sx={{
