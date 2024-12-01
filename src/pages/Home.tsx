@@ -21,7 +21,6 @@ import {
   EmojiEvents as EmojiEventsIcon,
   Gavel as GavelIcon,
   Sync as SyncIcon,
-  People as PeopleIcon,
   EmojiNature as EcoIcon,
 } from '@mui/icons-material';
 import { styled } from '@mui/system';
@@ -86,12 +85,6 @@ const Home: React.FC = () => {
       title: 'Diversified Portfolio 📊',
       description:
         'Exposure to the top 100 cryptocurrencies, minimizing risks associated with individual assets.',
-    },
-    {
-      icon: <EmojiEventsIcon color="secondary" sx={{ fontSize: 60 }} />,
-      title: 'Rewarding Holders 🏆',
-      description:
-        'Earn rewards through transaction fees and incentives for liquidity providers and upkeep users.',
     },
     {
       icon: <GavelIcon color="primary" sx={{ fontSize: 60 }} />,
@@ -383,9 +376,6 @@ const Home: React.FC = () => {
                     providing liquidity to the COIN100 pool, enhancing market
                     stability and trading efficiency.
                     <br />
-                    <strong>UpKeepers:</strong> Individuals who manually run
-                    upkeep tasks are rewarded for maintaining the system’s
-                    integrity, ensuring continuous and reliable operations.
                   </Typography>
                   <Divider sx={{ my: 3 }} />
                   <Typography
@@ -510,27 +500,6 @@ const Home: React.FC = () => {
                     A portion of every transaction fee is redistributed to
                     COIN100 holders, providing continuous rewards as the network
                     grows.
-                  </Typography>
-                </FeatureBox>
-              </Fade>
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <Fade in timeout={1800}>
-                <FeatureBox elevation={3}>
-                  <Box sx={{ mb: 3 }}>
-                    <PeopleIcon color="primary" sx={{ fontSize: 60 }} />
-                  </Box>
-                  <Typography
-                    variant="h6"
-                    gutterBottom
-                    sx={{ fontWeight: 600 }}
-                  >
-                    UpKeepers Rewards 🛠️
-                  </Typography>
-                  <Typography variant="body2" color="textSecondary">
-                    UpKeepers who manually maintain the system are rewarded for
-                    their efforts, ensuring the smooth operation and integrity
-                    of the COIN100 ecosystem.
                   </Typography>
                 </FeatureBox>
               </Fade>
