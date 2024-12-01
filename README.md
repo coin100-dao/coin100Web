@@ -1,11 +1,9 @@
 # COIN100 (C100)
-**Contract Address:** [0xa08a766169dfa9e2340953aeb65ee71d4b643a68](https://polygonscan.com/token/0xa08a766169dfa9e2340953aeb65ee71d4b643a68)
-
 ****COIN100** is a decentralized cryptocurrency index fund built on the polygon network. It represents the top 100 cryptocurrencies by market capitalization, offering users a diversified portfolio that mirrors the performance of the overall crypto market. Inspired by traditional index funds like the S&P 500, COIN100
 
 **Ultimate Goal:** To dynamically track and reflect the top 100 cryptocurrencies by market capitalization, ensuring that COIN100 remains a relevant and accurate representation of the cryptocurrency market.
 
-**Contract Address:** [0xa08a766169dfa9e2340953aeb65ee71d4b643a68](https://polygonscan.com/token/0xa08a766169dfa9e2340953aeb65ee71d4b643a68)
+**Contract Address:** [0xdbe819ddf0d14a54ffe611c6d070b32a7f9d23d1](https://polygonscan.com/token/0xdbe819ddf0d14a54ffe611c6d070b32a7f9d23d1)
 
 ---
 

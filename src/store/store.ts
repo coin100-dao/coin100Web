@@ -1,4 +1,5 @@
 // src/store/store.ts
+
 import { configureStore } from '@reduxjs/toolkit';
 import {
   persistStore,
@@ -12,21 +13,23 @@ import {
 } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import web3Reducer from './slices/web3Slice';
+import coingeckoReducer from './slices/coingeckoSlice';
 
-// Persist configuration for auth slice
+// Persist configuration for web3 slice
 const persistConfig = {
   key: 'web3',
   storage,
-  whitelist: ['walletAddress', 'tokenBalance'], // Persist walletAddress and tokenBalance
+  whitelist: ['walletAddress', 'connectedAt'], // Persist walletAddress and connectedAt
 };
 
-// Persisted auth reducer
+// Persisted web3 reducer
 const persistedWeb3Reducer = persistReducer(persistConfig, web3Reducer);
 
 // Configure the Redux store
 export const store = configureStore({
   reducer: {
     web3: persistedWeb3Reducer,
+    coingecko: coingeckoReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
