@@ -12,6 +12,7 @@ import {
   DialogContent,
   DialogContentText,
   useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -44,6 +45,8 @@ const Navbar: React.FC<NavbarProps> = ({ toggleTheme }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [walletDialogOpen, setWalletDialogOpen] = React.useState(false);
 
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   const handleWalletClick = () => {
     if (walletAddress) {
       setWalletDialogOpen(true);
@@ -69,24 +72,23 @@ const Navbar: React.FC<NavbarProps> = ({ toggleTheme }) => {
       open={mobileMenuOpen}
       onClose={() => setMobileMenuOpen(false)}
     >
-      <List sx={{ width: 250 }}>
-        <ListItemButton
-          component={RouterLink}
-          to="/"
-          onClick={() => setMobileMenuOpen(false)}
-        >
-          <ListItemText primary="Home" />
-        </ListItemButton>
-        {walletAddress && (
-          <ListItemButton
-            component={RouterLink}
-            to="/dashboard"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            <ListItemText primary="Dashboard" />
+      <Box
+        sx={{ width: 250 }}
+        role="presentation"
+        onClick={() => setMobileMenuOpen(false)}
+        onKeyDown={() => setMobileMenuOpen(false)}
+      >
+        <List>
+          <ListItemButton component={RouterLink} to="/">
+            <ListItemText primary="Home" />
           </ListItemButton>
-        )}
-      </List>
+          {walletAddress && (
+            <ListItemButton component={RouterLink} to="/dashboard">
+              <ListItemText primary="Dashboard" />
+            </ListItemButton>
+          )}
+        </List>
+      </Box>
     </Drawer>
   );
 
@@ -94,14 +96,16 @@ const Navbar: React.FC<NavbarProps> = ({ toggleTheme }) => {
     <>
       <AppBar position="static" elevation={0}>
         <Toolbar>
-          <IconButton
-            color="inherit"
-            edge="start"
-            onClick={() => setMobileMenuOpen(true)}
-            sx={{ display: { sm: 'none' }, mr: 2 }}
-          >
-            <MenuIcon />
-          </IconButton>
+          {isMobile && (
+            <IconButton
+              color="inherit"
+              edge="start"
+              onClick={() => setMobileMenuOpen(true)}
+              sx={{ mr: 2 }}
+            >
+              <MenuIcon />
+            </IconButton>
+          )}
 
           <Typography
             variant="h6"
@@ -112,21 +116,24 @@ const Navbar: React.FC<NavbarProps> = ({ toggleTheme }) => {
               textDecoration: 'none',
               color: 'inherit',
               fontWeight: 'bold',
+              display: { xs: 'none', sm: 'block' },
             }}
           >
             COIN100
           </Typography>
 
-          <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 2 }}>
-            <Button color="inherit" component={RouterLink} to="/">
-              Home
-            </Button>
-            {walletAddress && (
-              <Button color="inherit" component={RouterLink} to="/dashboard">
-                Dashboard
+          {!isMobile && (
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <Button color="inherit" component={RouterLink} to="/">
+                Home
               </Button>
-            )}
-          </Box>
+              {walletAddress && (
+                <Button color="inherit" component={RouterLink} to="/dashboard">
+                  Dashboard
+                </Button>
+              )}
+            </Box>
+          )}
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <IconButton onClick={toggleTheme} color="inherit">
@@ -146,6 +153,7 @@ const Navbar: React.FC<NavbarProps> = ({ toggleTheme }) => {
                   <Box
                     component="img"
                     src={MetaMaskIcon}
+                    alt="MetaMask"
                     sx={{ width: 20, height: 20 }}
                   />
                 ) : (
@@ -184,7 +192,7 @@ const Navbar: React.FC<NavbarProps> = ({ toggleTheme }) => {
         </DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Connected Address:
+            <strong>Connected Address:</strong>
             <br />
             {walletAddress}
           </DialogContentText>

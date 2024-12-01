@@ -4,8 +4,7 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import { getTheme } from './theme/theme';
 import AppRoutes from './routes/Routes';
-import Navbar from './components/Navbar';
-import Container from '@mui/material/Container';
+import Layout from './Layout';
 
 const App: React.FC = () => {
   const [mode, setMode] = React.useState<'light' | 'dark'>('light');
@@ -20,10 +19,9 @@ const App: React.FC = () => {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Router>
-        <Navbar toggleTheme={toggleTheme} />
-        <Container maxWidth="lg" sx={{ mt: 4 }}>
+        <Layout toggleTheme={toggleTheme}>
           <AppRoutes />
-        </Container>
+        </Layout>
       </Router>
     </ThemeProvider>
   );
