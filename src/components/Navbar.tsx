@@ -1,71 +1,60 @@
 // src/components/Navbar.tsx
 import React from 'react';
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
+import {
+  AppBar,
+  Box,
+  Toolbar,
+  Typography,
+  Button,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  useTheme,
+} from '@mui/material';
+import {
+  Menu as MenuIcon,
+  AccountBalanceWallet,
+  Brightness4,
+  Brightness7,
+  Close as CloseIcon,
+} from '@mui/icons-material';
 import { Link as RouterLink } from 'react-router-dom';
-import Link from '@mui/material/Link';
-import IconButton from '@mui/material/IconButton';
-import MenuIcon from '@mui/icons-material/Menu';
+import { useAppSelector, useAppDispatch } from '../store/hooks';
+import { RootState } from '../store/store';
+import { connectWallet, disconnectWallet } from '../store/slices/web3Slice';
+import MetaMaskIcon from '../assets/MetaMask_Fox.svg';
 import Drawer from '@mui/material/Drawer';
 import List from '@mui/material/List';
-import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
-import Button from '@mui/material/Button';
-import { useSelector, useDispatch } from 'react-redux';
-import { RootState, AppDispatch } from '../store/store';
-import { connectWallet } from '../store/slices/web3Slice';
-import Snackbar from '@mui/material/Snackbar';
-import Alert from '@mui/material/Alert';
-import CircularProgress from '@mui/material/CircularProgress';
-import { styled } from '@mui/material/styles';
-import MetaMaskIcon from '../assets/MetaMask_Fox.svg';
+import { ListItemButton } from '@mui/material';
 
-// Styled Components
-const WalletInfoBox = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: theme.spacing(1),
-}));
+interface NavbarProps {
+  toggleTheme: () => void;
+}
 
-const WalletAddress = styled(Typography)(() => ({
-  maxWidth: '150px',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  whiteSpace: 'nowrap',
-}));
-
-const Navbar: React.FC = () => {
-  const dispatch = useDispatch<AppDispatch>();
-  const { walletAddress, loading, error } = useSelector(
+const Navbar: React.FC<NavbarProps> = ({ toggleTheme }) => {
+  const theme = useTheme();
+  const dispatch = useAppDispatch();
+  const { walletAddress, loading } = useAppSelector(
     (state: RootState) => state.web3
   );
-  const [drawerOpen, setDrawerOpen] = React.useState(false);
-  const [snackbarOpen, setSnackbarOpen] = React.useState(false);
 
-  React.useEffect(() => {
-    if (error) {
-      setSnackbarOpen(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const [walletDialogOpen, setWalletDialogOpen] = React.useState(false);
+
+  const handleWalletClick = () => {
+    if (walletAddress) {
+      setWalletDialogOpen(true);
+    } else {
+      dispatch(connectWallet());
     }
-  }, [error]);
-
-  const toggleDrawer = (open: boolean) => () => {
-    setDrawerOpen(open);
   };
 
-  const handleConnectWallet = () => {
-    dispatch(connectWallet());
-  };
-
-  const handleCloseSnackbar = (
-    _event?: React.SyntheticEvent | Event,
-    reason?: string
-  ) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-    setSnackbarOpen(false);
+  const handleDisconnect = () => {
+    dispatch(disconnectWallet());
+    setWalletDialogOpen(false);
   };
 
   const truncateAddress = (address: string) => {
@@ -74,111 +63,144 @@ const Navbar: React.FC = () => {
     )}`;
   };
 
-  const drawerList = (
-    <Box
-      sx={{ width: 250 }}
-      role="presentation"
-      onClick={toggleDrawer(false)}
-      onKeyDown={toggleDrawer(false)}
+  const mobileMenu = (
+    <Drawer
+      anchor="left"
+      open={mobileMenuOpen}
+      onClose={() => setMobileMenuOpen(false)}
     >
-      <List>
-        <ListItemButton component={RouterLink} to="/">
-          <ListItemText primary={'Home'} />
+      <List sx={{ width: 250 }}>
+        <ListItemButton
+          component={RouterLink}
+          to="/"
+          onClick={() => setMobileMenuOpen(false)}
+        >
+          <ListItemText primary="Home" />
         </ListItemButton>
-        {/* Add more navigation items here */}
+        {walletAddress && (
+          <ListItemButton
+            component={RouterLink}
+            to="/dashboard"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <ListItemText primary="Dashboard" />
+          </ListItemButton>
+        )}
       </List>
-    </Box>
+    </Drawer>
   );
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static">
+    <>
+      <AppBar position="static" elevation={0}>
         <Toolbar>
-          {/* Hamburger Menu for Mobile */}
           <IconButton
             color="inherit"
             edge="start"
-            onClick={toggleDrawer(true)}
-            sx={{ display: { xs: 'block', sm: 'none' }, mr: 2 }}
+            onClick={() => setMobileMenuOpen(true)}
+            sx={{ display: { sm: 'none' }, mr: 2 }}
           >
             <MenuIcon />
           </IconButton>
 
-          {/* Title / Brand */}
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            <Link
-              component={RouterLink}
-              to="/"
-              color="inherit"
-              underline="none"
-            >
-              {'Home'}
-            </Link>
+          <Typography
+            variant="h6"
+            component={RouterLink}
+            to="/"
+            sx={{
+              flexGrow: 1,
+              textDecoration: 'none',
+              color: 'inherit',
+              fontWeight: 'bold',
+            }}
+          >
+            COIN100
           </Typography>
 
-          {/* Connect Wallet Section */}
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            {walletAddress ? (
-              <WalletInfoBox>
-                {/* MetaMask Icon */}
-                <Box
-                  component="img"
-                  src={MetaMaskIcon}
-                  alt="MetaMask"
-                  sx={{ width: 24, height: 24 }}
-                />
-
-                {/* Truncated Wallet Address */}
-                <WalletAddress variant="body1">
-                  {truncateAddress(walletAddress)}
-                </WalletAddress>
-              </WalletInfoBox>
-            ) : (
-              <Button
-                color="inherit"
-                variant="outlined"
-                onClick={handleConnectWallet}
-                disabled={loading}
-                startIcon={
-                  loading ? (
-                    <CircularProgress color="inherit" size={20} />
-                  ) : null
-                }
-                sx={{
-                  borderColor: 'rgba(255, 255, 255, 0.7)',
-                  '&:hover': {
-                    borderColor: 'white',
-                  },
-                }}
-              >
-                {loading ? 'Connecting...' : 'Connect Wallet'}
+          <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 2 }}>
+            <Button color="inherit" component={RouterLink} to="/">
+              Home
+            </Button>
+            {walletAddress && (
+              <Button color="inherit" component={RouterLink} to="/dashboard">
+                Dashboard
               </Button>
             )}
+          </Box>
+
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <IconButton onClick={toggleTheme} color="inherit">
+              {theme.palette.mode === 'dark' ? (
+                <Brightness7 />
+              ) : (
+                <Brightness4 />
+              )}
+            </IconButton>
+
+            <Button
+              variant="outlined"
+              color="inherit"
+              onClick={handleWalletClick}
+              startIcon={
+                loading ? null : walletAddress ? (
+                  <Box
+                    component="img"
+                    src={MetaMaskIcon}
+                    sx={{ width: 20, height: 20 }}
+                  />
+                ) : (
+                  <AccountBalanceWallet />
+                )
+              }
+              disabled={loading}
+            >
+              {loading
+                ? 'Connecting...'
+                : walletAddress
+                  ? truncateAddress(walletAddress)
+                  : 'Connect Wallet'}
+            </Button>
           </Box>
         </Toolbar>
       </AppBar>
 
-      {/* Drawer for Mobile Navigation */}
-      <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer(false)}>
-        {drawerList}
-      </Drawer>
+      {mobileMenu}
 
-      {/* Snackbar for Error Messages */}
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      {/* Wallet Dialog */}
+      <Dialog
+        open={walletDialogOpen}
+        onClose={() => setWalletDialogOpen(false)}
+        maxWidth="xs"
+        fullWidth
       >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity="error"
-          sx={{ width: '100%' }}
-        >
-          {error}
-        </Alert>
-      </Snackbar>
-    </Box>
+        <DialogTitle>
+          Wallet Info
+          <IconButton
+            onClick={() => setWalletDialogOpen(false)}
+            sx={{ position: 'absolute', right: 8, top: 8 }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Connected Address:
+            <br />
+            {walletAddress}
+          </DialogContentText>
+          <Box sx={{ mt: 2 }}>
+            <Button
+              variant="contained"
+              color="error"
+              fullWidth
+              onClick={handleDisconnect}
+            >
+              Disconnect Wallet
+            </Button>
+          </Box>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
