@@ -27,7 +27,7 @@ import {
 import { styled } from '@mui/system';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { connectWallet } from '../store/slices/web3Slice';
-import CoinLogo from '../assets/coin100-2-200.png';
+import CoinLogo from '../assets/coin100.png';
 import { useNavigate } from 'react-router-dom';
 
 // Styled component for feature boxes with modern hover effects and equal height
