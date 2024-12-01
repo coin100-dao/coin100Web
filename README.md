@@ -131,10 +131,10 @@ Security is paramount for COIN100. The contract incorporates multiple security m
 1. **Q1 2024:**  
     - Smart contract development and internal testing.
     - Community building and initial marketing campaigns.
+    - Deployment on the Polygon network.
     - Listing on major DEXs.
 
 2. **Q2 2024:**  
-    - Deployment on the Polygon network.
     - Integration with Chainlink oracles.
     - Launch of liquidity pools and staking mechanisms.
 
