@@ -1,13 +1,12 @@
 // src/theme/theme.ts
 import { createTheme, PaletteMode, ThemeOptions } from '@mui/material/styles';
 
-// Define color variables
 const colors = {
-  main: '#052e44',
-  primaryLight: '#1976d2',
-  primaryDark: '#90caf9',
-  secondaryLight: '#dc004e',
-  secondaryDark: '#f48fb1',
+  main: '#FF6F61', // Vibrant coral
+  primaryLight: '#FF8A80',
+  primaryDark: '#FF3D00',
+  secondaryLight: '#64B5F6',
+  secondaryDark: '#01579B',
   backgroundLight: '#f4f6f8',
   backgroundDark: '#121212',
   paperLight: '#ffffff',
@@ -41,8 +40,14 @@ export const getTheme = (mode: PaletteMode) => {
       },
     },
     typography: {
-      fontFamily: 'Roboto, sans-serif',
-      h4: {
+      fontFamily: 'Poppins, sans-serif', // Modern font
+      h3: {
+        fontWeight: 700,
+      },
+      h2: {
+        fontWeight: 800,
+      },
+      h5: {
         fontWeight: 600,
       },
       button: {
@@ -70,7 +75,7 @@ export const getTheme = (mode: PaletteMode) => {
       MuiButton: {
         styleOverrides: {
           root: {
-            borderRadius: 8,
+            borderRadius: 50,
             boxShadow: 'none',
             '&:hover': {
               boxShadow: 'none',

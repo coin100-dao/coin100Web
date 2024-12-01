@@ -12,6 +12,7 @@ import {
   useTheme,
   Card,
   CardContent,
+  Fade,
 } from '@mui/material';
 import {
   TrendingUp as TrendingUpIcon,
@@ -26,21 +27,26 @@ import {
 import { styled } from '@mui/system';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { connectWallet } from '../store/slices/web3Slice';
-import MetaMaskIcon from '../assets/MetaMask_Fox.svg';
+import CoinLogo from '../assets/coin100-2-200.png';
 import { useNavigate } from 'react-router-dom';
 
-// Styled component for feature boxes
+// Styled component for feature boxes with modern hover effects and equal height
 const FeatureBox = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(4),
+  padding: theme.spacing(6),
   textAlign: 'center',
   color: theme.palette.text.primary,
   borderRadius: theme.spacing(2),
-  transition: 'transform 0.3s, box-shadow 0.3s',
+  background: theme.palette.background.paper,
+  transition: 'transform 0.3s, box-shadow 0.3s, background 0.3s',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'space-between',
+  minHeight: '350px',
   '&:hover': {
     transform: 'translateY(-10px)',
-    boxShadow:
-      theme?.shadows?.[4 as keyof typeof theme.shadows] ||
-      '0px 4px 8px rgba(0, 0, 0, 0.2)', // Fallback shadow if theme.shadows is undefined
+    boxShadow: theme?.shadows?.[8] || '0px 8px 16px rgba(0, 0, 0, 0.2)', // Enhanced shadow on hover
+    background: theme.palette.primary.light,
+    color: theme.palette.primary.contrastText,
   },
 }));
 
@@ -58,40 +64,40 @@ const Home: React.FC = () => {
 
   const features = [
     {
-      icon: <TrendingUpIcon color="primary" sx={{ fontSize: 50 }} />,
+      icon: <TrendingUpIcon color="primary" sx={{ fontSize: 60 }} />,
       title: 'Dynamic Rebase Mechanism 🚀',
       description:
-        'Automatically adjusts the token supply based on market capitalization to maintain price stability and ensure accurate index tracking.',
+        'Adjusts token supply based on market cap to maintain price stability and accurate index tracking.',
     },
     {
-      icon: <SecurityIcon color="secondary" sx={{ fontSize: 50 }} />,
+      icon: <SecurityIcon color="secondary" sx={{ fontSize: 60 }} />,
       title: 'Robust Security 🔒',
       description:
-        'Built with top-tier security measures, including pausability and reentrancy protection, to safeguard your investments.',
+        'Top-tier security measures, including pausability and reentrancy protection, to safeguard your investments.',
     },
     {
-      icon: <DiversifyIcon color="primary" sx={{ fontSize: 50 }} />,
+      icon: <DiversifyIcon color="primary" sx={{ fontSize: 60 }} />,
       title: 'Diversified Portfolio 📊',
       description:
-        'Gain exposure to the top 100 cryptocurrencies by market capitalization, minimizing risks associated with individual assets.',
+        'Exposure to the top 100 cryptocurrencies, minimizing risks associated with individual assets.',
     },
     {
-      icon: <EmojiEventsIcon color="secondary" sx={{ fontSize: 50 }} />,
+      icon: <EmojiEventsIcon color="secondary" sx={{ fontSize: 60 }} />,
       title: 'Rewarding Holders 🏆',
       description:
-        'Earn rewards through transaction fees and incentives for liquidity providers and upkeep users, promoting long-term participation.',
+        'Earn rewards through transaction fees and incentives for liquidity providers and upkeep users.',
     },
     {
-      icon: <GavelIcon color="primary" sx={{ fontSize: 50 }} />,
+      icon: <GavelIcon color="primary" sx={{ fontSize: 60 }} />,
       title: 'Decentralized Governance 🗳️',
       description:
-        'Participate in voting on key decisions, ensuring the community drives the project’s future through transparent governance.',
+        'Community-driven voting on key decisions, ensuring transparent and fair project evolution.',
     },
     {
-      icon: <EcoIcon color="secondary" sx={{ fontSize: 50 }} />,
+      icon: <EcoIcon color="secondary" sx={{ fontSize: 60 }} />,
       title: 'Eco-Friendly on Polygon 🌱',
       description:
-        'Leveraging the Polygon network for low fees and high scalability with minimal environmental impact, promoting sustainable growth.',
+        'Low fees and high scalability with minimal environmental impact, promoting sustainable growth.',
     },
   ];
 
@@ -102,54 +108,102 @@ const Home: React.FC = () => {
         sx={{
           background: `linear-gradient(135deg, ${theme.palette.primary.main} 30%, ${theme.palette.secondary.main} 90%)`,
           color: '#fff',
-          py: 12,
+          py: 14,
           textAlign: 'center',
+          position: 'relative',
+          overflow: 'hidden',
         }}
       >
-        <Container maxWidth="md">
-          <Typography variant="h2" gutterBottom>
-            Welcome to <strong>COIN100</strong>
-          </Typography>
-          <Typography variant="h5" sx={{ mb: 4 }}>
-            A Decentralized Cryptocurrency Index Fund on Polygon
-          </Typography>
-          <Button
-            variant="contained"
-            color="secondary"
-            size="large"
-            onClick={handleBuyToken}
-            startIcon={
-              loading ? null : walletAddress ? (
-                <Box
-                  component="img"
-                  src={MetaMaskIcon}
-                  alt="MetaMask"
-                  sx={{ width: 24, height: 24 }}
-                />
-              ) : (
-                <SecurityIcon />
-              )
-            }
+        {/* Coin Logo as Background Element */}
+        <Box
+          component="img"
+          src={CoinLogo}
+          alt="COIN100 Logo"
+          sx={{
+            width: 300,
+            height: 300,
+            position: 'absolute',
+            top: -100,
+            right: -100,
+            opacity: 0.1,
+            zIndex: 1,
+          }}
+        />
+        <Container maxWidth="md" sx={{ position: 'relative', zIndex: 2 }}>
+          {/* Logo Next to Heading */}
+          <Box
+            component="img"
+            src={CoinLogo}
+            alt="COIN100 Logo"
             sx={{
-              borderRadius: 8,
-              px: 4,
-              py: 1.5,
-              fontSize: '1rem',
-              textTransform: 'none',
+              width: 100,
+              height: 100,
+              margin: '0 auto',
+              mb: 4,
             }}
-          >
-            {loading
-              ? 'Connecting...'
-              : walletAddress
-                ? 'Go to Dashboard'
-                : 'Buy Token'}
-          </Button>
+          />
+          <Fade in timeout={1000}>
+            <Box>
+              <Typography
+                variant="h2"
+                gutterBottom
+                sx={{
+                  fontWeight: 800,
+                  letterSpacing: '-1px',
+                  textTransform: 'uppercase',
+                }}
+              >
+                Welcome to <strong>COIN100</strong>
+              </Typography>
+              <Typography variant="h5" sx={{ mb: 6 }}>
+                Your Gateway to a Diversified Crypto Portfolio on Polygon
+              </Typography>
+              <Button
+                variant="contained"
+                color="secondary"
+                size="large"
+                onClick={handleBuyToken}
+                startIcon={
+                  <Box
+                    component="img"
+                    src={CoinLogo}
+                    alt="COIN100 Logo"
+                    sx={{ width: 24, height: 24 }}
+                  />
+                }
+                sx={{
+                  borderRadius: 50,
+                  px: 5,
+                  py: 1.5,
+                  fontSize: '1.1rem',
+                  textTransform: 'none',
+                  boxShadow: theme.shadows[4],
+                  transition: 'box-shadow 0.3s, transform 0.3s',
+                  '&:hover': {
+                    boxShadow: theme.shadows[8],
+                    transform: 'scale(1.05)',
+                  },
+                }}
+              >
+                {loading
+                  ? 'Connecting...'
+                  : walletAddress
+                    ? 'Go to Dashboard'
+                    : 'Buy Token'}
+              </Button>
+            </Box>
+          </Fade>
         </Container>
       </Box>
 
       {/* What is COIN100 Section */}
-      <Container maxWidth="lg" sx={{ py: 8 }}>
-        <Typography variant="h4" align="center" gutterBottom>
+      <Container maxWidth="lg" sx={{ py: 10 }}>
+        <Typography
+          variant="h3"
+          align="center"
+          gutterBottom
+          sx={{ fontWeight: 700 }}
+        >
           What is <strong>COIN100</strong>?
         </Typography>
         <Typography
@@ -157,9 +211,10 @@ const Home: React.FC = () => {
           color="textSecondary"
           align="center"
           paragraph
+          sx={{ maxWidth: 800, mx: 'auto', mt: 4 }}
         >
-          **COIN100 (C100)** is a decentralized cryptocurrency index fund built
-          on the Polygon network. It represents the top 100 cryptocurrencies by
+          COIN100 (C100) is a decentralized cryptocurrency index fund built on
+          the Polygon network. It represents the top 100 cryptocurrencies by
           market capitalization, offering users a diversified portfolio that
           mirrors the performance of the overall crypto market. Inspired by
           traditional index funds like the S&P 500, our ultimate goal is to
@@ -167,50 +222,66 @@ const Home: React.FC = () => {
           COIN100 remains a relevant and accurate representation of the
           cryptocurrency market.
         </Typography>
-        <Divider sx={{ my: 4 }} />
-        <Grid container spacing={4}>
+        <Divider sx={{ my: 6 }} />
+        <Grid container spacing={6}>
           <Grid item xs={12} md={6}>
-            <Typography variant="h5" gutterBottom>
-              Decentralized & Community-Driven
-            </Typography>
-            <Typography variant="body1" color="textSecondary" paragraph>
-              Governed by our community, COIN100 ensures that every holder has a
-              voice in the project future. Participate in voting on key
-              decisions, from asset inclusion to protocol upgrades, fostering a
-              truly decentralized ecosystem.
-            </Typography>
+            <Box sx={{ textAlign: 'center' }}>
+              <SecurityIcon color="primary" sx={{ fontSize: 60, mb: 2 }} />
+              <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
+                Decentralized & Community-Driven
+              </Typography>
+              <Typography variant="body1" color="textSecondary">
+                Governed by our community, COIN100 ensures that every holder has
+                a voice in the project future. Participate in voting on key
+                decisions, fostering a truly decentralized ecosystem.
+              </Typography>
+            </Box>
           </Grid>
           <Grid item xs={12} md={6}>
-            <Typography variant="h5" gutterBottom>
-              Dynamic Supply Adjustment
-            </Typography>
-            <Typography variant="body1" color="textSecondary" paragraph>
-              Our dynamic supply adjustment mechanism responds to market
-              movements, maintaining price stability and aligning with the
-              overall market cap of the tracked index. This ensures that COIN100
-              remains a true reflection of the cryptocurrency market.
-            </Typography>
+            <Box sx={{ textAlign: 'center' }}>
+              <TrendingUpIcon color="secondary" sx={{ fontSize: 60, mb: 2 }} />
+              <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
+                Dynamic Supply Adjustment
+              </Typography>
+              <Typography variant="body1" color="textSecondary">
+                Our dynamic supply adjustment mechanism responds to market
+                movements, maintaining price stability and aligning with the
+                overall market cap of the tracked index. This ensures COIN100
+                remains a true reflection of the cryptocurrency market.
+              </Typography>
+            </Box>
           </Grid>
         </Grid>
       </Container>
 
       {/* Features Section */}
-      <Container maxWidth="lg" sx={{ py: 8 }} id="features">
-        <Typography variant="h4" align="center" gutterBottom>
+      <Container maxWidth="lg" sx={{ py: 10 }} id="features">
+        <Typography
+          variant="h3"
+          align="center"
+          gutterBottom
+          sx={{ fontWeight: 700 }}
+        >
           Key Features
         </Typography>
-        <Grid container spacing={4} mt={4}>
+        <Grid container spacing={6} sx={{ mt: 4 }}>
           {features.map((feature, index) => (
             <Grid item xs={12} sm={6} md={4} key={index}>
-              <FeatureBox elevation={3}>
-                {feature.icon}
-                <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
-                  {feature.title}
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  {feature.description}
-                </Typography>
-              </FeatureBox>
+              <Fade in timeout={1000 + index * 200}>
+                <FeatureBox elevation={3}>
+                  <Box sx={{ mb: 4 }}>{feature.icon}</Box>
+                  <Typography
+                    variant="h6"
+                    gutterBottom
+                    sx={{ fontWeight: 600 }}
+                  >
+                    {feature.title}
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    {feature.description}
+                  </Typography>
+                </FeatureBox>
+              </Fade>
             </Grid>
           ))}
         </Grid>
@@ -219,22 +290,39 @@ const Home: React.FC = () => {
       {/* Tokenomics Section */}
       <Box
         sx={{
-          backgroundColor: theme.palette.grey[100],
-          py: 8,
+          backgroundColor: theme.palette.background.default,
+          py: 10,
         }}
       >
         <Container maxWidth="lg">
-          <Typography variant="h4" align="center" gutterBottom>
+          <Typography
+            variant="h3"
+            align="center"
+            gutterBottom
+            sx={{ fontWeight: 700 }}
+          >
             Tokenomics
           </Typography>
-          <Grid container spacing={4} mt={4}>
+          <Grid container spacing={6} sx={{ mt: 4 }}>
             <Grid item xs={12} md={6}>
-              <Card>
+              <Card sx={{ borderRadius: 3, boxShadow: theme.shadows[4] }}>
                 <CardContent>
-                  <Typography variant="h6" gutterBottom>
+                  <Box sx={{ textAlign: 'center', mb: 4 }}>
+                    <Box
+                      component="img"
+                      src={CoinLogo}
+                      alt="COIN100 Logo"
+                      sx={{ width: 80, height: 80 }}
+                    />
+                  </Box>
+                  <Typography
+                    variant="h5"
+                    gutterBottom
+                    sx={{ fontWeight: 600 }}
+                  >
                     Supply Mechanism
                   </Typography>
-                  <Typography variant="body1" color="textSecondary">
+                  <Typography variant="body1" color="textSecondary" paragraph>
                     COIN100 employs a dynamic supply adjustment mechanism that
                     automatically adjusts the total supply based on the market
                     capitalization of the top 100 cryptocurrencies. This ensures
@@ -242,8 +330,12 @@ const Home: React.FC = () => {
                     index, maintaining its relevance and accuracy in tracking
                     market movements.
                   </Typography>
-                  <Divider sx={{ my: 2 }} />
-                  <Typography variant="h6" gutterBottom>
+                  <Divider sx={{ my: 3 }} />
+                  <Typography
+                    variant="h5"
+                    gutterBottom
+                    sx={{ fontWeight: 600 }}
+                  >
                     Transaction Fees
                   </Typography>
                   <Typography variant="body1" color="textSecondary">
@@ -263,12 +355,24 @@ const Home: React.FC = () => {
               </Card>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Card>
+              <Card sx={{ borderRadius: 3, boxShadow: theme.shadows[4] }}>
                 <CardContent>
-                  <Typography variant="h6" gutterBottom>
+                  <Box sx={{ textAlign: 'center', mb: 4 }}>
+                    <Box
+                      component="img"
+                      src={CoinLogo}
+                      alt="COIN100 Logo"
+                      sx={{ width: 80, height: 80 }}
+                    />
+                  </Box>
+                  <Typography
+                    variant="h5"
+                    gutterBottom
+                    sx={{ fontWeight: 600 }}
+                  >
                     Rewards Distribution
                   </Typography>
-                  <Typography variant="body1" color="textSecondary">
+                  <Typography variant="body1" color="textSecondary" paragraph>
                     <strong>Liquidity Providers:</strong> Earn rewards for
                     providing liquidity to the COIN100 pool, enhancing market
                     stability and trading efficiency.
@@ -277,13 +381,17 @@ const Home: React.FC = () => {
                     upkeep tasks are rewarded for maintaining the system’s
                     integrity, ensuring continuous and reliable operations.
                   </Typography>
-                  <Divider sx={{ my: 2 }} />
-                  <Typography variant="h6" gutterBottom>
+                  <Divider sx={{ my: 3 }} />
+                  <Typography
+                    variant="h5"
+                    gutterBottom
+                    sx={{ fontWeight: 600 }}
+                  >
                     Total Supply
                   </Typography>
                   <Typography variant="body1" color="textSecondary">
-                    - **Total Supply:** 1,000,000,000 C100 tokens
-                    <br />- **Decimals:** 18
+                    - <strong>Total Supply:</strong> 1,000,000,000 C100 tokens
+                    <br />- <strong>Decimals:</strong> 18
                   </Typography>
                 </CardContent>
               </Card>
@@ -293,37 +401,50 @@ const Home: React.FC = () => {
       </Box>
 
       {/* Governance Section */}
-      <Container maxWidth="lg" sx={{ py: 8 }}>
-        <Typography variant="h4" align="center" gutterBottom>
+      <Container maxWidth="lg" sx={{ py: 10 }}>
+        <Typography
+          variant="h3"
+          align="center"
+          gutterBottom
+          sx={{ fontWeight: 700 }}
+        >
           Governance
         </Typography>
-        <Grid container spacing={4} mt={4}>
+        <Grid container spacing={6} sx={{ mt: 4 }}>
           <Grid item xs={12} md={6}>
-            <FeatureBox elevation={3}>
-              <GavelIcon color="primary" sx={{ fontSize: 50 }} />
-              <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
-                Decentralized Voting 🗳️
-              </Typography>
-              <Typography variant="body2" color="textSecondary">
-                Participate in voting on key decisions such as asset inclusion,
-                protocol upgrades, and fee adjustments. Your vote ensures that
-                COIN100 evolves in a direction that benefits the entire
-                community.
-              </Typography>
-            </FeatureBox>
+            <Fade in timeout={1000}>
+              <FeatureBox elevation={3}>
+                <Box sx={{ mb: 3 }}>
+                  <GavelIcon color="primary" sx={{ fontSize: 60 }} />
+                </Box>
+                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                  Decentralized Voting 🗳️
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  Participate in voting on key decisions such as asset
+                  inclusion, protocol upgrades, and fee adjustments. Your vote
+                  ensures that COIN100 evolves in a direction that benefits the
+                  entire community.
+                </Typography>
+              </FeatureBox>
+            </Fade>
           </Grid>
           <Grid item xs={12} md={6}>
-            <FeatureBox elevation={3}>
-              <SyncIcon color="secondary" sx={{ fontSize: 50 }} />
-              <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
-                Transparent Operations 🔍
-              </Typography>
-              <Typography variant="body2" color="textSecondary">
-                All governance actions and supply adjustments are executed
-                transparently through smart contracts, ensuring trust and
-                accountability within the ecosystem.
-              </Typography>
-            </FeatureBox>
+            <Fade in timeout={1200}>
+              <FeatureBox elevation={3}>
+                <Box sx={{ mb: 3 }}>
+                  <SyncIcon color="secondary" sx={{ fontSize: 60 }} />
+                </Box>
+                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                  Transparent Operations 🔍
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  All governance actions and supply adjustments are executed
+                  transparently through smart contracts, ensuring trust and
+                  accountability within the ecosystem.
+                </Typography>
+              </FeatureBox>
+            </Fade>
           </Grid>
         </Grid>
       </Container>
@@ -331,60 +452,95 @@ const Home: React.FC = () => {
       {/* Rewards Section */}
       <Box
         sx={{
-          backgroundColor: theme.palette.grey[100],
-          py: 8,
+          backgroundColor: theme.palette.background.default,
+          py: 10,
         }}
       >
         <Container maxWidth="lg">
-          <Typography variant="h4" align="center" gutterBottom>
+          <Typography
+            variant="h3"
+            align="center"
+            gutterBottom
+            sx={{ fontWeight: 700 }}
+          >
             Rewards & Incentives
           </Typography>
-          <Grid container spacing={4} mt={4}>
+          <Grid container spacing={6} sx={{ mt: 4 }}>
             <Grid item xs={12} md={4}>
-              <FeatureBox elevation={3}>
-                <TrendingUpIcon color="primary" sx={{ fontSize: 50 }} />
-                <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
-                  Staking Rewards 💰
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  Earn passive income by staking your COIN100 tokens. Enjoy
-                  competitive yields while contributing to the stability of the
-                  ecosystem.
-                </Typography>
-              </FeatureBox>
+              <Fade in timeout={1400}>
+                <FeatureBox elevation={3}>
+                  <Box sx={{ mb: 3 }}>
+                    <TrendingUpIcon color="primary" sx={{ fontSize: 60 }} />
+                  </Box>
+                  <Typography
+                    variant="h6"
+                    gutterBottom
+                    sx={{ fontWeight: 600 }}
+                  >
+                    Staking Rewards 💰
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    Earn passive income by staking your COIN100 tokens. Enjoy
+                    competitive yields while contributing to the stability of
+                    the ecosystem.
+                  </Typography>
+                </FeatureBox>
+              </Fade>
             </Grid>
             <Grid item xs={12} md={4}>
-              <FeatureBox elevation={3}>
-                <EmojiEventsIcon color="secondary" sx={{ fontSize: 50 }} />
-                <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
-                  Transaction Fees 💸
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  A portion of every transaction fee is redistributed to COIN100
-                  holders, providing continuous rewards as the network grows.
-                </Typography>
-              </FeatureBox>
+              <Fade in timeout={1600}>
+                <FeatureBox elevation={3}>
+                  <Box sx={{ mb: 3 }}>
+                    <EmojiEventsIcon color="secondary" sx={{ fontSize: 60 }} />
+                  </Box>
+                  <Typography
+                    variant="h6"
+                    gutterBottom
+                    sx={{ fontWeight: 600 }}
+                  >
+                    Transaction Fees 💸
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    A portion of every transaction fee is redistributed to
+                    COIN100 holders, providing continuous rewards as the network
+                    grows.
+                  </Typography>
+                </FeatureBox>
+              </Fade>
             </Grid>
             <Grid item xs={12} md={4}>
-              <FeatureBox elevation={3}>
-                <PeopleIcon color="primary" sx={{ fontSize: 50 }} />
-                <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
-                  UpKeepers Rewards 🛠️
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  UpKeepers who manually maintain the system are rewarded for
-                  their efforts, ensuring the smooth operation and integrity of
-                  the COIN100 ecosystem.
-                </Typography>
-              </FeatureBox>
+              <Fade in timeout={1800}>
+                <FeatureBox elevation={3}>
+                  <Box sx={{ mb: 3 }}>
+                    <PeopleIcon color="primary" sx={{ fontSize: 60 }} />
+                  </Box>
+                  <Typography
+                    variant="h6"
+                    gutterBottom
+                    sx={{ fontWeight: 600 }}
+                  >
+                    UpKeepers Rewards 🛠️
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    UpKeepers who manually maintain the system are rewarded for
+                    their efforts, ensuring the smooth operation and integrity
+                    of the COIN100 ecosystem.
+                  </Typography>
+                </FeatureBox>
+              </Fade>
             </Grid>
           </Grid>
         </Container>
       </Box>
 
       {/* Why Choose COIN100 Section */}
-      <Container maxWidth="lg" sx={{ py: 8 }}>
-        <Typography variant="h4" align="center" gutterBottom>
+      <Container maxWidth="lg" sx={{ py: 10 }}>
+        <Typography
+          variant="h3"
+          align="center"
+          gutterBottom
+          sx={{ fontWeight: 700 }}
+        >
           Why Choose <strong>COIN100</strong>?
         </Typography>
         <Typography
@@ -394,6 +550,7 @@ const Home: React.FC = () => {
           maxWidth="800px"
           mx="auto"
           paragraph
+          sx={{ mt: 4 }}
         >
           COIN100 is revolutionizing the way you invest in cryptocurrencies. By
           providing a decentralized index fund that dynamically tracks the top
@@ -402,25 +559,33 @@ const Home: React.FC = () => {
           investor or just getting started, COIN100 simplifies your investment
           journey, ensuring you stay ahead in the fast-paced crypto market.
         </Typography>
-        <Box textAlign="center" mt={6}>
+        <Box textAlign="center" sx={{ mt: 8 }}>
           <Button
             variant="contained"
             color="primary"
             size="large"
             onClick={handleBuyToken}
             startIcon={
-              loading ? null : walletAddress ? (
-                <Box
-                  component="img"
-                  src={MetaMaskIcon}
-                  alt="MetaMask"
-                  sx={{ width: 24, height: 24 }}
-                />
-              ) : (
-                <SecurityIcon />
-              )
+              <Box
+                component="img"
+                src={CoinLogo}
+                alt="COIN100 Logo"
+                sx={{ width: 24, height: 24 }}
+              />
             }
-            sx={{ borderRadius: 8, px: 4, py: 1.5 }}
+            sx={{
+              borderRadius: 50,
+              px: 5,
+              py: 1.5,
+              fontSize: '1.1rem',
+              textTransform: 'none',
+              boxShadow: theme.shadows[4],
+              transition: 'box-shadow 0.3s, transform 0.3s',
+              '&:hover': {
+                boxShadow: theme.shadows[8],
+                transform: 'scale(1.05)',
+              },
+            }}
           >
             {loading
               ? 'Connecting...'
@@ -436,12 +601,41 @@ const Home: React.FC = () => {
         sx={{
           backgroundColor: theme.palette.primary.main,
           color: '#fff',
-          py: 6,
+          py: 8,
           textAlign: 'center',
+          position: 'relative',
         }}
       >
+        {/* Coin Logo as Background Element */}
+        <Box
+          component="img"
+          src={CoinLogo}
+          alt="COIN100 Logo"
+          sx={{
+            width: 200,
+            height: 200,
+            position: 'absolute',
+            top: -100,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            opacity: 0.1,
+            zIndex: 1,
+          }}
+        />
         <Container maxWidth="md">
-          <Typography variant="h4" gutterBottom>
+          {/* Coin Logo Next to CTA */}
+          <Box
+            component="img"
+            src={CoinLogo}
+            alt="COIN100 Logo"
+            sx={{
+              width: 100,
+              height: 100,
+              margin: '0 auto',
+              mb: 4,
+            }}
+          />
+          <Typography variant="h4" gutterBottom sx={{ fontWeight: 700 }}>
             Ready to Invest in the Future of Crypto?
           </Typography>
           <Button
@@ -450,24 +644,26 @@ const Home: React.FC = () => {
             size="large"
             onClick={handleBuyToken}
             startIcon={
-              loading ? null : walletAddress ? (
-                <Box
-                  component="img"
-                  src={MetaMaskIcon}
-                  alt="MetaMask"
-                  sx={{ width: 24, height: 24 }}
-                />
-              ) : (
-                <SecurityIcon />
-              )
+              <Box
+                component="img"
+                src={CoinLogo}
+                alt="COIN100 Logo"
+                sx={{ width: 24, height: 24 }}
+              />
             }
             sx={{
-              borderRadius: 8,
-              px: 4,
+              borderRadius: 50,
+              px: 5,
               py: 1.5,
-              fontSize: '1rem',
+              fontSize: '1.1rem',
               textTransform: 'none',
-              mt: 4,
+              mt: 6,
+              boxShadow: theme.shadows[4],
+              transition: 'box-shadow 0.3s, transform 0.3s',
+              '&:hover': {
+                boxShadow: theme.shadows[8],
+                transform: 'scale(1.05)',
+              },
             }}
           >
             {loading
