@@ -25,7 +25,7 @@ interface Web3State {
   tokenBalance: string | null;
   loading: boolean;
   error: string | null;
-  connectedAt: number | null; // Timestamp of when the wallet was connected
+  connectedAt: number | null;
   chainId: string | null;
 }
 
@@ -38,14 +38,14 @@ const initialState: Web3State = {
   chainId: null,
 };
 
-// Define the ABI and token address (replace with your token details)
+// the ABI and token address
 const tokenABI: AbiItem[] = coin100ContractAbi as AbiItem[];
 const tokenAddress = '0xdbe819ddf0d14a54ffe611c6d070b32a7f9d23d1'; // Replace with the actual token contract address
 
-// Define the ITokenContract type
+// the ITokenContract type
 type ITokenContract = Contract<typeof tokenABI>;
 
-// Define a custom error type for MetaMask errors
+// a custom error type for MetaMask errors
 interface MetaMaskError extends Error {
   code: number;
 }
