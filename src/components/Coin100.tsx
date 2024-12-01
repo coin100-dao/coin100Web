@@ -5,19 +5,28 @@ import { Box, Typography, CircularProgress } from '@mui/material';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { RootState } from '../store/store';
 import { fetchTopCoins } from '../store/slices/coingeckoSlice';
+import { fetchTokenBalance } from '../store/slices/web3Slice';
 
 const Coin100: React.FC = () => {
   const dispatch = useAppDispatch();
   const { totalMarketCap, loading: coingeckoLoading } = useAppSelector(
     (state: RootState) => state.coingecko
   );
-  const { tokenBalance, loading: web3Loading } = useAppSelector(
-    (state: RootState) => state.web3
-  );
+  const {
+    tokenBalance,
+    loading: web3Loading,
+    walletAddress,
+  } = useAppSelector((state: RootState) => state.web3);
 
   useEffect(() => {
     dispatch(fetchTopCoins());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (walletAddress) {
+      dispatch(fetchTokenBalance({ walletAddress })).unwrap();
+    }
+  }, [dispatch, walletAddress]);
 
   if (coingeckoLoading || web3Loading) {
     return (
