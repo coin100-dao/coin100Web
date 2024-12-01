@@ -65,9 +65,10 @@ export const fetchTopCoins = createAsyncThunk<
         },
       }
     );
-    console.log(response);
+    // console.log(response);
     return response.data;
   } catch (error) {
+    console.error('Error fetching top coins:', error);
     if (axios.isAxiosError(error) && error.response) {
       return rejectWithValue(error.response.statusText);
     }

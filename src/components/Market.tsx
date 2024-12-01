@@ -28,8 +28,10 @@ const Market: React.FC = () => {
   );
 
   useEffect(() => {
-    dispatch(fetchTopCoins());
-  }, [dispatch]);
+    if (topCoins.length === 0) {
+      dispatch(fetchTopCoins());
+    }
+  }, [dispatch, topCoins.length]);
 
   useEffect(() => {
     if (selectedCoinId) {
