@@ -8,12 +8,23 @@ import {
   Grid,
   Paper,
   CircularProgress,
+  IconButton,
 } from '@mui/material';
 import { styled } from '@mui/system';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import HowToVoteIcon from '@mui/icons-material/HowToVote';
-import LocalAtmIcon from '@mui/icons-material/LocalAtm';
-import PoolIcon from '@mui/icons-material/Pool';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import SecurityIcon from '@mui/icons-material/Security';
+import AutoGraphIcon from '@mui/icons-material/AutoGraph';
+import GroupsIcon from '@mui/icons-material/Groups';
+import BalanceIcon from '@mui/icons-material/Balance';
+import SpeedIcon from '@mui/icons-material/Speed';
+import UpdateIcon from '@mui/icons-material/Update';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import TwitterIcon from '@mui/icons-material/Twitter';
+import RedditIcon from '@mui/icons-material/Reddit';
+import EmailIcon from '@mui/icons-material/Email';
+import ChatIcon from '@mui/icons-material/Chat';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
@@ -52,6 +63,32 @@ const GradientText = styled(Typography)(({ theme }) => ({
   marginBottom: theme.spacing(4),
 }));
 
+const StyledFooter = styled(Box)(({ theme }) => ({
+  marginTop: 'auto',
+  padding: theme.spacing(3),
+  background: 'rgba(255, 255, 255, 0.05)',
+  backdropFilter: 'blur(10px)',
+  borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+}));
+
+const StatsCard = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(2),
+  textAlign: 'center',
+  background: 'rgba(33, 150, 243, 0.1)',
+  backdropFilter: 'blur(10px)',
+  borderRadius: '10px',
+  border: '1px solid rgba(33, 150, 243, 0.2)',
+}));
+
+const HeroSection = styled(Box)(({ theme }) => ({
+  textAlign: 'center',
+  marginBottom: theme.spacing(8),
+  padding: theme.spacing(8, 0),
+  background:
+    'linear-gradient(45deg, rgba(33, 150, 243, 0.1) 0%, rgba(33, 203, 243, 0.1) 100%)',
+  borderRadius: '20px',
+}));
+
 const Home = () => {
   const dispatch = useDispatch();
   const { totalMarketCap, loading } = useSelector((state) => state.coingecko);
@@ -72,131 +109,191 @@ const Home = () => {
 
   const features = [
     {
-      title: 'Decentralized Governance',
-      icon: <HowToVoteIcon />,
-      description:
-        "Participate in shaping COIN100's future through our democratic voting system. Token holders can propose and vote on important protocol decisions, ensuring true decentralization.",
-    },
-    {
-      title: 'Smart Rewards System',
-      icon: <LocalAtmIcon />,
-      description:
-        'Earn rewards through multiple streams including holding, providing liquidity, and participating in governance. Our dynamic reward system adjusts based on market conditions.',
-    },
-    {
-      title: 'Liquidity Mining',
-      icon: <PoolIcon />,
-      description:
-        'Provide liquidity to earn additional rewards. Our liquidity pools offer competitive APY and bonus incentives for long-term liquidity providers.',
-    },
-    {
-      title: 'Portfolio Management',
+      title: 'Decentralized Index Fund',
       icon: <AccountBalanceWalletIcon />,
       description:
-        'Get exposure to the top 100 cryptocurrencies through a single token. Our smart contract automatically rebalances to maintain optimal market representation.',
+        'Track the top 100 cryptocurrencies through a single token, offering unparalleled diversification and market exposure.',
+    },
+    {
+      title: 'Dynamic Rebase Mechanism',
+      icon: <AutoGraphIcon />,
+      description:
+        'Automatic supply adjustments ensure accurate market cap tracking and sustainable token economics.',
+    },
+    {
+      title: 'High APY Rewards',
+      icon: <TrendingUpIcon />,
+      description:
+        'Earn substantial rewards through our innovative reward distribution system. Potential APY ranges from 10% to 1,042.8%, depending on the total liquidity provided. Join our liquidity pools today and maximize your earnings!',
+    },
+    {
+      title: 'Advanced Security',
+      icon: <SecurityIcon />,
+      description:
+        'Built with robust security features including pausability and protection against common attack vectors.',
+    },
+    {
+      title: 'Community Governance',
+      icon: <HowToVoteIcon />,
+      description:
+        'Shape the future of COIN100 through our democratic voting system and proposal mechanism.',
+    },
+    {
+      title: 'Market Analytics',
+      icon: <SpeedIcon />,
+      description:
+        'Real-time market data and performance metrics to track your investment growth.',
+    },
+    {
+      title: 'Automated Portfolio',
+      icon: <UpdateIcon />,
+      description:
+        'Smart contracts automatically maintain optimal market representation without manual intervention.',
+    },
+    {
+      title: 'Polygon Network',
+      icon: <AccountTreeIcon />,
+      description:
+        'Built on Polygon for lightning-fast transactions and minimal gas fees.',
+    },
+    {
+      title: 'Community Driven',
+      icon: <GroupsIcon />,
+      description:
+        'Strong community focus with regular events, updates, and engagement opportunities.',
+    },
+    {
+      title: 'Fair Distribution',
+      icon: <BalanceIcon />,
+      description:
+        'Transparent token distribution ensuring long-term sustainability and fair participation.',
     },
   ];
 
   return (
-    <Container maxWidth="lg" sx={{ py: 8 }}>
-      {/* Hero Section */}
-      <Box sx={{ textAlign: 'center', mb: 8 }}>
-        <GradientText variant="h2" component="h1" gutterBottom>
-          COIN100 (C100)
-        </GradientText>
-        <Typography variant="h5" color="textSecondary" gutterBottom>
-          The Future of Crypto Index Investing
-        </Typography>
-
-        {/* Market Cap Display */}
-        <Paper
-          elevation={3}
-          sx={{
-            p: 3,
-            mt: 4,
-            display: 'inline-block',
-            background: 'rgba(255, 255, 255, 0.1)',
-            backdropFilter: 'blur(10px)',
-          }}
-        >
-          <Typography variant="h6" gutterBottom>
-            Total Market Cap Tracked
+    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <Container maxWidth="lg" sx={{ py: 8, flex: 1 }}>
+        <HeroSection>
+          <Typography variant="h2" component="h1" gutterBottom>
+            COIN100 (C100)
           </Typography>
-          {loading ? (
-            <CircularProgress size={24} />
-          ) : (
-            <Typography
-              variant="h4"
-              component="div"
-              sx={{ fontWeight: 'bold' }}
-            >
-              {formatMarketCap(totalMarketCap)}
-            </Typography>
-          )}
-        </Paper>
-      </Box>
+          <GradientText variant="h4" gutterBottom>
+            The Future of Crypto Index Funds
+          </GradientText>
+          <Typography variant="h6" color="textSecondary" sx={{ mb: 4 }}>
+            Your Gateway to the Top 100 Cryptocurrencies
+          </Typography>
 
-      {/* Features Grid */}
-      <Grid container spacing={4}>
-        {features.map((feature, index) => (
-          <Grid item xs={12} sm={6} md={3} key={index}>
-            <StyledPaper>
-              <FeatureIcon>{feature.icon}</FeatureIcon>
-              <Typography variant="h6" gutterBottom>
-                {feature.title}
-              </Typography>
-              <Typography variant="body2" color="textSecondary">
-                {feature.description}
-              </Typography>
-            </StyledPaper>
+          <Grid container spacing={3} justifyContent="center" sx={{ mt: 4 }}>
+            <Grid item xs={12} md={4}>
+              <StatsCard>
+                <Typography variant="h6">Total Market Cap</Typography>
+                <Typography variant="h4" sx={{ mt: 2 }}>
+                  {loading ? (
+                    <CircularProgress size={24} />
+                  ) : (
+                    formatMarketCap(totalMarketCap)
+                  )}
+                </Typography>
+              </StatsCard>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <StatsCard>
+                <Typography variant="h6">Current APY</Typography>
+                <Typography variant="h4" sx={{ mt: 2 }}>
+                  Up to 365,000%
+                </Typography>
+              </StatsCard>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <StatsCard>
+                <Typography variant="h6">Token Price Target</Typography>
+                <Typography variant="h4" sx={{ mt: 2 }}>
+                  $0.01
+                </Typography>
+              </StatsCard>
+            </Grid>
           </Grid>
-        ))}
-      </Grid>
+        </HeroSection>
 
-      {/* Additional Information */}
-      <Box sx={{ mt: 8 }}>
-        <Typography variant="h4" gutterBottom>
+        <Typography
+          variant="h4"
+          gutterBottom
+          sx={{ mb: 6, textAlign: 'center' }}
+        >
           Why Choose COIN100?
         </Typography>
+
         <Grid container spacing={4}>
-          <Grid item xs={12} md={6}>
-            <StyledPaper>
-              <Typography variant="h6" gutterBottom>
-                Governance Mechanism
-              </Typography>
-              <Typography paragraph>
-                Our governance system empowers token holders to actively
-                participate in the protocol development. Each C100 token
-                represents one vote, ensuring fair representation. Proposals can
-                range from technical upgrades to strategic partnerships.
-              </Typography>
-              <Typography paragraph>
-                Key features include: • 3-day voting periods • Minimum token
-                holding requirement for proposals • Transparent execution of
-                approved changes
-              </Typography>
-            </StyledPaper>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <StyledPaper>
-              <Typography variant="h6" gutterBottom>
-                Rewards Ecosystem
-              </Typography>
-              <Typography paragraph>
-                COIN100 features a multi-layered reward system designed to
-                benefit all participants: • Holding Rewards: Earn from
-                transaction fees • Liquidity Provider Rewards: Up to 25% APY •
-                Governance Participation Rewards
-              </Typography>
-              <Typography>
-                Our smart contracts automatically distribute rewards, ensuring
-                fairness and transparency.
-              </Typography>
-            </StyledPaper>
-          </Grid>
+          {features.map((feature, index) => (
+            <Grid item xs={12} sm={6} md={4} key={index}>
+              <StyledPaper>
+                <FeatureIcon>{feature.icon}</FeatureIcon>
+                <Typography variant="h6" gutterBottom>
+                  {feature.title}
+                </Typography>
+                <Typography color="textSecondary">
+                  {feature.description}
+                </Typography>
+              </StyledPaper>
+            </Grid>
+          ))}
         </Grid>
-      </Box>
-    </Container>
+      </Container>
+
+      <StyledFooter>
+        <Container maxWidth="lg">
+          <Grid
+            container
+            spacing={3}
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <Grid item xs={12} md={4}>
+              <Typography variant="h6" gutterBottom>
+                Contact Us
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <IconButton
+                  href="https://x.com/Coin100token"
+                  target="_blank"
+                  color="primary"
+                >
+                  <TwitterIcon />
+                </IconButton>
+                <IconButton
+                  href="https://discord.com/channels/1312498183485784236/1312498184500674693"
+                  target="_blank"
+                  color="primary"
+                >
+                  <ChatIcon />
+                </IconButton>
+                <IconButton
+                  href="https://www.reddit.com/r/Coin100"
+                  target="_blank"
+                  color="primary"
+                >
+                  <RedditIcon />
+                </IconButton>
+                <IconButton href="mailto:support@coin100.link" color="primary">
+                  <EmailIcon />
+                </IconButton>
+              </Box>
+            </Grid>
+            <Grid item xs={12} md={4} sx={{ textAlign: 'center' }}>
+              <Typography variant="body2" color="textSecondary">
+                &copy; 2024 COIN100. All rights reserved.
+              </Typography>
+            </Grid>
+            <Grid item xs={12} md={4} sx={{ textAlign: 'right' }}>
+              <Typography variant="body2" color="textSecondary">
+                Contract: 0xdbe819ddf0d14a54ffe611c6d070b32a7f9d23d1
+              </Typography>
+            </Grid>
+          </Grid>
+        </Container>
+      </StyledFooter>
+    </Box>
   );
 };
 
