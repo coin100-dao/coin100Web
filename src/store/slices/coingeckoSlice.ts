@@ -4,7 +4,6 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
 // Constants
-const CACHE_DURATION = 2 * 60 * 1000; // 2 minutes
 const MAX_RETRIES = 3;
 const INITIAL_RETRY_DELAY = 1000;
 
@@ -48,13 +47,32 @@ interface CoinDetails {
     price_change_percentage_24h: number;
     price_change_percentage_7d: number;
     price_change_percentage_30d: number;
-    // Add other fields as needed
   };
   links?: {
     homepage?: string[];
     twitter_screen_name?: string;
   };
-  // Add other fields as needed
+}
+
+interface GlobalMarketData {
+  total_market_cap: { [key: string]: number };
+  total_volume: { [key: string]: number };
+  market_cap_percentage: { [key: string]: number };
+  market_cap_change_percentage_24h_usd: number;
+}
+
+interface GlobalHistoricalData {
+  market_caps: [number, number][];
+  volumes: [number, number][];
+  timestamps: number[];
+}
+
+interface GlobalHistoricalDataByRange {
+  [timeRange: string]: {
+    market_caps: [number, number][];
+    timestamps: number[];
+    lastFetched: number;
+  };
 }
 
 interface CoingeckoState {
@@ -65,9 +83,19 @@ interface CoingeckoState {
   loading: boolean;
   error: string | null;
   lastFetched: number | null;
+  selectedCoinId: string | null;
+  historicalData: {
+    [key: string]: {
+      prices: [number, number][];
+      lastFetched: number;
+    };
+  };
+  globalMarketData: GlobalMarketData | null;
+  globalHistoricalData: GlobalHistoricalData | null;
+  globalDataLastFetched: number | null;
+  globalHistoricalDataByRange: GlobalHistoricalDataByRange;
 }
 
-// Initial state
 const initialState: CoingeckoState = {
   topCoins: [],
   coinDetails: null,
@@ -76,9 +104,14 @@ const initialState: CoingeckoState = {
   loading: false,
   error: null,
   lastFetched: null,
+  selectedCoinId: null,
+  historicalData: {},
+  globalMarketData: null,
+  globalHistoricalData: null,
+  globalDataLastFetched: null,
+  globalHistoricalDataByRange: {},
 };
 
-// Helper function for exponential backoff
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const fetchWithRetry = async <T>(
@@ -95,36 +128,23 @@ const fetchWithRetry = async <T>(
   }
 };
 
-// Async thunk to fetch top 100 coins
+// Async thunk to fetch top 100 coins with sparkline data
 export const fetchTopCoins = createAsyncThunk(
   'coingecko/fetchTopCoins',
-  async (_, { getState, rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
-      const state = getState() as { coingecko: CoingeckoState };
-      const now = Date.now();
-
-      // Return cached data if it's still fresh
-      if (
-        state.coingecko.lastFetched &&
-        now - state.coingecko.lastFetched < CACHE_DURATION &&
-        state.coingecko.topCoins.length > 0
-      ) {
-        return state.coingecko.topCoins;
-      }
-
-      const fetchData = () =>
-        axios.get<CoinMarketData[]>(
-          'https://api.coingecko.com/api/v3/coins/markets',
-          {
-            params: {
-              vs_currency: 'usd',
-              order: 'market_cap_desc',
-              per_page: 100,
-              page: 1,
-              sparkline: true,
-            },
-          }
-        );
+      const fetchData = async () => {
+        return axios.get('https://api.coingecko.com/api/v3/coins/markets', {
+          params: {
+            vs_currency: 'usd',
+            order: 'market_cap_desc',
+            per_page: 100,
+            page: 1,
+            sparkline: true,
+            price_change_percentage: '24h',
+          },
+        });
+      };
 
       const response = await fetchWithRetry(() => fetchData());
       return response.data;
@@ -132,53 +152,54 @@ export const fetchTopCoins = createAsyncThunk(
       if (error instanceof Error) {
         return rejectWithValue(error.message);
       }
-      return rejectWithValue('Failed to fetch top coins');
+      return rejectWithValue('An unknown error occurred');
     }
   }
 );
 
-// Async thunk to fetch coin details
-export const fetchCoinDetails = createAsyncThunk(
-  'coingecko/fetchCoinDetails',
-  async (coinId: string, { rejectWithValue }) => {
-    try {
-      const fetchData = () =>
-        axios.get<CoinDetails>(
-          `https://api.coingecko.com/api/v3/coins/${coinId}`,
-          {
-            params: {
-              localization: false,
-              tickers: false,
-              market_data: true,
-              community_data: false,
-              developer_data: false,
-              sparkline: false,
-            },
-          }
-        );
-
-      const response = await fetchWithRetry(() => fetchData());
-      return response.data;
-    } catch (error) {
-      if (error instanceof Error) {
-        return rejectWithValue(error.message);
-      }
-      return rejectWithValue('Failed to fetch coin details');
-    }
-  }
-);
-
-// Async thunk to fetch coin price history
-export const fetchCoinPriceHistory = createAsyncThunk(
-  'coingecko/fetchCoinPriceHistory',
-  async (coinId: string, { rejectWithValue }) => {
+// Async thunk to fetch historical data for a specific coin
+export const fetchCoinHistory = createAsyncThunk(
+  'coingecko/fetchCoinHistory',
+  async (
+    { coinId, days = 30 }: { coinId: string; days?: number },
+    { rejectWithValue }
+  ) => {
     try {
       const response = await axios.get(
         `https://api.coingecko.com/api/v3/coins/${coinId}/market_chart`,
         {
           params: {
             vs_currency: 'usd',
-            days: 7,
+            days,
+            interval: days > 90 ? 'daily' : 'hourly',
+          },
+        }
+      );
+      return { coinId, data: response.data };
+    } catch (error) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message);
+      }
+      return rejectWithValue('An unknown error occurred');
+    }
+  }
+);
+
+// Async thunk to fetch detailed coin data
+export const fetchCoinDetails = createAsyncThunk(
+  'coingecko/fetchCoinDetails',
+  async (coinId: string, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(
+        `https://api.coingecko.com/api/v3/coins/${coinId}`,
+        {
+          params: {
+            localization: false,
+            tickers: false,
+            market_data: true,
+            community_data: false,
+            developer_data: false,
+            sparkline: false,
           },
         }
       );
@@ -187,69 +208,153 @@ export const fetchCoinPriceHistory = createAsyncThunk(
       if (error instanceof Error) {
         return rejectWithValue(error.message);
       }
-      return rejectWithValue('Failed to fetch price history');
+      return rejectWithValue('An unknown error occurred');
     }
   }
 );
 
-// Slice
+// Async thunk to fetch global market data
+export const fetchGlobalMarketData = createAsyncThunk(
+  'coingecko/fetchGlobalMarketData',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(
+        'https://api.coingecko.com/api/v3/global'
+      );
+      return response.data.data;
+    } catch (error) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message);
+      }
+      return rejectWithValue('An unknown error occurred');
+    }
+  }
+);
+
+// Async thunk to fetch historical market cap data for a specific time range
+export const fetchHistoricalMarketCap = createAsyncThunk(
+  'coingecko/fetchHistoricalMarketCap',
+  async (
+    timeRange: '24h' | '7d' | '30d' | '90d' | '1y',
+    { rejectWithValue }
+  ) => {
+    try {
+      const response = await axios.get(
+        `https://api.coingecko.com/api/v3/global/market_caps/chart?vs_currency=usd&days=${timeRange}`
+      );
+
+      return {
+        timeRange,
+        data: {
+          market_caps: response.data.market_caps,
+          timestamps: response.data.market_caps.map(
+            (item: [number, number]) => item[0]
+          ),
+        },
+      };
+    } catch (error) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message);
+      }
+      return rejectWithValue('An unknown error occurred');
+    }
+  }
+);
+
 const coingeckoSlice = createSlice({
   name: 'coingecko',
   initialState,
   reducers: {
-    clearError: (state) => {
+    clearError(state) {
       state.error = null;
+    },
+    setSelectedCoin(state, action) {
+      state.selectedCoinId = action.payload;
     },
   },
   extraReducers: (builder) => {
-    // Handle fetchTopCoins
-    builder.addCase(fetchTopCoins.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(fetchTopCoins.fulfilled, (state, action) => {
-      state.loading = false;
-      state.topCoins = action.payload;
-      state.lastFetched = Date.now();
-      state.totalMarketCap = action.payload.reduce(
-        (sum, coin) => sum + coin.market_cap,
-        0
-      );
-    });
-    builder.addCase(fetchTopCoins.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload as string;
-    });
-
-    // Handle fetchCoinDetails
-    builder.addCase(fetchCoinDetails.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(fetchCoinDetails.fulfilled, (state, action) => {
-      state.loading = false;
-      state.coinDetails = action.payload;
-    });
-    builder.addCase(fetchCoinDetails.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload as string;
-    });
-
-    // Handle fetchCoinPriceHistory
-    builder.addCase(fetchCoinPriceHistory.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(fetchCoinPriceHistory.fulfilled, (state, action) => {
-      state.loading = false;
-      state.priceHistory = action.payload;
-    });
-    builder.addCase(fetchCoinPriceHistory.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload as string;
-    });
+    builder
+      // Top coins reducers
+      .addCase(fetchTopCoins.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchTopCoins.fulfilled, (state, action) => {
+        state.loading = false;
+        state.topCoins = action.payload;
+        state.lastFetched = Date.now();
+        state.totalMarketCap = action.payload.reduce(
+          (sum: number, coin: { market_cap: number }) => sum + coin.market_cap,
+          0
+        );
+      })
+      .addCase(fetchTopCoins.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Coin history reducers
+      .addCase(fetchCoinHistory.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchCoinHistory.fulfilled, (state, action) => {
+        state.loading = false;
+        state.historicalData[action.payload.coinId] = {
+          prices: action.payload.data.prices,
+          lastFetched: Date.now(),
+        };
+      })
+      .addCase(fetchCoinHistory.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Coin details reducers
+      .addCase(fetchCoinDetails.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchCoinDetails.fulfilled, (state, action) => {
+        state.loading = false;
+        state.coinDetails = action.payload;
+      })
+      .addCase(fetchCoinDetails.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Global market data reducers
+      .addCase(fetchGlobalMarketData.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchGlobalMarketData.fulfilled, (state, action) => {
+        state.loading = false;
+        state.globalMarketData = action.payload;
+        state.globalDataLastFetched = Date.now();
+      })
+      .addCase(fetchGlobalMarketData.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Historical market cap data reducers
+      .addCase(fetchHistoricalMarketCap.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchHistoricalMarketCap.fulfilled, (state, action) => {
+        const { timeRange, data } = action.payload;
+        state.globalHistoricalDataByRange[timeRange] = {
+          market_caps: data.market_caps,
+          timestamps: data.timestamps,
+          lastFetched: Date.now(),
+        };
+        state.loading = false;
+      })
+      .addCase(fetchHistoricalMarketCap.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
   },
 });
 
-export const { clearError } = coingeckoSlice.actions;
+export const { clearError, setSelectedCoin } = coingeckoSlice.actions;
 export default coingeckoSlice.reducer;

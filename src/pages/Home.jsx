@@ -1,14 +1,8 @@
 import React, { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { fetchTopCoins } from '../store/slices/coingeckoSlice';
-import {
-  Box,
-  Container,
-  Typography,
-  Grid,
-  Paper,
-  IconButton,
-} from '@mui/material';
+import { Box, Container, Typography, Paper, IconButton } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import { styled } from '@mui/system';
 import { useTheme } from '@mui/material/styles';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
@@ -229,18 +223,18 @@ const Home = () => {
               Key Challenges:
             </Typography>
             <Grid container spacing={3}>
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Typography variant="body1">
                   • High volatility and risk exposure with individual
                   cryptocurrencies
                 </Typography>
               </Grid>
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Typography variant="body1">
                   • Time-consuming portfolio management and tracking
                 </Typography>
               </Grid>
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Typography variant="body1">
                   • Limited access to regulated index-based investments
                 </Typography>
@@ -275,7 +269,7 @@ const Home = () => {
           </SectionTitle>
           <Grid container spacing={4}>
             {features.map((feature, index) => (
-              <Grid item xs={12} sm={6} md={4} key={index}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={index}>
                 <StyledPaper>
                   <FeatureIcon>{feature.icon}</FeatureIcon>
                   <Typography variant="h6" gutterBottom>
@@ -295,7 +289,7 @@ const Home = () => {
             How It Works
           </SectionTitle>
           <Grid container spacing={4}>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <ProblemCard>
                 <Typography variant="h6" color="primary" gutterBottom>
                   Dynamic Rebase Mechanism
@@ -309,7 +303,7 @@ const Home = () => {
                 </Typography>
               </ProblemCard>
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <ProblemCard>
                 <Typography variant="h6" color="primary" gutterBottom>
                   Automated Rewards System
@@ -335,7 +329,7 @@ const Home = () => {
             justifyContent="space-between"
             alignItems="center"
           >
-            <Grid item xs={12} md={4}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <Typography variant="h6" gutterBottom>
                 Contact Us
               </Typography>
@@ -366,12 +360,12 @@ const Home = () => {
                 </IconButton>
               </Box>
             </Grid>
-            <Grid item xs={12} md={4} sx={{ textAlign: 'center' }}>
+            <Grid size={{ xs: 12, md: 4 }} sx={{ textAlign: 'center' }}>
               <Typography variant="body2" color="textSecondary">
                 &copy; 2024 COIN100. All rights reserved.
               </Typography>
             </Grid>
-            <Grid item xs={12} md={4} sx={{ textAlign: 'right' }}>
+            <Grid size={{ xs: 12, md: 4 }} sx={{ textAlign: 'right' }}>
               <Typography variant="body2" color="textSecondary">
                 Contract: 0xdbe819ddf0d14a54ffe611c6d070b32a7f9d23d1
               </Typography>
