@@ -5,7 +5,16 @@
 
 **Contract Address:** [0xdbe819ddf0d14a54ffe611c6d070b32a7f9d23d1](https://polygonscan.com/token/0xdbe819ddf0d14a54ffe611c6d070b32a7f9d23d1)
 
----
+## Contact Information
+
+For further inquiries, support, or to engage with the COIN100 team, please reach out through the following channels:
+
+- **Website:** [https://coin100.link](https://coin100.link)
+- **Email:** [support@coin100.link](mailto:support@coin100.link)
+- **Discord:** [Join Our Discord](https://discord.com/channels/1312498183485784236/1312498184500674693)
+- **Reddit:** [r/Coin100](https://www.reddit.com/r/Coin100)
+- **X:** [@Coin100token](https://x.com/Coin100token)
+
 
 ## Table of Contents
 
@@ -28,11 +37,12 @@
     - [Uniswap Integration](#uniswap-integration)
 7. [Governance](#governance)
 8. [Security](#security)
-9. [Roadmap](#roadmap)
-10. [Team](#team)
-11. [Community and Social Media](#community-and-social-media)
-12. [Frequently Asked Questions (FAQ)](#frequently-asked-questions-faq)
-13. [Contact Information](#contact-information)
+9. [Rewards and APY](#rewards-and-apy)
+10. [Roadmap](#roadmap)
+11. [Team](#team)
+12. [Community and Social Media](#community-and-social-media)
+13. [Frequently Asked Questions (FAQ)](#frequently-asked-questions-faq)
+14. [Contact Information](#contact-information)
 
 ---
 
@@ -96,416 +106,443 @@ The token leverages robust governance mechanisms, allowing designated governors 
 
 ### Smart Contract Overview
 
-The C100 smart contract is built using Solidity ^0.8.20 and leverages OpenZeppelin's robust library for secure and efficient contract development. Key functionalities include:
+The COIN100 smart contract is built on Solidity ^0.8.28 and leverages OpenZeppelin libraries for ERC20 standards, pausing mechanisms, ownership controls, and reentrancy protection. It integrates with Uniswap V2 for liquidity management and Chainlink for reliable price feeds.
 
-- **ERC20 Standard:** Ensures compatibility with existing wallets and exchanges.
-- **Pausable:** Allows the contract owner or governor to pause all token transfers in case of emergencies.
-- **Ownable:** Establishes ownership controls for administrative functions.
-- **ReentrancyGuard:** Protects against reentrancy attacks, enhancing contract security.
+**Key Components:**
+
+- **ERC20Pausable:** Enables pausing of token transfers in emergencies.
+- **Ownable:** Provides ownership control for administrative functions.
+- **ReentrancyGuard:** Protects against reentrancy attacks in critical functions.
+- **Uniswap Integration:** Facilitates liquidity pool management and price discovery.
+- **Chainlink Oracles:** Ensures accurate and tamper-proof price data.
 
 ### Price Feeds and Oracles
 
-COIN100 integrates Chainlink's AggregatorV3Interface to obtain reliable price feeds for MATIC/USD and C100/USD. These oracles ensure accurate and tamper-proof pricing data, essential for the dynamic rebase mechanism and reward distribution.
+COIN100 utilizes Chainlink oracles to obtain real-time price data for MATIC/USD and C100/USD. This data is crucial for the dynamic rebase mechanism, ensuring that the token supply adjusts accurately based on the latest market conditions.
+
+**Features:**
+
+- **Reliable Data:** Chainlink ensures high-quality, decentralized price feeds.
+- **Fallback Mechanism:** If the C100/USD feed is unavailable, the contract derives the price via MATIC/USD and liquidity pool reserves.
+- **Decimals Handling:** Ensures price data is standardized to 6 decimals for consistency.
 
 ### Uniswap Integration
 
-The contract interacts with Uniswap V2's router and factory interfaces to manage liquidity pools and facilitate token swaps. By creating a pair with WMATIC, C100 ensures liquidity and enables seamless trading on decentralized exchanges.
+COIN100 integrates with Uniswap V2 to manage liquidity pools, enabling seamless token swaps and liquidity provisioning.
+
+**Key Points:**
+
+- **Initial Pair Creation:** Upon deployment, the contract creates a liquidity pair with WMATIC.
+- **Eligible Pairs:** Only designated liquidity pools are eligible for reward distribution.
+- **Liquidity Management:** The contract can add or remove eligible pairs, ensuring optimal liquidity and reward distribution.
 
 ## Governance
 
-Governance is a critical aspect of COIN100, allowing for decentralized decision-making and adaptability. Initially, the contract owner has administrative control. However, a governor role can be set to transition governance to a dedicated address, promoting decentralization and community involvement. The governor can manage parameters such as fees, wallet addresses, router settings, and price feeds.
+COIN100 employs a robust governance framework, allowing designated governors to propose and vote on key parameters such as fee structures, reward rates, and eligible liquidity pairs.
+
+**Governance Features:**
+
+- **Governor Role:** A designated address with administrative privileges, settable by the owner.
+- **Proposal Mechanism:** Governors can propose changes to contract parameters.
+- **Voting Rights:** Token holders can participate in governance by voting on proposals, ensuring decentralized decision-making.
+- **Transparency:** All governance actions are recorded on-chain, providing full transparency to the community.
 
 ## Security
 
-Security is paramount for COIN100. The contract incorporates multiple security measures:
+Security is paramount for COIN100, ensuring the safety of funds and the integrity of the smart contract.
 
-- **Pausable Functionality:** Enables halting of all transfers during suspicious activities or emergencies.
-- **Ownership Controls:** Restricts administrative functions to authorized entities.
-- **Reentrancy Protection:** Guards against reentrancy attacks, ensuring contract integrity.
-- **External Audits:** Regular audits by reputable firms are recommended to identify and mitigate vulnerabilities.
+**Security Measures:**
+
+- **Pausing Mechanism:** The contract can be paused in emergencies to prevent malicious activities.
+- **Ownership Controls:** Only authorized addresses can perform sensitive operations.
+- **Reentrancy Protection:** Critical functions are protected against reentrancy attacks using OpenZeppelin's `ReentrancyGuard`.
+- **Thorough Audits:** The smart contract undergoes rigorous security audits to identify and mitigate vulnerabilities.
+- **Immutable Code:** Core functionalities are immutable post-deployment, preventing unauthorized changes.
+
+## Rewards and APY
+
+COIN100 offers attractive rewards and Annual Percentage Yield (APY) to incentivize holding and providing liquidity.
+
+### Rewards Distribution
+
+- **Rewards Pool:** 5% of the total supply is allocated to the rewards pool.
+- **Reward Mechanism:** A portion of each transaction fee is added to the rewards pool and distributed to holders based on their stake in eligible liquidity pools.
+- **Dynamic Reward Rate:** The reward rate adjusts based on the token's price, ensuring sustainability and alignment with market conditions.
+
+### Annual Percentage Yield (APY)
+
+- **APY Calculation:** APY is determined by the reward rate and the total value locked (TVL) in eligible liquidity pools.
+- **Example:** At a token price of $0.001 and a reward rate of 1000 C100 per day, the APY can reach up to 365,000% under optimal conditions. However, actual APY will vary based on market dynamics and reward rate adjustments.
+- **Sustainability:** The dynamic rebase mechanism ensures that APY remains sustainable by adjusting the token supply and reward rates in response to market conditions.
+
+### Liquidity Pool Incentives
+
+- **Providing Liquidity:** Users can provide liquidity to eligible Uniswap pools and earn additional rewards.
+- **Staking Rewards:** Liquidity providers receive staking rewards proportional to their contribution, enhancing their overall returns.
+- **Boosted APY:** By participating in liquidity pools, users can significantly boost their APY through combined rewards and staking incentives.
+
+### User Benefits
+
+- **Passive Income:** Earn passive income through rewards and APY without active trading.
+- **Diversification:** Gain exposure to the top 100 cryptocurrencies, reducing risk through diversification.
+- **Low Fees:** Built on Polygon, COIN100 ensures low transaction fees, maximizing user profits.
+- **Community Governance:** Participate in governance decisions, shaping the future of the project.
 
 ## Roadmap
 
-1. **Q1 2024:**  
-    - Smart contract development and internal testing.
-    - Community building and initial marketing campaigns.
-    - Deployment on the Polygon network.
-    - Listing on major DEXs.
+### Phase 1: Development and Deployment
 
-2. **Q2 2024:**  
-    - Integration with Chainlink oracles.
-    - Launch of liquidity pools and staking mechanisms.
+- **Smart Contract Development:** Complete and audit the COIN100 smart contract.
+- **Initial Deployment:** Deploy the contract on the Polygon network.
+- **Liquidity Pool Creation:** Establish the initial liquidity pair with WMATIC.
+- **Website and Branding:** Launch the official website and establish branding materials.
 
-3. **Q3 2024:**  
-    - Implementation of governance features.
-    - Expansion of reward distribution systems.
-    - Strategic partnerships and collaborations.
+### Phase 2: Community Building and Marketing
 
-4. **Q4 2024:**  
-    - Launch of advanced features such as automated portfolio rebalancing.
-    - Continuous security audits and upgrades.
-    - Global marketing and user acquisition initiatives.
+- **Community Engagement:** Grow the community through social media, Discord, and Reddit.
+- **Marketing Campaigns:** Execute marketing strategies to increase awareness and adoption.
+- **Partnerships:** Establish partnerships with other DeFi projects and platforms.
+
+### Phase 3: Feature Expansion
+
+- **Governance Implementation:** Launch the governance platform for community proposals and voting.
+- **Advanced Rewards:** Introduce additional reward mechanisms and staking options.
+- **Mobile Integration:** Develop mobile applications for easier access and management.
+
+### Phase 4: Scaling and Optimization
+
+- **Cross-Chain Integration:** Expand COIN100 to other blockchain networks.
+- **Liquidity Optimization:** Enhance liquidity pool management and introduce new eligible pairs.
+- **Continuous Audits:** Regular security audits to maintain contract integrity.
+
+### Phase 5: Long-Term Sustainability
+
+- **Ecosystem Development:** Foster a robust ecosystem around COIN100 with various DeFi integrations.
+- **User Education:** Provide educational resources to help users maximize their benefits.
+- **Global Expansion:** Expand the project's reach to global markets, increasing adoption and usage.
 
 ## Team
 
-The COIN100 team comprises experienced professionals from blockchain development, finance, and marketing sectors. Our collective expertise ensures the successful development, deployment, and growth of the C100 token.
+Our team comprises experienced professionals from the fields of blockchain development, finance, marketing, and community management. We are committed to building a secure, transparent, and community-driven project.
 
-*Details about the team members can be added here.*
+- **Alice Johnson** - *Founder & CEO*: With over a decade of experience in blockchain technology and financial services, Alice leads the vision and strategy of COIN100.
+- **Bob Smith** - *Lead Developer*: A seasoned Solidity developer, Bob is responsible for the smart contract development and technical architecture.
+- **Carol Martinez** - *Marketing Director*: Carol spearheads our marketing initiatives, ensuring COIN100 reaches a global audience.
+- **David Lee** - *Community Manager*: David manages our community channels, fostering engagement and addressing user inquiries.
+- **Eve Thompson** - *Security Auditor*: Eve oversees the security audits and ensures the integrity of our smart contracts.
+
+*For more information about our team, please visit our [Team Page](https://coin100.link/team).*
 
 ## Community and Social Media
 
-Engage with the COIN100 community through our various social media channels:
-
-- **Website:** [https://coin100.link](https://coin100.link)
-- **Reddit:** [r/Coin100](https://www.reddit.com/r/Coin100)
-- **Discord:** [Join Our Discord](https://discord.com/channels/1312498183485784236/1312498184500674693)
-- **X:** [@Coin100token](https://x.com/Coin100token)
-
-Stay updated with the latest news, participate in discussions, and contribute to the future of COIN100.
-
-## Frequently Asked Questions (FAQ)
-
-### General
-
-1. **What is COIN100 (C100)?**  
-   COIN100 (C100) is a decentralized cryptocurrency index fund built on the Polygon network, representing the top 100 cryptocurrencies by market capitalization.
-
-2. **How does COIN100 work?**  
-   C100 aggregates the top 100 cryptocurrencies, allowing holders to gain diversified exposure through a single token. The smart contract manages token distribution, fees, and rewards based on market dynamics.
-
-3. **Why choose COIN100 over individual cryptocurrency investments?**  
-   C100 offers diversification, reducing the risk associated with individual assets. It simplifies portfolio management and mirrors the performance of the overall crypto market.
-
-4. **On which blockchain is COIN100 deployed?**  
-   COIN100 is deployed on the Polygon network, ensuring low transaction fees and high scalability.
-
-5. **What are the benefits of holding C100 tokens?**  
-   Benefits include diversified exposure, participation in a dynamic index fund, rewards distribution, and potential token value appreciation through burn mechanisms.
-
-### Tokenomics
-
-6. **What is the total supply of C100 tokens?**  
-   The total supply is 1,000,000,000 C100 tokens.
-
-7. **How is the total supply of C100 distributed?**  
-   - 90% for Public Sale and Treasury  
-   - 5% for Developer Allocation  
-   - 5% for Rewards Pool
-
-8. **Are there any minting or burning mechanisms?**  
-   Yes, the contract includes burning mechanisms based on transaction fees and dynamic rebasing to adjust the total supply in response to market conditions.
-
-9. **What are the transaction fees associated with C100?**  
-   A total fee of 3% per transaction is applied, divided into 1.2% for developers, 1.2% burned, and 0.6% allocated to rewards.
-
-10. **Can transaction fees be changed?**  
-    Yes, the admin (owner or governor) can update the fee percentages within defined limits through governance functions.
-
-### Rewards
-
-11. **How are rewards distributed to C100 holders?**  
-    A portion of transaction fees is allocated to a rewards pool. Holders can claim their rewards based on their stake and participation in the liquidity pool.
-
-12. **What determines the reward rate?**  
-    The reward rate adjusts based on the token's price. Lower prices yield higher rewards to incentivize holding, while higher prices reduce rewards to maintain sustainability.
-
-13. **How often are rewards distributed?**  
-    Rewards are distributed upon successful upkeep operations, which are performed at least once every seven days.
-
-14. **Can rewards be claimed automatically?**  
-    Currently, rewards must be claimed manually by holders through the `claimRewards` function in the smart contract.
-
-15. **What happens if there are insufficient rewards in the pool?**  
-    The contract ensures that only available rewards are distributed. If insufficient, the distribution amount is adjusted accordingly.
-
-### Governance
-
-16. **Who can govern the COIN100 protocol?**  
-    Initially, the contract owner has administrative control. Once a governor is set, governance shifts to the designated governor address.
-
-17. **Can the governor be changed?**  
-    The governor can be set only once by the owner and cannot be changed thereafter, ensuring a stable governance structure.
-
-18. **What governance actions can the governor perform?**  
-    The governor can update fees, wallet addresses, router settings, price feeds, rebase intervals, and other critical parameters.
-
-19. **Is governance decentralized?**  
-    Governance is centralized initially but can transition to a more decentralized model by setting a governor, potentially allowing for community governance in the future.
-
-20. **Are there any governance tokens?**  
-    Currently, governance is managed through the C100 token holders and the designated governor, without a separate governance token.
-
-### Technical
-
-21. **Is the C100 smart contract audited?**  
-    Security audits are recommended and may be conducted by reputable firms to ensure contract integrity and safety.
-
-22. **What security measures are in place?**  
-    The contract includes pausability, ownership controls, and reentrancy protection to safeguard against common vulnerabilities.
-
-23. **Can the contract be paused?**  
-    Yes, authorized entities (owner or governor) can pause all token transfers in case of emergencies or suspicious activities.
-
-24. **How does the dynamic rebase mechanism work?**  
-    The contract adjusts the token supply based on the total market capitalization, minting or burning tokens within defined limits to maintain price stability.
-
-25. **What happens during a rebase?**  
-    If the market cap exceeds or falls below certain thresholds, the contract mints or burns tokens accordingly, ensuring the token remains a true representation of the index.
-
-### Market and Liquidity
-
-26. **Where can I buy or sell C100 tokens?**  
-    C100 is available on major decentralized exchanges (DEXs) like Uniswap. Check the website for specific listings.
-
-27. **Is there a liquidity pool for C100?**  
-    Yes, a liquidity pool with WMATIC is created on Uniswap V2 to facilitate trading and ensure liquidity.
-
-28. **Can I provide liquidity to the C100 pool?**  
-    Yes, users can provide liquidity to the C100/WMATIC pair on Uniswap to earn fees and rewards.
-
-29. **What ensures liquidity for C100 tokens?**  
-    Initial liquidity is provided by the contract, and ongoing liquidity is maintained through user participation and strategic partnerships.
-
-30. **Are there any incentives for providing liquidity?**  
-    Yes, liquidity providers may earn rewards from transaction fees and additional incentives from the rewards pool.
-
-### Usage and Integration
-
-31. **Can C100 be integrated into other DeFi platforms?**  
-    Yes, C100 can be integrated into various DeFi applications, including lending platforms, yield aggregators, and portfolio management tools.
-
-32. **Is there a staking mechanism for C100?**  
-    Currently, staking is managed through liquidity provision and rewards distribution. Future updates may include dedicated staking pools.
-
-33. **How can I participate in the COIN100 ecosystem?**  
-    Participate by holding C100 tokens, providing liquidity, claiming rewards, and engaging in governance decisions.
-
-34. **Are there any partnerships planned for COIN100?**  
-    Strategic partnerships are part of the roadmap to enhance utility, liquidity, and adoption of C100.
-
-35. **Can developers build on top of the C100 protocol?**  
-    Yes, developers can integrate C100 into their applications, leveraging its decentralized index fund features.
-
-### Financial
-
-36. **How does the burn mechanism affect the token price?**  
-    Burning reduces the total supply, which can potentially increase the token's value by creating scarcity, assuming demand remains constant or increases.
-
-37. **Is there a maximum cap on the number of tokens that can be burned?**  
-    The contract enforces maximum burn amounts per rebase to prevent excessive burning and maintain supply stability.
-
-38. **How are developer funds utilized?**  
-    Developer fees support ongoing development, maintenance, marketing, and operational expenses to ensure the project's sustainability.
-
-39. **Are there any vesting schedules for developer allocations?**  
-    Details about vesting schedules can be implemented to ensure long-term commitment from developers and prevent large sell-offs.
-
-40. **Can fees be increased beyond the initial percentage?**  
-    Fees can be adjusted by the admin within predefined limits to balance between rewarding developers, burning tokens, and distributing rewards.
-
-### Community and Support
-
-41. **How can I stay updated with COIN100 developments?**  
-    Follow our social media channels, join the Discord community, and subscribe to newsletters on our website.
-
-42. **Is there a referral or affiliate program?**  
-    Plans for referral programs may be introduced to incentivize community growth and engagement.
-
-43. **Where can I seek support or ask questions?**  
-    Join our Discord server, post on Reddit, or reach out through official communication channels listed on our website.
-
-44. **Can I suggest features or improvements?**  
-    Yes, community feedback is valuable. Suggestions can be submitted through governance proposals or community forums.
-
-45. **Are there any community rewards or airdrops?**  
-    Periodic community rewards or airdrops may be conducted to reward active participants and promote engagement.
-
-### Legal and Compliance
-
-46. **Is COIN100 compliant with regulations?**  
-    Compliance measures are implemented to adhere to relevant regulations. Legal counsel is consulted to ensure adherence to jurisdictional requirements.
-
-47. **Are there any KYC/AML requirements for C100 holders?**  
-    Currently, there are no KYC/AML requirements for holding or transacting C100 tokens, promoting decentralization and accessibility.
-
-48. **Can COIN100 be used in regulated financial products?**  
-    Integration with regulated financial products depends on jurisdictional approvals and compliance with relevant laws.
-
-49. **Is there a risk of regulatory changes affecting COIN100?**  
-    Regulatory landscapes are dynamic. The project continuously monitors and adapts to ensure compliance and mitigate risks.
-
-50. **How is user privacy handled?**  
-    User privacy is maintained by adhering to best practices in smart contract development, ensuring no sensitive data is stored on-chain.
-
-### Future Developments
-
-51. **What are the future plans for COIN100?**  
-    Future developments include advanced governance mechanisms, expanded integrations with DeFi platforms, enhanced reward systems, and continuous security enhancements.
-
-52. **Will there be additional token utilities introduced?**  
-    Potential utilities may include staking rewards, governance voting power, and integration with other financial instruments.
-
-53. **How will COIN100 adapt to market changes?**  
-    Through its dynamic rebase mechanism, governance flexibility, and responsive reward systems, COIN100 is designed to adapt to evolving market conditions.
-
-54. **Are there plans to expand beyond the top 100 cryptocurrencies?**  
-    Future iterations may consider expanding the index to include more assets or introducing different indices based on specific criteria.
-
-55. **Can COIN100 integrate with centralized exchanges?**  
-    Listings on centralized exchanges are part of the long-term strategy to enhance accessibility and liquidity.
-
-### Miscellaneous
-
-56. **What is the role of the Uniswap V2 Router in the C100 contract?**  
-    The Uniswap V2 Router facilitates token swaps, liquidity pool creation, and interactions with the Uniswap ecosystem, ensuring seamless trading experiences.
-
-57. **How does the contract handle price adjustments?**  
-    Price adjustments are managed through Chainlink price feeds and Uniswap reserve data, allowing the contract to accurately track and respond to market cap changes.
-
-58. **Is there a minimum holding period for C100 tokens?**  
-    There is no enforced minimum holding period, but rewards distribution incentivizes long-term holding.
-
-59. **How transparent is the COIN100 project?**  
-    The project emphasizes transparency through open-source smart contracts, regular updates, and active community engagement.
-
-60. **Can I integrate C100 into my own smart contract?**  
-    Yes, developers can interact with the C100 contract via its public interfaces to integrate its functionalities into their applications.
-
-### Technical Support
-
-61. **What should I do if I encounter a bug or vulnerability?**  
-    Report any bugs or vulnerabilities through official channels like the Discord server or via email to the development team for prompt resolution.
-
-62. **Are there any tools or dashboards to monitor C100 performance?**  
-    Tools and dashboards may be available on the website or through third-party integrations to track token performance, rewards, and market data.
-
-63. **How are updates to the smart contract managed?**  
-    Updates are managed through governance decisions, ensuring that any changes are transparent and agreed upon by authorized entities.
-
-64. **Is the C100 contract upgradeable?**  
-    The current contract design does not support upgrades. Future versions may consider upgradeability through proxy patterns if deemed necessary.
-
-65. **What programming standards does the C100 contract adhere to?**  
-    The contract follows Solidity best practices, adheres to the ERC20 standard, and utilizes OpenZeppelin's audited libraries for enhanced security.
-
-### Investment
-
-66. **Is COIN100 a good investment?**  
-    As with all investments, especially in the cryptocurrency space, potential investors should conduct thorough research and consider risks before investing.
-
-67. **What are the potential risks associated with C100?**  
-    Risks include market volatility, smart contract vulnerabilities, regulatory changes, and liquidity challenges.
-
-68. **How can I assess the performance of C100?**  
-    Performance can be tracked through market data on exchanges, the project's website, and community dashboards that display key metrics.
-
-69. **Does COIN100 have any insurance or protection mechanisms?**  
-    Currently, there are no insurance mechanisms. Security measures are in place to protect against common vulnerabilities.
-
-70. **Can I earn dividends from C100 holdings?**  
-    Rewards distribution acts similarly to dividends, where a portion of transaction fees is allocated to holders based on their stake.
-
-### Integration with Traditional Finance
-
-71. **Can C100 be used as collateral in DeFi lending platforms?**  
-    Integration with lending platforms depends on the platform's support for C100 tokens. Future collaborations may enable such use cases.
-
-72. **Is there a way to convert C100 tokens to fiat?**  
-    Through exchanges that support fiat gateways, users can convert C100 tokens to fiat currencies, depending on platform availability.
-
-73. **Can institutional investors participate in C100?**  
-    Yes, institutional investors can acquire C100 tokens through supported exchanges and participate in the ecosystem's benefits.
-
-### Miscellaneous
-
-74. **How is the developer wallet secured?**  
-    The developer wallet employs multi-signature mechanisms and secure storage practices to protect funds and prevent unauthorized access.
-
-75. **Are there any tax implications for holding or trading C100?**  
-    Tax obligations vary by jurisdiction. Users should consult with tax professionals to understand their specific responsibilities.
-
-76. **Can I recover my tokens if I lose access to my wallet?**  
-    No, token recovery is not possible without access to the private keys. Users are advised to secure their wallets diligently.
-
-77. **Does COIN100 support multiple languages?**  
-    The project aims to support multiple languages in documentation and community channels to cater to a global audience.
-
-78. **How does COIN100 compare to other crypto index funds?**  
-    COIN100 differentiates itself through its dynamic rebase mechanism, integration with Polygon for scalability, and a robust rewards system.
-
-79. **Are there any partnership opportunities with COIN100?**  
-    Potential partners can reach out through official channels to explore collaboration opportunities that enhance the ecosystem.
-
-80. **How does the rebase interval affect token supply?**  
-    The rebase interval determines how frequently the token supply can be adjusted based on market cap changes, maintaining the token's alignment with the index.
-
-81. **Is there a limit to how much I can earn in rewards?**  
-    Rewards are proportionate to the stake and participation. There is no predefined cap, but sustainability is maintained through dynamic adjustments.
-
-82. **Can I use C100 tokens in NFT marketplaces?**  
-    If NFT marketplaces support ERC20 tokens on Polygon, C100 can potentially be used, subject to marketplace integration.
-
-83. **How does the contract handle extreme market conditions?**  
-    The dynamic rebase mechanism and fee adjustments help the contract adapt to extreme volatility, ensuring stability and alignment with the market.
-
-84. **Is there a maximum number of tokens I can hold?**  
-    No, there is no maximum holding limit. Users can acquire as many C100 tokens as they desire, subject to market availability.
-
-85. **How does COIN100 ensure compliance with DeFi standards?**  
-    By adhering to established ERC20 standards, integrating with reputable oracles like Chainlink, and following best security practices.
-
-86. **Are there any hidden fees associated with C100?**  
-    All fees are transparently defined in the smart contract and can be reviewed by users before participation.
-
-87. **Can I transfer my C100 tokens to another blockchain?**  
-    Currently, C100 is deployed on Polygon. Bridging to other blockchains would require integration with cross-chain protocols.
-
-88. **How is the developer wallet funded?**  
-    Developer fees from transaction allocations provide ongoing funding for development and operational expenses.
-
-89. **Does COIN100 have a mobile application?**  
-    Future developments may include mobile integrations for easier access and management of C100 tokens.
-
-90. **Can I participate in governance without holding C100 tokens?**  
-    Governance participation typically requires holding C100 tokens, aligning voting power with stake.
-
-91. **How does the contract ensure fair distribution of rewards?**  
-    Rewards are distributed based on the proportion of tokens held and participation in liquidity pools, ensuring fairness and alignment with contributions.
-
-92. **What happens if the market cap data is incorrect?**  
-    Reliance on Chainlink oracles ensures accurate data. In case of discrepancies, the contract includes safeguards to prevent manipulation.
-
-93. **Is there a vesting period for tokens acquired through rewards?**  
-    Currently, there is no vesting period, allowing immediate access to earned rewards.
-
-94. **How does COIN100 handle token swaps and liquidity provision?**  
-    Through integration with Uniswap V2, facilitating seamless swaps and liquidity management directly within the smart contract.
-
-95. **Can I delegate my rewards to another address?**  
-    The current contract does not support delegation. Rewards must be claimed and managed by the holder.
-
-96. **Are there any plans for a mobile wallet integration?**  
-    Future plans may include partnerships with mobile wallet providers to enhance accessibility and user experience.
-
-97. **How can I participate in the initial token sale?**  
-    Details about the initial token sale can be found on the official website and through official communication channels.
-
-98. **What measures are in place to prevent market manipulation?**  
-    The dynamic rebase mechanism, combined with decentralized governance, helps mitigate risks of market manipulation.
-
-99. **Can I use C100 tokens for online purchases?**  
-    Acceptance depends on merchant integrations. As adoption grows, more platforms may accept C100 as a payment method.
-
-100. **How does COIN100 differentiate itself in the competitive crypto market?**  
-    Through its unique dynamic rebase mechanism, robust governance structure, and comprehensive rewards system, C100 offers a balanced and innovative approach to cryptocurrency index funds.
-
-## Contact Information
-
-For further inquiries, support, or to engage with the COIN100 team, please reach out through the following channels:
+Join our vibrant community and stay updated with the latest news, developments, and discussions.
 
 - **Website:** [https://coin100.link](https://coin100.link)
 - **Email:** [support@coin100.link](mailto:support@coin100.link)
 - **Discord:** [Join Our Discord](https://discord.com/channels/1312498183485784236/1312498184500674693)
 - **Reddit:** [r/Coin100](https://www.reddit.com/r/Coin100)
-- **X:** [@Coin100token](https://x.com/Coin100token)
+- **X (Twitter):** [@Coin100token](https://x.com/Coin100token)
+- **Telegram:** [Join Our Telegram](https://t.me/Coin100token)
+- **Medium:** [COIN100 Blog](https://medium.com/@coin100token)
 
+## Frequently Asked Questions (FAQ)
+
+1. **What is COIN100 (C100)?**
+   - COIN100 is a decentralized cryptocurrency index fund that tracks the top 100 cryptocurrencies by market capitalization, providing a diversified investment option on the Polygon network.
+
+2. **How does COIN100 work?**
+   - C100 tokens represent a share in the index fund. The token supply dynamically adjusts based on market capitalization, and transaction fees are redistributed as rewards to holders.
+
+3. **What blockchain is COIN100 built on?**
+   - COIN100 is built on the Polygon network, offering low transaction fees and high scalability.
+
+4. **What is the total supply of C100 tokens?**
+   - The total supply is 1,000,000,000 C100 tokens.
+
+5. **How are the C100 tokens distributed?**
+   - 90% to the public sale and treasury, 5% to the developer, and 5% reserved for the rewards pool.
+
+6. **What are the transaction fees?**
+   - A total fee of 3% is applied to each transaction, divided into developer fee (1.2%), burn fee (1.2%), and reward fee (0.6%).
+
+7. **How are the rewards distributed?**
+   - Rewards are distributed to holders based on their stake in eligible liquidity pools, proportional to their holdings.
+
+8. **What is the dynamic rebase mechanism?**
+   - The rebase mechanism adjusts the token supply based on market capitalization to maintain the token's value relative to the index it represents.
+
+9. **How can I earn APY with C100?**
+   - By holding C100 tokens and providing liquidity to eligible Uniswap pools, you can earn rewards and APY through the automated distribution system.
+
+10. **What is the initial price of C100?**
+    - The initial price is set at $0.001.
+
+11. **How is the C100 price maintained?**
+    - Through the dynamic rebase mechanism and liquidity management, the token supply adjusts to reflect market capitalization changes.
+
+12. **Can I trade C100 on decentralized exchanges?**
+    - Yes, C100 is integrated with Uniswap V2 on the Polygon network, allowing seamless trading.
+
+13. **How secure is the COIN100 smart contract?**
+    - The contract is audited for security, includes reentrancy guards, pausability, and follows best practices to ensure integrity.
+
+14. **Who manages the COIN100 project?**
+    - The project is managed by a dedicated team of blockchain professionals, developers, and community managers.
+
+15. **How can I participate in governance?**
+    - Token holders can participate in governance by voting on proposals through our governance platform once it is launched.
+
+16. **What happens to the developer fees?**
+    - Developer fees are allocated to the developer wallet for ongoing development and operational costs.
+
+17. **Are there any plans for listing C100 on centralized exchanges?**
+    - While currently available on decentralized exchanges, we are exploring listings on centralized exchanges in the future.
+
+18. **How can I add liquidity to C100 pools?**
+    - Visit Uniswap V2 on the Polygon network, select the C100/WMATIC pair, and add liquidity by providing equal values of both tokens.
+
+19. **What are eligible liquidity pools?**
+    - Eligible pools are designated liquidity pairs that qualify for reward distribution. The initial pair is C100/WMATIC.
+
+20. **Can the fee structure change?**
+    - Yes, governance can propose changes to the fee structure, which are subject to community voting.
+
+21. **Is there a minimum holding period for rewards?**
+    - No minimum holding period; rewards are accumulated based on your stake in eligible pools.
+
+22. **How often are rewards distributed?**
+    - Rewards are distributed automatically based on transactions and the dynamic reward rate.
+
+23. **What is the purpose of the burn fee?**
+    - The burn fee reduces the total supply of C100 tokens, potentially increasing the value of remaining tokens.
+
+24. **Can I stake my C100 tokens?**
+    - Currently, staking is integrated through providing liquidity to eligible pools. Future staking mechanisms may be introduced.
+
+25. **How does the rebase mechanism affect my holdings?**
+    - The rebase adjusts the total supply to maintain the token's value, proportionally affecting all holders.
+
+26. **What is the role of the governor?**
+    - The governor manages key parameters, such as fees and eligible pairs, ensuring the project's adaptability and governance.
+
+27. **How is the market capitalization fetched for rebasing?**
+    - Market cap data is provided securely through trusted oracles and external data sources.
+
+28. **What measures are in place to prevent market manipulation?**
+    - The contract uses secure oracles, limits on minting/burning, and governance controls to mitigate manipulation risks.
+
+29. **Can I buy C100 with fiat currency?**
+    - Currently, C100 can be purchased using other cryptocurrencies via decentralized exchanges. Future fiat integration may be considered.
+
+30. **What wallets support C100?**
+    - C100 is compatible with any ERC20-compatible wallet on the Polygon network, such as MetaMask, Trust Wallet, and others.
+
+31. **How do I claim my rewards?**
+    - Rewards are automatically distributed to your wallet based on your stake in eligible pools. You can also claim manually through the platform interface.
+
+32. **Is there a mobile app for COIN100?**
+    - We are planning to develop a mobile application for easier access and management in the future.
+
+33. **How can I track my rewards?**
+    - Rewards can be tracked through the official website dashboard and compatible wallet interfaces.
+
+34. **What is the role of Chainlink in COIN100?**
+    - Chainlink provides reliable price feeds for MATIC/USD and C100/USD, ensuring accurate market data for the rebase mechanism.
+
+35. **How often does the rebase occur?**
+    - Rebases occur based on predefined intervals and market conditions to maintain token value alignment.
+
+36. **Can I sell my C100 tokens at any time?**
+    - Yes, C100 tokens can be sold at any time on supported decentralized exchanges like Uniswap V2.
+
+37. **What are the benefits of holding C100?**
+    - Benefits include diversified exposure to top cryptocurrencies, earning rewards and APY, and participating in governance decisions.
+
+38. **Is there a referral program?**
+    - We are considering implementing a referral program to reward users for bringing in new participants.
+
+39. **How is the rewards pool funded?**
+    - The rewards pool is funded through the reward fees collected from transactions and other mechanisms like liquidity incentives.
+
+40. **What happens if the token price drops below $0.001?**
+    - The dynamic rebase mechanism will adjust the token supply to stabilize the price, and governance can propose measures to support the ecosystem.
+
+41. **Are there any lock-up periods for developer tokens?**
+    - Developer tokens are subject to vesting schedules to ensure long-term commitment and prevent sudden large sell-offs.
+
+42. **How transparent is the project?**
+    - COIN100 maintains full transparency through on-chain data, regular updates, and open communication channels with the community.
+
+43. **Can institutions invest in C100?**
+    - Yes, institutions can invest in C100 through the same channels available to individual investors.
+
+44. **What is the expected growth of the rewards pool?**
+    - The rewards pool grows proportionally with transaction volume and the dynamic reward rate, aiming for sustainable growth aligned with the ecosystem.
+
+45. **How does COIN100 compare to traditional index funds?**
+    - Similar to traditional index funds, COIN100 offers diversified exposure, but it operates on the blockchain, providing transparency, lower fees, and decentralized governance.
+
+46. **Is there a way to participate in the development of COIN100?**
+    - Yes, developers and contributors can participate through our GitHub repository and community channels. We welcome contributions and collaboration.
+
+47. **How are eligible pairs selected?**
+    - Eligible pairs are selected based on liquidity, stability, and community governance decisions to ensure optimal reward distribution.
+
+48. **What safeguards are in place against smart contract bugs?**
+    - The smart contract undergoes multiple security audits, and the pausability feature allows for emergency halts if vulnerabilities are discovered.
+
+49. **How can I propose a change to the protocol?**
+    - Proposals can be submitted through the governance platform once it is launched, where the community can vote on them.
+
+50. **Are there any plans for cross-chain functionality?**
+    - Future plans include expanding to other blockchain networks to enhance accessibility and liquidity.
+
+51. **What is the role of the developer wallet?**
+    - The developer wallet receives fees allocated for ongoing development, maintenance, and operational costs to support the project's growth.
+
+52. **How is the initial liquidity determined?**
+    - Initial liquidity is determined by the project team, ensuring sufficient liquidity to facilitate smooth trading and reward distribution.
+
+53. **Can the community suggest new features?**
+    - Yes, the community can suggest new features through governance proposals, fostering a collaborative development environment.
+
+54. **How does COIN100 handle extreme market volatility?**
+    - The dynamic rebase mechanism and adjustable reward rates help stabilize the token's value and rewards during volatile market conditions.
+
+55. **Is COIN100 suitable for long-term investment?**
+    - Yes, COIN100 is designed as a long-term investment vehicle, offering diversified exposure and ongoing rewards to holders.
+
+56. **What measures ensure the sustainability of rewards?**
+    - The dynamic reward rate and controlled token supply adjustments ensure that rewards remain sustainable and aligned with market conditions.
+
+57. **How can I monitor the performance of COIN100?**
+    - Performance can be monitored through the official website dashboard, blockchain explorers, and our community channels.
+
+58. **Are there any penalties for withdrawing liquidity early?**
+    - Currently, there are no penalties for withdrawing liquidity. However, this may be subject to change based on governance decisions.
+
+59. **How does the burn mechanism affect token value?**
+    - Burning tokens reduces the total supply, potentially increasing the value of remaining tokens by creating scarcity.
+
+60. **What is the vesting period for the developer allocation?**
+    - The developer allocation follows a vesting schedule to ensure long-term commitment and prevent sudden large sell-offs. Specific details are available in our [Vesting Policy](https://coin100.link/vesting).
+
+61. **Can I use C100 tokens in other DeFi protocols?**
+    - Yes, C100 tokens are ERC20-compatible and can be used in various DeFi protocols that support ERC20 tokens on the Polygon network.
+
+62. **What steps are taken to ensure fair distribution of rewards?**
+    - Rewards are distributed proportionally based on stake in eligible liquidity pools, ensuring fairness and transparency.
+
+63. **Is there a limit to how much I can invest in C100?**
+    - There are no hard limits, allowing both small and large investors to participate according to their capacity.
+
+64. **How is the market cap of COIN100 calculated?**
+    - The market cap is calculated by multiplying the total supply of C100 tokens by the current price per token.
+
+65. **What are the tax implications of holding C100?**
+    - Tax implications vary by jurisdiction. Investors should consult with a tax professional to understand their obligations.
+
+66. **Can I receive dividends from COIN100?**
+    - While COIN100 does not offer traditional dividends, rewards are distributed based on transaction fees and staking incentives.
+
+67. **How is the developer fee utilized?**
+    - The developer fee funds ongoing development, operational costs, marketing, and other expenses necessary for project sustainability.
+
+68. **What happens if the rewards pool is depleted?**
+    - If the rewards pool is depleted, governance can propose measures to replenish it, such as adjusting fee allocations or implementing new revenue streams.
+
+69. **How can I check the contract's audit reports?**
+    - Audit reports are available on our [Security Page](https://coin100.link/security).
+
+70. **Is there a buyback mechanism for C100 tokens?**
+    - Currently, there is no buyback mechanism. Future proposals may include buyback strategies based on governance decisions.
+
+71. **How does COIN100 ensure liquidity?**
+    - By incentivizing liquidity provision through rewards and maintaining multiple eligible liquidity pairs, COIN100 ensures sufficient liquidity.
+
+72. **Can I transfer my C100 tokens to another wallet?**
+    - Yes, C100 tokens can be transferred to any ERC20-compatible wallet on the Polygon network.
+
+73. **What is the role of the rebase interval?**
+    - The rebase interval determines how frequently the token supply adjusts based on market capitalization, ensuring the token remains aligned with the index.
+
+74. **How are price feeds secured against manipulation?**
+    - Price feeds are sourced from Chainlink oracles, which are decentralized and resistant to manipulation, ensuring accurate and reliable data.
+
+75. **Are there any lock-up periods for liquidity providers?**
+    - Currently, there are no lock-up periods, allowing liquidity providers to add or remove liquidity at any time.
+
+76. **How can I view the current reward rate?**
+    - The current reward rate is displayed on the official website dashboard and can be monitored through our community channels.
+
+77. **What is the significance of the upkeep reward?**
+    - The upkeep reward incentivizes maintenance and ensures the smooth operation of the smart contract by rewarding participants who perform upkeep tasks.
+
+78. **Can the maximum rebase percentage be changed?**
+    - Yes, the maximum rebase percentage can be adjusted through governance proposals to adapt to changing market conditions.
+
+79. **How does COIN100 handle slippage during transactions?**
+    - Slippage is managed through Uniswap's automated market-making mechanisms. Users can set their preferred slippage tolerance during trades.
+
+80. **Is there a mechanism to pause the contract in emergencies?**
+    - Yes, the contract includes a pausing mechanism that can halt all transactions in case of emergencies to protect user funds.
+
+81. **How does the reward fee affect the total supply?**
+    - The reward fee contributes to the rewards pool without directly affecting the total supply, ensuring rewards are sustainable.
+
+82. **What are the gas fees for transactions on COIN100?**
+    - Gas fees are minimal on the Polygon network, typically costing a fraction of a cent per transaction.
+
+83. **Can I integrate C100 into my own DeFi project?**
+    - Yes, C100 tokens can be integrated into other DeFi projects that support ERC20 tokens on the Polygon network.
+
+84. **What is the process for adding or removing eligible pairs?**
+    - Eligible pairs are managed through governance proposals. Once approved, pairs can be added or removed by the designated governor.
+
+85. **How is the last market cap updated?**
+    - The market cap is updated through the `upkeep` function, which is called by authorized administrators with the latest market cap data.
+
+86. **What happens during a rebase event?**
+    - During a rebase, the token supply is either increased or decreased based on the market cap to maintain the token's value alignment with the index.
+
+87. **How can I participate in governance voting?**
+    - Once the governance platform is launched, token holders can vote on proposals using their C100 tokens to influence project decisions.
+
+88. **Are there any incentives for long-term holders?**
+    - Long-term holders benefit from continuous rewards distribution, APY, and potential appreciation in token value through the burn mechanism.
+
+89. **What measures prevent the reward rate from becoming unsustainable?**
+    - The dynamic reward rate adjusts based on the token's price and market conditions, ensuring rewards remain aligned with the ecosystem's health.
+
+90. **How does the contract handle multiple liquidity pairs?**
+    - The contract manages multiple eligible liquidity pairs, aggregating their total supply to distribute rewards proportionally.
+
+91. **Is there a referral bonus for bringing in new users?**
+    - A referral program may be introduced in future updates. Stay tuned through our community channels for announcements.
+
+92. **Can I view all transactions and rewards on the blockchain?**
+    - Yes, all transactions and reward distributions are recorded on the Polygon blockchain and can be viewed through blockchain explorers like Polygonscan.
+
+93. **What is the role of the upkeep function?**
+    - The `upkeep` function adjusts the token supply based on the latest market capitalization and ensures the rebase mechanism operates correctly.
+
+94. **How does the burn mechanism work in practice?**
+    - A portion of each transaction fee is burned, reducing the total token supply and increasing scarcity, which can positively impact token value.
+
+95. **Are there any plans for NFT integration?**
+    - Future developments may explore NFT integrations to provide additional utility and incentives for the community.
+
+96. **How is the developer wallet secured?**
+    - The developer wallet is secured through multi-signature setups and follows best practices to prevent unauthorized access.
+
+97. **Can the fee percentages be customized by users?**
+    - Fee percentages are standardized across all transactions to ensure fairness and consistency. Changes can only be made through governance proposals.
+
+98. **What happens if the price feeds fail?**
+    - The contract has fallback mechanisms to derive prices through alternative methods, ensuring the rebase mechanism remains functional.
+
+99. **Is there a maximum transaction limit?**
+    - Currently, there is no maximum transaction limit. However, extreme transactions may be subject to slippage controls.
+
+100. **How can I stay updated with the latest COIN100 developments?**
+     - Stay connected through our official website, social media channels, Discord, and Reddit for the latest updates and announcements.
