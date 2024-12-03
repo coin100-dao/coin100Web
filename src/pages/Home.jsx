@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { fetchTopCoins } from '../store/slices/coingeckoSlice';
 import {
   Box,
@@ -7,10 +7,10 @@ import {
   Typography,
   Grid,
   Paper,
-  CircularProgress,
   IconButton,
 } from '@mui/material';
 import { styled } from '@mui/system';
+import { useTheme } from '@mui/material/styles';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import HowToVoteIcon from '@mui/icons-material/HowToVote';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -25,6 +25,8 @@ import TwitterIcon from '@mui/icons-material/Twitter';
 import RedditIcon from '@mui/icons-material/Reddit';
 import EmailIcon from '@mui/icons-material/Email';
 import ChatIcon from '@mui/icons-material/Chat';
+import darkLogo from '../assets/c100-high-resolution-dark-logo-transparent.svg';
+import lightLogo from '../assets/c100-high-resolution-light-logo-transparent.svg';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
@@ -71,15 +73,6 @@ const StyledFooter = styled(Box)(({ theme }) => ({
   borderTop: '1px solid rgba(255, 255, 255, 0.1)',
 }));
 
-const StatsCard = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(2),
-  textAlign: 'center',
-  background: 'rgba(33, 150, 243, 0.1)',
-  backdropFilter: 'blur(10px)',
-  borderRadius: '10px',
-  border: '1px solid rgba(33, 150, 243, 0.2)',
-}));
-
 const HeroSection = styled(Box)(({ theme }) => ({
   textAlign: 'center',
   marginBottom: theme.spacing(8),
@@ -91,21 +84,12 @@ const HeroSection = styled(Box)(({ theme }) => ({
 
 const Home = () => {
   const dispatch = useDispatch();
-  const { totalMarketCap, loading } = useSelector((state) => state.coingecko);
+  const theme = useTheme();
+  const logo = theme.palette.mode === 'light' ? lightLogo : darkLogo;
 
   useEffect(() => {
     dispatch(fetchTopCoins());
   }, [dispatch]);
-
-  const formatMarketCap = (value) => {
-    if (!value) return 'Loading...';
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      notation: 'compact',
-      maximumFractionDigits: 2,
-    }).format(value);
-  };
 
   const features = [
     {
@@ -174,6 +158,20 @@ const Home = () => {
     <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Container maxWidth="lg" sx={{ py: 8, flex: 1 }}>
         <HeroSection>
+          <Box sx={{ mb: 4, display: 'flex', justifyContent: 'center' }}>
+            <img
+              src={logo}
+              alt="COIN100 Logo"
+              style={{
+                height: '80px',
+                marginBottom: '2rem',
+                filter:
+                  theme.palette.mode === 'dark'
+                    ? 'brightness(1)'
+                    : 'brightness(0.9)',
+              }}
+            />
+          </Box>
           <Typography variant="h2" component="h1" gutterBottom>
             COIN100 (C100)
           </Typography>
@@ -183,37 +181,6 @@ const Home = () => {
           <Typography variant="h6" color="textSecondary" sx={{ mb: 4 }}>
             Your Gateway to the Top 100 Cryptocurrencies
           </Typography>
-
-          <Grid container spacing={3} justifyContent="center" sx={{ mt: 4 }}>
-            <Grid item xs={12} md={4}>
-              <StatsCard>
-                <Typography variant="h6">Total Market Cap</Typography>
-                <Typography variant="h4" sx={{ mt: 2 }}>
-                  {loading ? (
-                    <CircularProgress size={24} />
-                  ) : (
-                    formatMarketCap(totalMarketCap)
-                  )}
-                </Typography>
-              </StatsCard>
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <StatsCard>
-                <Typography variant="h6">Current APY</Typography>
-                <Typography variant="h4" sx={{ mt: 2 }}>
-                  Up to 365,000%
-                </Typography>
-              </StatsCard>
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <StatsCard>
-                <Typography variant="h6">Token Price Target</Typography>
-                <Typography variant="h4" sx={{ mt: 2 }}>
-                  $0.01
-                </Typography>
-              </StatsCard>
-            </Grid>
-          </Grid>
         </HeroSection>
 
         <Typography
