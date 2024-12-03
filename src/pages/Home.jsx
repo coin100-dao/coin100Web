@@ -82,6 +82,31 @@ const HeroSection = styled(Box)(({ theme }) => ({
   borderRadius: '20px',
 }));
 
+const ProblemCard = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(4),
+  background: 'rgba(255, 255, 255, 0.05)',
+  backdropFilter: 'blur(10px)',
+  borderRadius: '20px',
+  border: '1px solid rgba(255, 255, 255, 0.1)',
+  marginBottom: theme.spacing(6),
+}));
+
+const SectionTitle = styled(Typography)(({ theme }) => ({
+  position: 'relative',
+  marginBottom: theme.spacing(4),
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    bottom: '-10px',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    width: '60px',
+    height: '4px',
+    background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+    borderRadius: '2px',
+  },
+}));
+
 const Home = () => {
   const dispatch = useDispatch();
   const theme = useTheme();
@@ -183,29 +208,123 @@ const Home = () => {
           </Typography>
         </HeroSection>
 
-        <Typography
-          variant="h4"
-          gutterBottom
-          sx={{ mb: 6, textAlign: 'center' }}
-        >
-          Why Choose COIN100?
-        </Typography>
-
-        <Grid container spacing={4}>
-          {features.map((feature, index) => (
-            <Grid item xs={12} sm={6} md={4} key={index}>
-              <StyledPaper>
-                <FeatureIcon>{feature.icon}</FeatureIcon>
-                <Typography variant="h6" gutterBottom>
-                  {feature.title}
+        <Box sx={{ mb: 8 }}>
+          <SectionTitle variant="h3" align="center" gutterBottom>
+            The Challenge
+          </SectionTitle>
+          <ProblemCard>
+            <Typography variant="body1" paragraph>
+              The cryptocurrency market is renowned for its volatility and rapid
+              growth. However, navigating this landscape can be challenging for
+              both new and seasoned investors. Traditional financial instruments
+              like index funds have provided a balanced and diversified
+              investment approach in conventional markets.
+            </Typography>
+            <Typography
+              variant="h6"
+              color="primary"
+              gutterBottom
+              sx={{ mt: 3 }}
+            >
+              Key Challenges:
+            </Typography>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={4}>
+                <Typography variant="body1">
+                  • High volatility and risk exposure with individual
+                  cryptocurrencies
                 </Typography>
-                <Typography color="textSecondary">
-                  {feature.description}
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <Typography variant="body1">
+                  • Time-consuming portfolio management and tracking
                 </Typography>
-              </StyledPaper>
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <Typography variant="body1">
+                  • Limited access to regulated index-based investments
+                </Typography>
+              </Grid>
             </Grid>
-          ))}
-        </Grid>
+          </ProblemCard>
+        </Box>
+
+        <Box sx={{ mb: 8 }}>
+          <SectionTitle variant="h3" align="center" gutterBottom>
+            Our Solution
+          </SectionTitle>
+          <ProblemCard>
+            <Typography variant="body1" paragraph>
+              COIN100 (C100) addresses these challenges by offering a
+              decentralized index fund that tracks the top 100 cryptocurrencies
+              by market capitalization. By holding C100 tokens, investors gain
+              diversified exposure to the leading cryptocurrencies, mitigating
+              the risks associated with individual asset volatility.
+            </Typography>
+            <Typography variant="body1">
+              Built on the Polygon network, C100 ensures low transaction fees,
+              high scalability, and robust security, making it the perfect
+              solution for both newcomers and experienced crypto investors.
+            </Typography>
+          </ProblemCard>
+        </Box>
+
+        <Box sx={{ mb: 8 }}>
+          <SectionTitle variant="h3" align="center" gutterBottom>
+            Core Features
+          </SectionTitle>
+          <Grid container spacing={4}>
+            {features.map((feature, index) => (
+              <Grid item xs={12} sm={6} md={4} key={index}>
+                <StyledPaper>
+                  <FeatureIcon>{feature.icon}</FeatureIcon>
+                  <Typography variant="h6" gutterBottom>
+                    {feature.title}
+                  </Typography>
+                  <Typography color="textSecondary">
+                    {feature.description}
+                  </Typography>
+                </StyledPaper>
+              </Grid>
+            ))}
+          </Grid>
+        </Box>
+
+        <Box sx={{ mb: 8 }}>
+          <SectionTitle variant="h3" align="center" gutterBottom>
+            How It Works
+          </SectionTitle>
+          <Grid container spacing={4}>
+            <Grid item xs={12} md={6}>
+              <ProblemCard>
+                <Typography variant="h6" color="primary" gutterBottom>
+                  Dynamic Rebase Mechanism
+                </Typography>
+                <Typography variant="body1" paragraph>
+                  The C100 token incorporates a dynamic rebase mechanism that
+                  adjusts the token supply based on the total market
+                  capitalization. This ensures that the token remains a true
+                  reflection of the underlying index, maintaining its relevance
+                  and accuracy in tracking market movements.
+                </Typography>
+              </ProblemCard>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <ProblemCard>
+                <Typography variant="h6" color="primary" gutterBottom>
+                  Automated Rewards System
+                </Typography>
+                <Typography variant="body1" paragraph>
+                  C100 holders are rewarded through an automated distribution
+                  system. The reward rate adjusts based on the token&apos;s
+                  price, ensuring sustainability and alignment with market
+                  conditions. Join our liquidity pools today and earn rewards
+                  ranging from 10% to 1,042.8% APY!
+                </Typography>
+              </ProblemCard>
+            </Grid>
+          </Grid>
+        </Box>
       </Container>
 
       <StyledFooter>
