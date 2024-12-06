@@ -54,6 +54,19 @@ export const coinApi = {
     );
     return response.data;
   },
+
+  getTotalMarketCap: async (
+    period: string = '5m'
+  ): Promise<
+    ApiResponse<{ timestamp: string; total_market_cap: string }[]>
+  > => {
+    const response = await api.get<
+      ApiResponse<{ timestamp: string; total_market_cap: string }[]>
+    >('/api/coins/market/total', {
+      params: { period },
+    });
+    return response.data;
+  },
 };
 
 export default api;

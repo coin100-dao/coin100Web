@@ -15,6 +15,11 @@ interface CoinHistoryMap {
   [key: string]: CoinHistory;
 }
 
+interface TotalMarketCapData {
+  timestamp: string;
+  total_market_cap: string;
+}
+
 interface Coin100State {
   allCoins: CoinData[];
   selectedCoin: CoinData | null;
@@ -24,6 +29,9 @@ interface Coin100State {
   error: string | null;
   lastFetched: number | null;
   lastSymbolFetch: { [key: string]: number }; // Track last fetch time per symbol
+  totalMarketCapData: TotalMarketCapData[];
+  loadingTotalMarketCap: boolean;
+  totalMarketCapError: string | null;
 }
 
 // Initial state
@@ -36,6 +44,9 @@ const initialState: Coin100State = {
   error: null,
   lastFetched: null,
   lastSymbolFetch: {},
+  totalMarketCapData: [],
+  loadingTotalMarketCap: false,
+  totalMarketCapError: null,
 };
 
 interface FetchCoinBySymbolParams {
@@ -62,7 +73,7 @@ export const fetchAllCoins = createAsyncThunk<
     } catch (error: unknown) {
       const axiosError = error as AxiosError<{ error?: string }>;
       return rejectWithValue(
-        axiosError.response?.data?.error || 'Failed to fetch coins'
+        axiosError.response?.data?.error ?? 'An unknown error occurred'
       );
     }
   }
@@ -98,50 +109,82 @@ export const fetchCoinBySymbol = createAsyncThunk<
     } catch (error: unknown) {
       const axiosError = error as AxiosError<{ error?: string }>;
       return rejectWithValue(
-        axiosError.response?.data?.error || 'Failed to fetch coin data'
+        axiosError.response?.data?.error ?? 'An unknown error occurred'
       );
     }
   }
 );
 
+export const fetchTotalMarketCap = createAsyncThunk<
+  TotalMarketCapData[],
+  string,
+  { rejectValue: { error: string } } // Add type annotation for error response structure
+>('coin100/fetchTotalMarketCap', async (period = '5m', { rejectWithValue }) => {
+  try {
+    const response = await coinApi.getTotalMarketCap(period);
+    if (!response.success || !response.data) {
+      return rejectWithValue({
+        error: 'Failed to fetch total market cap data',
+      });
+    }
+    // Map the response data to TotalMarketCapData type
+    return response.data.map((item) => ({
+      timestamp: item.timestamp,
+      total_market_cap: item.total_market_cap,
+    }));
+  } catch (error) {
+    const axiosError = error as AxiosError<{ error: string }>; // Add type annotation for error response structure
+    return rejectWithValue(
+      axiosError.response?.data ?? { error: 'An unknown error occurred' }
+    );
+  }
+});
+
 const coin100Slice = createSlice({
   name: 'coin100',
   initialState,
   reducers: {
-    clearError(state) {
+    clearError(state: Coin100State) {
       state.error = null;
     },
-    clearSelectedCoin(state) {
+    clearSelectedCoin(state: Coin100State) {
       state.selectedCoin = null;
     },
-    clearCoinHistory(state, action: PayloadAction<string>) {
-      delete state.coinHistory[action.payload];
+    clearCoinHistory(state: Coin100State, action: PayloadAction<string>) {
+      const symbol = action.payload;
+      if (state.coinHistory[symbol]) {
+        state.coinHistory[symbol] = {
+          prices: [],
+          timestamps: [],
+          period: '',
+          lastUpdated: 0,
+        };
+      }
     },
   },
   extraReducers: (builder) => {
     builder
       // fetchAllCoins
-      .addCase(fetchAllCoins.pending, (state) => {
+      .addCase(fetchAllCoins.pending, (state: Coin100State) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchAllCoins.fulfilled, (state, action) => {
+      .addCase(fetchAllCoins.fulfilled, (state: Coin100State, action) => {
         state.loading = false;
         state.allCoins = action.payload;
-        state.lastFetched = Date.now();
+        state.error = null;
       })
-      .addCase(fetchAllCoins.rejected, (state, action) => {
+      .addCase(fetchAllCoins.rejected, (state: Coin100State, action) => {
         state.loading = false;
-        state.error =
-          action.payload ?? 'An error occurred while fetching coins';
+        state.error = (action.payload as string) ?? 'Failed to fetch coins';
       })
       // fetchCoinBySymbol
-      .addCase(fetchCoinBySymbol.pending, (state, action) => {
+      .addCase(fetchCoinBySymbol.pending, (state: Coin100State, action) => {
         const symbol = action.meta.arg.symbol;
         state.loadingSymbols[symbol] = true;
         state.error = null;
       })
-      .addCase(fetchCoinBySymbol.fulfilled, (state, action) => {
+      .addCase(fetchCoinBySymbol.fulfilled, (state: Coin100State, action) => {
         const { symbol, period, timestamp, data } = action.payload;
         state.loadingSymbols[symbol] = false;
         state.lastSymbolFetch[symbol] = timestamp;
@@ -182,11 +225,25 @@ const coin100Slice = createSlice({
           history.lastUpdated = timestamp;
         }
       })
-      .addCase(fetchCoinBySymbol.rejected, (state, action) => {
+      .addCase(fetchCoinBySymbol.rejected, (state: Coin100State, action) => {
         const symbol = action.meta.arg.symbol;
         state.loadingSymbols[symbol] = false;
         state.error =
           action.payload ?? 'An error occurred while fetching coin data';
+      })
+      // fetchTotalMarketCap
+      .addCase(fetchTotalMarketCap.pending, (state: Coin100State) => {
+        state.loadingTotalMarketCap = true;
+        state.totalMarketCapError = null;
+      })
+      .addCase(fetchTotalMarketCap.fulfilled, (state: Coin100State, action) => {
+        state.loadingTotalMarketCap = false;
+        state.totalMarketCapData = action.payload;
+      })
+      .addCase(fetchTotalMarketCap.rejected, (state: Coin100State, action) => {
+        state.loadingTotalMarketCap = false;
+        state.totalMarketCapError =
+          action.payload?.error || 'Failed to fetch total market cap';
       });
   },
 });
