@@ -331,9 +331,6 @@ const Home = () => {
             alignItems="center"
           >
             <Grid size={{ xs: 12, md: 4 }}>
-              <Typography variant="h6" gutterBottom>
-                Contact Us
-              </Typography>
               <Box sx={{ display: 'flex', gap: 2 }}>
                 <IconButton
                   href="https://x.com/Coin100token"
@@ -364,11 +361,6 @@ const Home = () => {
             <Grid size={{ xs: 12, md: 4 }} sx={{ textAlign: 'center' }}>
               <Typography variant="body2" color="textSecondary">
                 &copy; 2024 COIN100. All rights reserved.
-              </Typography>
-            </Grid>
-            <Grid size={{ xs: 12, md: 4 }} sx={{ textAlign: 'right' }}>
-              <Typography variant="body2" color="textSecondary">
-                Contract: 0xdbe819ddf0d14a54ffe611c6d070b32a7f9d23d1
               </Typography>
             </Grid>
           </Grid>

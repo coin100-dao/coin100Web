@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -12,11 +12,8 @@ import {
   Tab,
   Grid,
   Chip,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
   CircularProgress,
+  Button,
 } from '@mui/material';
 import { Close, TrendingUp, TrendingDown } from '@mui/icons-material';
 import { LineChart } from '@mui/x-charts';
@@ -43,7 +40,7 @@ const PERIOD_OPTIONS = [
   { value: '1w', label: '1 Week' },
 ];
 
-const CHART_UPDATE_INTERVAL = 10000; // 10 seconds
+const DEFAULT_PERIOD = '5m';
 
 export const CoinDetailDialog: React.FC<CoinDetailDialogProps> = ({
   coin,
@@ -53,39 +50,60 @@ export const CoinDetailDialog: React.FC<CoinDetailDialogProps> = ({
   const theme = useTheme();
   const dispatch = useAppDispatch();
   const [tabValue, setTabValue] = useState(0);
-  const [period, setPeriod] = useState('5m');
+  const [period, setPeriod] = useState(DEFAULT_PERIOD);
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
-  const { coinHistory, selectedCoin } = useAppSelector(
-    (state) => state.coin100
+  const { coinHistory, selectedCoin, loadingSymbols, lastSymbolFetch } =
+    useAppSelector((state) => state.coin100);
+
+  // Function to check if we should fetch data
+  const shouldFetchData = useCallback(
+    (symbol: string) => {
+      const now = Date.now();
+      const lastFetch = lastSymbolFetch[symbol] || 0;
+      const timeSinceLastFetch = now - lastFetch;
+      return timeSinceLastFetch > 5000; // Only fetch if more than 5 seconds have passed
+    },
+    [lastSymbolFetch]
   );
 
-  // Fetch initial data when dialog opens or period changes
-  useEffect(() => {
-    if (coin && open) {
-      dispatch(fetchCoinBySymbol({ symbol: coin.symbol, period }));
+  // Function to fetch data
+  const fetchData = useCallback(() => {
+    if (!coin?.symbol || !open || loadingSymbols[coin.symbol]) {
+      return;
     }
-  }, [coin?.symbol, period, open, dispatch]);
 
-  // Set up periodic updates when chart tab is active
-  useEffect(() => {
-    if (coin && open && tabValue === 1) {
-      const intervalId = setInterval(() => {
-        dispatch(fetchCoinBySymbol({ symbol: coin.symbol, period }));
-      }, CHART_UPDATE_INTERVAL);
-      return () => clearInterval(intervalId);
+    if (!shouldFetchData(coin.symbol)) {
+      return;
     }
-  }, [coin?.symbol, period, open, tabValue, dispatch]);
 
-  if (!coin) return null;
+    dispatch(fetchCoinBySymbol({ symbol: coin.symbol, period }));
+  }, [coin?.symbol, period, open, dispatch, shouldFetchData, loadingSymbols]);
+
+  // Initial data fetch when dialog opens or period changes
+  useEffect(() => {
+    if (open && coin?.symbol) {
+      fetchData();
+    }
+  }, [open, coin?.symbol, period, fetchData]);
+
+  const handlePeriodChange = (newPeriod: string) => {
+    setPeriod(newPeriod);
+    fetchData();
+  };
+
+  if (!coin || !open) {
+    return null;
+  }
 
   const priceChange = coin.price_change_percentage_24h ?? 0;
   const isPositive = priceChange > 0;
+  const isLoading = loadingSymbols[coin.symbol] || false;
 
   const currentHistory = coinHistory[coin.symbol] || {
     prices: [],
     timestamps: [],
-    period: '',
+    period: DEFAULT_PERIOD,
     lastUpdated: 0,
   };
 
@@ -94,7 +112,7 @@ export const CoinDetailDialog: React.FC<CoinDetailDialogProps> = ({
     xAxis: [
       {
         data: currentHistory.timestamps,
-        scaleType: 'time' as const, // Change this from a generic string to 'time'
+        scaleType: 'time' as const,
         id: 'timestamp-axis',
       },
     ],
@@ -121,7 +139,7 @@ export const CoinDetailDialog: React.FC<CoinDetailDialogProps> = ({
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Typography variant="h5" component="div">
-            {coin.name} ({coin.symbol.toUpperCase()})
+            {coin.name || 'Unknown'} ({coin.symbol?.toUpperCase() || 'N/A'})
           </Typography>
           <IconButton onClick={onClose}>
             <Close />
@@ -181,41 +199,45 @@ export const CoinDetailDialog: React.FC<CoinDetailDialogProps> = ({
         </TabPanel>
 
         <TabPanel value={tabValue} index={1}>
-          <Box mb={2}>
-            <FormControl size="small">
-              <InputLabel>Time Period</InputLabel>
-              <Select
-                value={period}
-                label="Time Period"
-                onChange={(e) => setPeriod(e.target.value)}
-                sx={{ minWidth: 120 }}
+          <Box sx={{ mb: 2 }}>
+            {PERIOD_OPTIONS.map((option) => (
+              <Button
+                key={option.value}
+                variant={period === option.value ? 'contained' : 'outlined'}
+                onClick={() => handlePeriodChange(option.value)}
+                disabled={isLoading}
               >
-                {PERIOD_OPTIONS.map((option) => (
-                  <MenuItem key={option.value} value={option.value}>
-                    {option.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+                {option.label}
+              </Button>
+            ))}
           </Box>
-          <Box height={400}>
-            {currentHistory.prices.length > 0 ? (
-              <LineChart
-                xAxis={chartData.xAxis}
-                series={chartData.series}
-                height={400}
-              />
-            ) : (
-              <Box
-                display="flex"
-                justifyContent="center"
-                alignItems="center"
-                height="100%"
-              >
-                <CircularProgress />
-              </Box>
-            )}
-          </Box>
+
+          {isLoading ? (
+            <Box
+              display="flex"
+              justifyContent="center"
+              alignItems="center"
+              height={400}
+            >
+              <CircularProgress />
+            </Box>
+          ) : currentHistory.prices.length > 0 ? (
+            <LineChart
+              xAxis={chartData.xAxis}
+              series={chartData.series}
+              width={500}
+              height={400}
+            />
+          ) : (
+            <Box
+              display="flex"
+              justifyContent="center"
+              alignItems="center"
+              height={400}
+            >
+              <Typography>No data available</Typography>
+            </Box>
+          )}
         </TabPanel>
       </DialogContent>
     </Dialog>

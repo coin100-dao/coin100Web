@@ -20,8 +20,10 @@ interface Coin100State {
   selectedCoin: CoinData | null;
   coinHistory: CoinHistoryMap;
   loading: boolean;
+  loadingSymbols: { [key: string]: boolean }; // Track loading state per symbol
   error: string | null;
   lastFetched: number | null;
+  lastSymbolFetch: { [key: string]: number }; // Track last fetch time per symbol
 }
 
 // Initial state
@@ -30,8 +32,10 @@ const initialState: Coin100State = {
   selectedCoin: null,
   coinHistory: {},
   loading: false,
+  loadingSymbols: {},
   error: null,
   lastFetched: null,
+  lastSymbolFetch: {},
 };
 
 interface FetchCoinBySymbolParams {
@@ -132,16 +136,18 @@ const coin100Slice = createSlice({
           action.payload ?? 'An error occurred while fetching coins';
       })
       // fetchCoinBySymbol
-      .addCase(fetchCoinBySymbol.pending, (state) => {
-        state.loading = true;
+      .addCase(fetchCoinBySymbol.pending, (state, action) => {
+        const symbol = action.meta.arg.symbol;
+        state.loadingSymbols[symbol] = true;
         state.error = null;
       })
       .addCase(fetchCoinBySymbol.fulfilled, (state, action) => {
-        state.loading = false;
-        state.selectedCoin = action.payload.data;
+        const { symbol, period, timestamp, data } = action.payload;
+        state.loadingSymbols[symbol] = false;
+        state.lastSymbolFetch[symbol] = timestamp;
+        state.selectedCoin = data;
 
         // Initialize coin history if it doesn't exist
-        const { symbol, period, timestamp, data } = action.payload;
         if (!state.coinHistory[symbol]) {
           state.coinHistory[symbol] = {
             prices: [],
@@ -152,30 +158,33 @@ const coin100Slice = createSlice({
         }
 
         const history = state.coinHistory[symbol];
+        const timeSinceLastUpdate = timestamp - history.lastUpdated;
 
-        // Reset history if period changed or last update was more than 1 minute ago
-        if (
-          history.period !== period ||
-          timestamp - history.lastUpdated > 60000
-        ) {
-          history.prices = [data.current_price];
-          history.timestamps = [timestamp];
+        // Only update if period changed or enough time has passed
+        if (history.period !== period || timeSinceLastUpdate >= 5000) {
+          if (history.period !== period) {
+            // Reset history for new period
+            history.prices = [data.current_price];
+            history.timestamps = [timestamp];
+          } else {
+            // Append new data point
+            history.prices.push(data.current_price);
+            history.timestamps.push(timestamp);
+
+            // Keep only last 100 data points
+            if (history.prices.length > 100) {
+              history.prices = history.prices.slice(-100);
+              history.timestamps = history.timestamps.slice(-100);
+            }
+          }
+
           history.period = period;
           history.lastUpdated = timestamp;
-        } else {
-          // Append new data point
-          history.prices.push(data.current_price);
-          history.timestamps.push(timestamp);
-
-          // Keep only last 100 data points
-          if (history.prices.length > 100) {
-            history.prices = history.prices.slice(-100);
-            history.timestamps = history.timestamps.slice(-100);
-          }
         }
       })
       .addCase(fetchCoinBySymbol.rejected, (state, action) => {
-        state.loading = false;
+        const symbol = action.meta.arg.symbol;
+        state.loadingSymbols[symbol] = false;
         state.error =
           action.payload ?? 'An error occurred while fetching coin data';
       });
