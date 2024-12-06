@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useAppDispatch } from '../store/hooks';
+import { AppDispatch } from '../store/store';
 import { fetchTopCoins } from '../store/slices/coingeckoSlice';
 import { Box, Container, Typography, Paper, IconButton } from '@mui/material';
 import Grid from '@mui/material/Grid2';
@@ -102,7 +103,7 @@ const SectionTitle = styled(Typography)(({ theme }) => ({
 }));
 
 const Home = () => {
-  const dispatch = useDispatch();
+  const dispatch: AppDispatch = useAppDispatch();
   const theme = useTheme();
   const logo = theme.palette.mode === 'light' ? lightLogo : darkLogo;
 
