@@ -9,9 +9,9 @@
     "lint:css": "stylelint \"src/**/*.{css,scss}\" --fix",
     "lint:js": "eslint \"src/**/*.{js,jsx,ts,tsx}\" --fix",
     "lint": "npm run lint:css && npm run lint:js",
-    "dev": "vite",
     "build": "tsc --project tsconfig.app.json && vite build",
-    "preview": "vite preview"
+    "dev": "vite --host 0.0.0.0",
+    "preview": "npm run dev && code --new-window --enable-preview"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
