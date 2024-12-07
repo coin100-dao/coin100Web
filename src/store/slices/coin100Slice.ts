@@ -203,21 +203,22 @@ const coin100Slice = createSlice({
         const history = state.coinHistory[symbol];
         const timeSinceLastUpdate = timestamp - history.lastUpdated;
 
-        // Only update if period changed or enough time has passed
+        // Only update if period changed or enough time has passed (5 seconds)
         if (history.period !== period || timeSinceLastUpdate >= 5000) {
           if (history.period !== period) {
             // Reset history for new period
             history.prices = [data.current_price];
             history.timestamps = [timestamp];
           } else {
-            // Append new data point
+            // Add new data point
             history.prices.push(data.current_price);
             history.timestamps.push(timestamp);
 
             // Keep only last 100 data points
-            if (history.prices.length > 100) {
-              history.prices = history.prices.slice(-100);
-              history.timestamps = history.timestamps.slice(-100);
+            const maxDataPoints = 100;
+            if (history.prices.length > maxDataPoints) {
+              history.prices = history.prices.slice(-maxDataPoints);
+              history.timestamps = history.timestamps.slice(-maxDataPoints);
             }
           }
 
