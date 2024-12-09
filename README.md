@@ -63,20 +63,8 @@ On each upkeep call, the total supply adjusts to reflect the updated top 100 cry
 ### Manual Upkeep in Initial Phase
 Early on, the owner will manually call the rebase function with updated market cap figures. Over time, this process can transition to an automated system (e.g., via a governance proposal and oracle integration).
 
-### No Complex Public Sale Mechanics
-At launch, the entire supply is minted to the owner. The owner retains 3% for initial upkeep and distributes 97% through an ICO or directly to a DEX liquidity pool, allowing free market discovery of the token price.
 
 ## Tokenomics
-
-### Initial Parameters
-- **Initial Supply = Initial Market Cap (M₀)**: If M₀ is the initial top 100 crypto market cap in USD, we set total supply = M₀ C100.
-- **Reference Price (~$1/C100)**: By pairing C100 with a stable asset (e.g., USDC) in a liquidity pool, initial market participants can anchor the price around $1.
-
-### Distribution (Owner Allocation & ICO)
-- Owner receives 100% at deployment.
-- Owner keeps 3% (developer allocation).
-- Owner allocates remaining 97% for ICO or liquidity provisioning.
-
 ### Rebase Formula ("Genius" Formula)
 **ratio = M_new / M_old**  
 - New Supply = Old Supply * ratio  
@@ -96,7 +84,7 @@ Deployed on Polygon for low gas fees and high throughput.
 Implements ERC20 standards, rebase logic, ownership control, pause/unpause functionalities, and integration points for future governance.
 
 ### ICO (Public Sale) Contract
-Handles the initial distribution of 97% tokens. Investors purchase C100 with MATIC or ERC20 tokens (e.g., USDC) during the ICO period. Unsold tokens are burned at the end, ensuring only the circulating supply reflects real participants.
+Handles the initial distribution of 97% tokens. Investors purchase C100 with POL or ERC20 tokens (e.g., USDC) during the ICO period. Unsold tokens are burned at the end, ensuring only the circulating supply reflects real participants.
 
 ### Scaling and GonsPerFragment
 Balances are tracked in a large integer unit called “gons.” The global `gonsPerFragment` variable determines how these translate into user balances. On rebase, adjusting `gonsPerFragment` updates everyone’s balance proportionally in O(1) complexity.
@@ -118,7 +106,7 @@ Over time, the community will shape the project’s future. They can propose:
 ## Security
 
 ### Ownership Controls
-The `onlyOwner` and `onlyAdmin` modifiers ensure that only authorized parties (owner or governor) can make critical changes.
+The `onlyAdmin` modifiers ensure that only authorized parties can make critical changes.
 
 ### Pause/Unpause Mechanisms
 The contract can be paused in emergencies, preventing transfers and safeguarding against exploits during uncertain times.
@@ -139,9 +127,9 @@ Smart contract auditing and community code reviews will enhance trust and securi
 ## ICO Plan (Simplicity-Focused)
 
 ### ICO Parameters
-- Duration: e.g., 12 months.
-- Accepted Currencies: MATIC, optionally USDC.
-- Rate: Fixed C100 per MATIC/USDC.
+- Duration: 12 months.
+- Accepted Currencies: POL, optionally USDC.
+- Rate: Fixed C100 per POL/USDC.
 
 ### During the ICO
 - Investors buy C100 directly from the crowdsale contract.
@@ -151,7 +139,7 @@ Smart contract auditing and community code reviews will enhance trust and securi
 ### Post-ICO Finalization and Burning Unsold Tokens
 At the end of the ICO:
 - No more purchases allowed.
-- Any unsold tokens are burned, ensuring the supply reflects only actively held tokens plus the owner’s 3%.
+- Any unsold tokens are burned, ensuring the supply reflects only actively held tokens.
 
 ### Maintaining the Index Post-ICO
 After the ICO:
@@ -172,7 +160,7 @@ After the ICO:
    **A:** Yes, it follows the ERC20 standard with additional rebasing logic.
 
 4. **Q:** On which network is C100 deployed?  
-   **A:** Polygon (Matic) network.
+   **A:** Polygon (POL) network.
 
 5. **Q:** Why Polygon?  
    **A:** Low fees, fast transactions, and high scalability.
@@ -207,9 +195,6 @@ After the ICO:
 15. **Q:** Does the owner get special treatment in rebases?  
     **A:** No, after initial allocation, the owner’s tokens also rebase equally.
 
-16. **Q:** What is the owner’s initial allocation?  
-    **A:** 3% of total supply for their initial upkeep efforts.
-
 17. **Q:** What happens to the remaining 97% at launch?  
     **A:** It’s used for ICO or directly to provide liquidity and let the market buy freely.
 
@@ -233,9 +218,6 @@ After the ICO:
 
 24. **Q:** How do I store C100?  
     **A:** In any Polygon-compatible ERC20 wallet.
-
-25. **Q:** Is there a vesting schedule?  
-    **A:** None by default. The owner’s 3% is fully unlocked at launch.
 
 26. **Q:** How do I track the top 100 market cap changes?  
     **A:** Initially, trust the owner’s manual updates. Later, an oracle might provide on-chain data.
@@ -409,7 +391,7 @@ After the ICO:
     **A:** No, just hold it in a Polygon-compatible wallet.
 
 83. **Q:** Is there a minimum gas token needed?  
-    **A:** Yes, MATIC for gas fees on Polygon.
+    **A:** Yes, POL for gas fees on Polygon.
 
 84. **Q:** Can I bridge C100 to other chains?  
     **A:** Possibly in the future if bridges support it.
