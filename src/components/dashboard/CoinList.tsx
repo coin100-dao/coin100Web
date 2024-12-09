@@ -9,16 +9,21 @@ import {
   Typography,
   Paper,
 } from '@mui/material';
-import { useAppSelector } from '../../store/hooks';
+import { useAppSelector, useAppDispatch } from '../../store/hooks';
+import { setSelectedCoin } from '../../store/slices/coin100Slice';
 import { CoinData } from '../../services/api';
 
 interface CoinListProps {
-  onCoinSelect: (coin: CoinData) => void;
   selectedCoin?: CoinData | null;
 }
 
-const CoinList: React.FC<CoinListProps> = ({ onCoinSelect, selectedCoin }) => {
+const CoinList: React.FC<CoinListProps> = ({ selectedCoin }) => {
+  const dispatch = useAppDispatch();
   const { allCoins } = useAppSelector((state) => state.coin100);
+
+  const handleCoinSelect = (coin: CoinData) => {
+    dispatch(setSelectedCoin(coin));
+  };
 
   return (
     <Paper elevation={3} sx={{ height: '100%', overflow: 'hidden' }}>
@@ -44,7 +49,7 @@ const CoinList: React.FC<CoinListProps> = ({ onCoinSelect, selectedCoin }) => {
           <ListItem key={coin.id} disablePadding>
             <ListItemButton
               selected={selectedCoin?.id === coin.id}
-              onClick={() => onCoinSelect(coin)}
+              onClick={() => handleCoinSelect(coin)}
             >
               <ListItemIcon sx={{ minWidth: 40 }}>
                 <img

@@ -6,6 +6,7 @@ import { coinApi, CoinData } from '../../services/api';
 // Types
 interface CoinHistory {
   prices: number[];
+  volumes: number[];
   timestamps: number[];
   period: string;
   lastUpdated: number;
@@ -150,11 +151,15 @@ const coin100Slice = createSlice({
     clearSelectedCoin(state: Coin100State) {
       state.selectedCoin = null;
     },
+    setSelectedCoin(state: Coin100State, action: PayloadAction<CoinData>) {
+      state.selectedCoin = action.payload;
+    },
     clearCoinHistory(state: Coin100State, action: PayloadAction<string>) {
       const symbol = action.payload;
       if (state.coinHistory[symbol]) {
         state.coinHistory[symbol] = {
           prices: [],
+          volumes: [],
           timestamps: [],
           period: '',
           lastUpdated: 0,
@@ -194,6 +199,7 @@ const coin100Slice = createSlice({
         if (!state.coinHistory[symbol]) {
           state.coinHistory[symbol] = {
             prices: [],
+            volumes: [],
             timestamps: [],
             period: '',
             lastUpdated: 0,
@@ -208,16 +214,19 @@ const coin100Slice = createSlice({
           if (history.period !== period) {
             // Reset history for new period
             history.prices = [data.current_price];
+            history.volumes = [data.total_volume];
             history.timestamps = [timestamp];
           } else {
             // Add new data point
             history.prices.push(data.current_price);
+            history.volumes.push(data.total_volume);
             history.timestamps.push(timestamp);
 
             // Keep only last 100 data points
             const maxDataPoints = 100;
             if (history.prices.length > maxDataPoints) {
               history.prices = history.prices.slice(-maxDataPoints);
+              history.volumes = history.volumes.slice(-maxDataPoints);
               history.timestamps = history.timestamps.slice(-maxDataPoints);
             }
           }
@@ -249,6 +258,10 @@ const coin100Slice = createSlice({
   },
 });
 
-export const { clearError, clearSelectedCoin, clearCoinHistory } =
-  coin100Slice.actions;
+export const {
+  clearError,
+  clearSelectedCoin,
+  setSelectedCoin,
+  clearCoinHistory,
+} = coin100Slice.actions;
 export default coin100Slice.reducer;
