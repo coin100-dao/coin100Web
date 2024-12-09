@@ -9,9 +9,9 @@
     "lint:css": "stylelint \"src/**/*.{css,scss}\" --fix",
     "lint:js": "eslint \"src/**/*.{js,jsx,ts,tsx}\" --fix",
     "lint": "npm run lint:css && npm run lint:js",
-    "dev": "vite",
     "build": "tsc --project tsconfig.app.json && vite build",
-    "preview": "vite preview"
+    "dev": "vite --host 0.0.0.0",
+    "preview": "npm run dev && code --new-window --enable-preview"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
@@ -28,12 +28,18 @@
     "@emotion/styled": "^11.13.0",
     "@hookform/resolvers": "^3.9.1",
     "@mui/icons-material": "^6.1.6",
+    "@mui/lab": "^6.0.0-beta.18",
     "@mui/material": "^6.1.6",
+    "@mui/x-charts": "^7.23.0",
     "@reduxjs/toolkit": "^2.3.0",
     "@types/react-router-dom": "^5.3.3",
     "axios": "^1.7.7",
+    "chart.js": "^4.4.7",
+    "chartjs-adapter-date-fns": "^3.0.0",
+    "framer-motion": "^11.13.1",
     "jwt-decode": "^4.0.0",
     "react": "^18.3.1",
+    "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.53.1",
     "react-plaid-link": "^3.6.1",
