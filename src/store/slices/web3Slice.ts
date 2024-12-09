@@ -40,8 +40,8 @@ const initialState: Web3State = {
 
 // the ABI and token address
 const tokenABI: AbiItem[] = coin100ContractAbi as AbiItem[];
-const tokenAddress = '0xf2d5f457523d161a0942e5bdd1a9aee708b907fd';
-// const publicSaleAddress = '0xfd1574a607684079f78ab5b90b74fdcc985643c1';
+const tokenAddress = '0x6402778921629ffbfeb3b683a4da099f74a2d4c5';
+// const publicSaleAddress = '';
 
 // the ITokenContract type
 type ITokenContract = Contract<typeof tokenABI>;
