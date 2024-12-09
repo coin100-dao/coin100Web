@@ -80,6 +80,13 @@ const Navbar: React.FC<NavbarProps> = ({ toggleTheme }) => {
     )}`;
   };
 
+  const pages = [
+    { name: 'Home', path: '/' },
+    { name: 'ICO', path: '/ico' },
+    { name: 'FAQ', path: '/faq' },
+    { name: 'Dashboard', path: '/dashboard' },
+  ];
+
   const mobileMenu = (
     <Drawer
       anchor="left"
@@ -93,17 +100,15 @@ const Navbar: React.FC<NavbarProps> = ({ toggleTheme }) => {
         onKeyDown={() => setMobileMenuOpen(false)}
       >
         <List>
-          <ListItemButton component={RouterLink} to="/">
-            <ListItemText primary="Home" />
-          </ListItemButton>
-          <ListItemButton component={RouterLink} to="/faq">
-            <ListItemText primary="FAQ" />
-          </ListItemButton>
-          {walletAddress && (
-            <ListItemButton component={RouterLink} to="/dashboard">
-              <ListItemText primary="Dashboard" />
+          {pages.map((page) => (
+            <ListItemButton
+              key={page.name}
+              component={RouterLink}
+              to={page.path}
+            >
+              <ListItemText primary={page.name} />
             </ListItemButton>
-          )}
+          ))}
         </List>
       </Box>
     </Drawer>
@@ -142,21 +147,16 @@ const Navbar: React.FC<NavbarProps> = ({ toggleTheme }) => {
 
             {!isMobile && (
               <Box sx={{ display: 'flex', gap: 2, ml: 2 }}>
-                <Button color="inherit" component={RouterLink} to="/">
-                  Home
-                </Button>
-                {walletAddress && (
+                {pages.map((page) => (
                   <Button
+                    key={page.name}
                     color="inherit"
                     component={RouterLink}
-                    to="/dashboard"
+                    to={page.path}
                   >
-                    Dashboard
+                    {page.name}
                   </Button>
-                )}
-                <Button color="inherit" component={RouterLink} to="/faq">
-                  FAQ
-                </Button>
+                ))}
               </Box>
             )}
           </Box>
