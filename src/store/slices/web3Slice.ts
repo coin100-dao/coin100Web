@@ -5,6 +5,7 @@ import Web3 from 'web3';
 import { AbiItem } from 'web3-utils';
 import { Contract } from 'web3-eth-contract';
 import coin100ContractAbi from '../../data/coin100-contract-abi.json';
+// import coin100PublicSaleContractAbi from '../../data/coin100-public-sale-contract-abi.json';
 
 // Define the EthereumProvider interface based on EIP-1193
 interface EthereumProvider {
@@ -41,6 +42,7 @@ const initialState: Web3State = {
 // the ABI and token address
 const tokenABI: AbiItem[] = coin100ContractAbi as AbiItem[];
 const tokenAddress = '0x6402778921629ffbfeb3b683a4da099f74a2d4c5';
+// const publicSaleABI: AbiItem[] = coin100PublicSaleContractAbi as AbiItem[];
 // const publicSaleAddress = '0xc79d86e03eda12720ba2f640d908ff9525227dd6';
 
 // the ITokenContract type
