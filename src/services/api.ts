@@ -65,7 +65,7 @@ export const coinApi = {
     end: string
   ): Promise<ApiResponse<CoinData>> {
     return api
-      .get(`/api/coins?symbol=${symbol}`, {
+      .get(`/api/coins/symbol/${symbol}`, {
         params: {
           start,
           end,
