@@ -50,38 +50,42 @@ const api: AxiosInstance = axios.create({
 // API methods
 export const coinApi = {
   getAllCoins: async (
-    period: string = '5m'
+    start: string,
+    end: string
   ): Promise<ApiResponse<CoinData[]>> => {
     const response = await api.get<ApiResponse<CoinData[]>>('/api/coins', {
-      params: { period },
+      params: { start, end },
     });
     return response.data;
   },
 
-  getCoinBySymbol: async (
+  getCoinBySymbol(
     symbol: string,
-    period: string = '5m'
-  ): Promise<ApiResponse<CoinData>> => {
-    const response = await api.get<ApiResponse<CoinData>>(
-      `/api/coins/?symbol=${symbol}`,
-      {
-        params: { period },
-      }
-    );
-    return response.data;
+    start: string,
+    end: string
+  ): Promise<ApiResponse<CoinData>> {
+    return api
+      .get(`/api/coins/symbol/${symbol}`, {
+        params: {
+          start,
+          end,
+        },
+      })
+      .then((response) => response.data);
   },
 
-  getTotalMarketCap: async (
-    period: string = '5m'
-  ): Promise<
-    ApiResponse<{ timestamp: string; total_market_cap: string }[]>
-  > => {
-    const response = await api.get<
-      ApiResponse<{ timestamp: string; total_market_cap: string }[]>
-    >('/api/coins/market/total', {
-      params: { period },
-    });
-    return response.data;
+  getTotalMarketCap(
+    start: string,
+    end: string
+  ): Promise<ApiResponse<{ timestamp: string; total_market_cap: string }[]>> {
+    return api
+      .get('/api/coins/market/total', {
+        params: {
+          start,
+          end,
+        },
+      })
+      .then((response) => response.data);
   },
 };
 
