@@ -96,6 +96,9 @@ const Navbar: React.FC<NavbarProps> = ({ toggleTheme }) => {
           <ListItemButton component={RouterLink} to="/">
             <ListItemText primary="Home" />
           </ListItemButton>
+          <ListItemButton component={RouterLink} to="/faq">
+            <ListItemText primary="FAQ" />
+          </ListItemButton>
           {walletAddress && (
             <ListItemButton component={RouterLink} to="/dashboard">
               <ListItemText primary="Dashboard" />
@@ -151,6 +154,9 @@ const Navbar: React.FC<NavbarProps> = ({ toggleTheme }) => {
                     Dashboard
                   </Button>
                 )}
+                <Button color="inherit" component={RouterLink} to="/faq">
+                  FAQ
+                </Button>
               </Box>
             )}
           </Box>

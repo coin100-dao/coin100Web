@@ -1,0 +1,544 @@
+{
+  "categories": [
+    {
+      "id": "basics",
+      "name": "Basics",
+      "questions": [
+        {
+          "id": 1,
+          "question": "What is COIN100 (C100)?",
+          "answer": "It’s a decentralized index fund token on Polygon, tracking the top 100 cryptos by market cap."
+        },
+        {
+          "id": 2,
+          "question": "How does C100 track the top 100 crypto market cap?",
+          "answer": "Through a global rebase mechanism. As the total market cap changes, the supply and balances adjust proportionally."
+        },
+        {
+          "id": 24,
+          "question": "How do I store C100?",
+          "answer": "In any Polygon-compatible ERC20 wallet."
+        },
+        {
+          "id": 46,
+          "question": "Will the token’s name or symbol change?",
+          "answer": "Unlikely. It’s set at deployment."
+        },
+        {
+          "id": 47,
+          "question": "How do I add C100 to my wallet interface?",
+          "answer": "Import the token's contract address into your Polygon-compatible wallet."
+        },
+        {
+          "id": 82,
+          "question": "Does holding C100 require any special steps?",
+          "answer": "No, just hold it in a Polygon-compatible wallet."
+        },
+        {
+          "id": 100,
+          "question": "Why trust C100 over other tokens?",
+          "answer": "C100 provides broad, fair, and transparent index exposure with a clear path to decentralization and community governance."
+        }
+      ]
+    },
+    {
+      "id": "technical",
+      "name": "Technical Details",
+      "questions": [
+        {
+          "id": 3,
+          "question": "Is C100 an ERC20 token?",
+          "answer": "Yes, it follows the ERC20 standard with additional rebasing logic."
+        },
+        {
+          "id": 4,
+          "question": "On which network is C100 deployed?",
+          "answer": "Polygon (POL) network."
+        },
+        {
+          "id": 5,
+          "question": "Why Polygon?",
+          "answer": "Low fees, fast transactions, and high scalability."
+        },
+        {
+          "id": 30,
+          "question": "What is gonsPerFragment?",
+          "answer": "An internal scaling factor that efficiently adjusts balances during rebases."
+        },
+        {
+          "id": 53,
+          "question": "Will there be an official oracle integration?",
+          "answer": "In the future, yes, to automate market cap updates."
+        },
+        {
+          "id": 54,
+          "question": "Can governance integrate Chainlink oracles?",
+          "answer": "Yes, governance can approve contracts and integrate reliable oracles."
+        },
+        {
+          "id": 55,
+          "question": "Are there smart contract upgrade plans?",
+          "answer": "Possibly. With governance, changes can be proposed and voted on, potentially including upgrades."
+        },
+        {
+          "id": 56,
+          "question": "What if the Polygon network faces issues?",
+          "answer": "The token resides on Polygon. Any network-wide issues affect all tokens equally."
+        },
+        {
+          "id": 63,
+          "question": "Will the contract be verified on PolygonScan?",
+          "answer": "Yes, for transparency and trust."
+        },
+        {
+          "id": 83,
+          "question": "Is there a minimum gas token needed?",
+          "answer": "Yes, you need POL (MATIC) for gas fees on Polygon."
+        },
+        {
+          "id": 84,
+          "question": "Can I bridge C100 to other chains?",
+          "answer": "Possibly in the future if cross-chain bridges support it."
+        },
+        {
+          "id": 87,
+          "question": "Are smart contract addresses known at launch?",
+          "answer": "Yes, they will be published once deployed and verified."
+        },
+        {
+          "id": 88,
+          "question": "Will there be a testnet version?",
+          "answer": "Likely, for community testing before mainnet release."
+        },
+        {
+          "id": 89,
+          "question": "Does the token support EIP-2612 (permit)?",
+          "answer": "Not initially. Could be added by governance if desired."
+        },
+        {
+          "id": 98,
+          "question": "Is the code open source?",
+          "answer": "Yes, allowing transparency and community audits."
+        }
+      ]
+    },
+    {
+      "id": "tokenomics",
+      "name": "Tokenomics",
+      "questions": [
+        {
+          "id": 6,
+          "question": "What is the initial supply of C100?",
+          "answer": "Equal to the initial top 100 crypto market cap (denominated in C100 units)."
+        },
+        {
+          "id": 7,
+          "question": "What is the reference price at launch?",
+          "answer": "Around $1 per C100 token, assuming the owner pairs it with a stable asset in a DEX."
+        },
+        {
+          "id": 23,
+          "question": "Does C100 pay dividends?",
+          "answer": "Not directly. The value accrues by tracking the market cap of top 100 cryptos."
+        },
+        {
+          "id": 40,
+          "question": "Is C100 inflationary?",
+          "answer": "Rebase adjusts supply proportionally. It’s not traditional inflation; it’s a representation of the index."
+        },
+        {
+          "id": 57,
+          "question": "Is there a limit to how large the top 100 crypto market cap can grow?",
+          "answer": "Practically no limit. As it grows, C100 supply and balances grow proportionally."
+        },
+        {
+          "id": 58,
+          "question": "How do I know the top 100 composition?",
+          "answer": "Initially off-chain data. In the future, oracles or references can be introduced on-chain."
+        },
+        {
+          "id": 59,
+          "question": "Does the composition of the top 100 matter for holders?",
+          "answer": "Not directly. You always hold a fraction of the total cap, regardless of composition changes."
+        },
+        {
+          "id": 60,
+          "question": "What if the top 100 changes (some coins leave, others enter)?",
+          "answer": "The index’s total cap changes, reflected at the next rebase. No direct action needed by holders."
+        },
+        {
+          "id": 66,
+          "question": "Is there a maximum supply cap?",
+          "answer": "No hard cap. Supply floats with market cap."
+        },
+        {
+          "id": 79,
+          "question": "Can I redeem my tokens for underlying assets?",
+          "answer": "No direct redemption. C100 is synthetic exposure, not a claim on underlying coins."
+        },
+        {
+          "id": 80,
+          "question": "What if the top 100 index calculation method changes?",
+          "answer": "Governance could adapt the model if needed."
+        },
+        {
+          "id": 86,
+          "question": "Does C100 track stablecoins if they are in the top 100?",
+          "answer": "Yes, it’s a neutral index. Stablecoins in the top 100 would be included."
+        }
+      ]
+    },
+    {
+      "id": "rebase",
+      "name": "Rebase Mechanism",
+      "questions": [
+        {
+          "id": 8,
+          "question": "What does rebase mean?",
+          "answer": "Rebase changes everyone’s balances proportionally to reflect changes in total market cap."
+        },
+        {
+          "id": 9,
+          "question": "Who initiates the rebase initially?",
+          "answer": "The owner (admin) does this manually until governance is set."
+        },
+        {
+          "id": 10,
+          "question": "Will there be automated rebasing eventually?",
+          "answer": "Yes, once governance and oracles are established."
+        },
+        {
+          "id": 11,
+          "question": "What happens if the market cap doubles?",
+          "answer": "All token balances double, maintaining the same fractional ownership."
+        },
+        {
+          "id": 12,
+          "question": "What if the market cap halves?",
+          "answer": "All balances reduce proportionally, preserving fractional ownership."
+        },
+        {
+          "id": 13,
+          "question": "Is there a fixed time interval for rebases?",
+          "answer": "Initially manual. Later, governance may define a frequency or trigger conditions."
+        },
+        {
+          "id": 14,
+          "question": "How is fairness ensured?",
+          "answer": "Every holder’s balance changes by the same ratio on rebases, no exceptions."
+        },
+        {
+          "id": 15,
+          "question": "Does the owner get special treatment in rebases?",
+          "answer": "No, after initial allocation, the owner’s tokens also rebase equally."
+        },
+        {
+          "id": 31,
+          "question": "Does rebase affect my token count in my wallet?",
+          "answer": "Yes, your balance number changes, but proportionally to everyone else’s."
+        },
+        {
+          "id": 41,
+          "question": "Does market cap growth dilute existing holders?",
+          "answer": "No, growth increases everyone’s balance proportionally."
+        },
+        {
+          "id": 42,
+          "question": "If the index grows, do I earn more tokens?",
+          "answer": "Yes, your token balance increases on rebase events."
+        },
+        {
+          "id": 48,
+          "question": "Are rebases taxable events?",
+          "answer": "Consult a tax professional. Tax treatment may vary by jurisdiction."
+        },
+        {
+          "id": 50,
+          "question": "What if I buy right before a rebase?",
+          "answer": "Your purchase includes the upcoming rebase changes. No unfair advantage or disadvantage."
+        },
+        {
+          "id": 51,
+          "question": "Do I need to claim my rebased tokens?",
+          "answer": "No. Rebase updates balances automatically."
+        },
+        {
+          "id": 52,
+          "question": "How often will the owner rebase initially?",
+          "answer": "Possibly daily, but it’s flexible until governance sets rules."
+        },
+        {
+          "id": 81,
+          "question": "How frequently is market cap data updated manually?",
+          "answer": "Initially at the owner’s discretion, possibly daily or weekly until automated."
+        },
+        {
+          "id": 96,
+          "question": "What if no one calls rebase?",
+          "answer": "Then the index isn’t updated. Market price may drift. Eventually governance or oracles should handle this."
+        }
+      ]
+    },
+    {
+      "id": "ico",
+      "name": "ICO & Distribution",
+      "questions": [
+        {
+          "id": 17,
+          "question": "What happens to the remaining 97% at launch?",
+          "answer": "It’s used for the ICO or to provide liquidity, allowing the market to buy freely."
+        },
+        {
+          "id": 18,
+          "question": "Is there an ICO?",
+          "answer": "Yes, the owner may run an ICO to distribute the 97% of tokens."
+        },
+        {
+          "id": 19,
+          "question": "What if not all tokens sell in the ICO?",
+          "answer": "Unsold tokens are burned at the end of the ICO."
+        },
+        {
+          "id": 20,
+          "question": "Why burn unsold tokens?",
+          "answer": "To ensure the supply accurately reflects actively held tokens, maintaining fairness and index integrity."
+        },
+        {
+          "id": 21,
+          "question": "Can I buy C100 after the ICO?",
+          "answer": "Yes, on DEXs where liquidity is provided by the owner and early participants."
+        },
+        {
+          "id": 38,
+          "question": "Is there a whitelist or KYC?",
+          "answer": "No. Anyone on Polygon can buy C100; it’s permissionless."
+        },
+        {
+          "id": 49,
+          "question": "Is there a minimum or maximum investment?",
+          "answer": "No strict limits by the contract. Market liquidity and token price determine practical limits."
+        },
+        {
+          "id": 91,
+          "question": "How is liquidity provided initially?",
+          "answer": "The owner adds initial liquidity to a DEX, possibly at around $1/C100."
+        }
+      ]
+    },
+    {
+      "id": "governance",
+      "name": "Governance",
+      "questions": [
+        {
+          "id": 33,
+          "question": "What if someone doesn’t trust the owner’s data?",
+          "answer": "Eventually, governance and oracles will automate and decentralize updates, reducing trust issues."
+        },
+        {
+          "id": 34,
+          "question": "Could governance change the parameters?",
+          "answer": "Yes, once established, governance can vote on parameters like rebase frequency or fees."
+        },
+        {
+          "id": 43,
+          "question": "Can governance remove the owner’s rights?",
+          "answer": "Yes, if coded accordingly. After governance takes over, the owner can relinquish control."
+        },
+        {
+          "id": 44,
+          "question": "What if governance makes bad decisions?",
+          "answer": "Governance is community-driven. If bad proposals pass, that’s a community risk."
+        },
+        {
+          "id": 45,
+          "question": "Can I propose changes without being the governor?",
+          "answer": "Typically, you need a minimum token amount to propose. Details depend on the governor contract design."
+        },
+        {
+          "id": 64,
+          "question": "How do I participate in governance voting?",
+          "answer": "Acquire enough C100 to vote and interact with the governor contract once deployed."
+        },
+        {
+          "id": 65,
+          "question": "Can governance freeze rebases?",
+          "answer": "If coded, yes. Governance might pause or adjust rebase conditions."
+        },
+        {
+          "id": 67,
+          "question": "Could C100 track a different index in the future?",
+          "answer": "Governance could propose changing index parameters if allowed."
+        },
+        {
+          "id": 71,
+          "question": "Does C100 rely on a single entity?",
+          "answer": "Initially owner-managed, but the goal is fully decentralized governance."
+        },
+        {
+          "id": 72,
+          "question": "Can C100 survive if the owner disappears?",
+          "answer": "Once governance is established, yes. The project can run autonomously."
+        },
+        {
+          "id": 75,
+          "question": "Will large holders influence votes heavily?",
+          "answer": "Yes, governance is token-weighted. More tokens mean more voting power."
+        },
+        {
+          "id": 76,
+          "question": "Could governance introduce fees on transfers?",
+          "answer": "Yes, if proposals pass, a fee could be implemented."
+        },
+        {
+          "id": 77,
+          "question": "Where do fees go if introduced?",
+          "answer": "Potentially a treasury governed by token holders."
+        }
+      ]
+    },
+    {
+      "id": "security",
+      "name": "Security & Safety",
+      "questions": [
+        {
+          "id": 27,
+          "question": "Is the contract audited?",
+          "answer": "The team plans for audits before mainnet release."
+        },
+        {
+          "id": 28,
+          "question": "Can C100 be paused?",
+          "answer": "Yes, the admin can pause the contract in emergencies."
+        },
+        {
+          "id": 29,
+          "question": "Why pause the contract?",
+          "answer": "To prevent malicious exploitation during unexpected issues."
+        },
+        {
+          "id": 70,
+          "question": "Will liquidity be locked?",
+          "answer": "Owner or governance may decide on liquidity locking for added trust."
+        }
+      ]
+    },
+    {
+      "id": "treasury",
+      "name": "Treasury & Fees",
+      "questions": [
+        {
+          "id": 35,
+          "question": "Will there be a treasury?",
+          "answer": "Possibly. Governance can introduce treasury fees and funds to support project growth."
+        },
+        {
+          "id": 36,
+          "question": "How would treasury fees work?",
+          "answer": "A small portion of transactions could go to a treasury wallet, allocated by governance."
+        },
+        {
+          "id": 37,
+          "question": "What is the benefit of a treasury?",
+          "answer": "It supports future development, marketing, audits, or liquidity incentives."
+        },
+        {
+          "id": 78,
+          "question": "How is the treasury managed?",
+          "answer": "By governance votes on how to allocate or use funds."
+        }
+      ]
+    },
+    {
+      "id": "market",
+      "name": "Market & Trading",
+      "questions": [
+        {
+          "id": 22,
+          "question": "Will there be a stable price?",
+          "answer": "Price aims to stay near the index-based reference. Market forces and arbitrage help maintain this."
+        },
+        {
+          "id": 39,
+          "question": "Can I sell C100 anytime?",
+          "answer": "Yes, on any DEX where liquidity is available."
+        },
+        {
+          "id": 61,
+          "question": "Can I use C100 in DeFi (lending, staking)?",
+          "answer": "Potentially yes, if DeFi protocols support C100."
+        },
+        {
+          "id": 85,
+          "question": "Will listing on centralized exchanges happen?",
+          "answer": "Up to exchanges’ interest. The community can encourage listings."
+        },
+        {
+          "id": 92,
+          "question": "Can I track C100 price on aggregators?",
+          "answer": "Yes, once listed, price data will appear on coin trackers."
+        },
+        {
+          "id": 93,
+          "question": "Is C100 correlated with Bitcoin/Ethereum alone?",
+          "answer": "It’s correlated with the entire top 100 cryptos, not just one coin."
+        },
+        {
+          "id": 94,
+          "question": "Can I short C100?",
+          "answer": "Only if a DeFi platform offers derivatives. C100 doesn’t provide native shorting."
+        }
+      ]
+    },
+    {
+      "id": "community",
+      "name": "Community & Future",
+      "questions": [
+        {
+          "id": 62,
+          "question": "Is there a whitepaper available?",
+          "answer": "This README and future documentation serve as a whitepaper. Detailed docs are planned."
+        },
+        {
+          "id": 68,
+          "question": "Does the token have a logo?",
+          "answer": "Initially a simple logo. The community can decide on rebranding later."
+        },
+        {
+          "id": 69,
+          "question": "Are there any partnerships?",
+          "answer": "Partnerships may be pursued. Check announcements."
+        },
+        {
+          "id": 73,
+          "question": "How can I suggest improvements?",
+          "answer": "Join Discord, Reddit, or submit proposals once governance is live."
+        },
+        {
+          "id": 74,
+          "question": "Can I fork C100?",
+          "answer": "The code is open-source. Others can fork, but trust, community, and liquidity matter."
+        },
+        {
+          "id": 90,
+          "question": "Is there a referral program?",
+          "answer": "Not currently. Community can propose incentive programs later."
+        },
+        {
+          "id": 95,
+          "question": "Does C100 have a roadmap for oracle integration?",
+          "answer": "Yes, after the community matures, oracles may automate index tracking."
+        },
+        {
+          "id": 97,
+          "question": "Will the team remain anonymous?",
+          "answer": "The team may reveal themselves over time. Governance reduces reliance on team identity."
+        },
+        {
+          "id": 99,
+          "question": "How do I get support?",
+          "answer": "Via email, Discord, Reddit, or X as listed in Contact Information."
+        }
+      ]
+    }
+  ]
+}
