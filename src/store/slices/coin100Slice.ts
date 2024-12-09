@@ -71,7 +71,11 @@ export const fetchAllCoins = createAsyncThunk<
   try {
     const response = await coinApi.getAllCoins(start, end);
     if (response.success && response.data) {
-      return response.data;
+      // Ensure unique coins by ID using a Map
+      const uniqueCoinsMap = new Map(
+        response.data.map((coin) => [coin.id, coin])
+      );
+      return Array.from(uniqueCoinsMap.values());
     }
     return rejectWithValue(response.error || 'Failed to fetch coins');
   } catch (error) {
