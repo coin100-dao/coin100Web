@@ -85,10 +85,10 @@ const ICO = () => {
               </Typography>
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body1" sx={{ mb: 1 }}>
-                  • Start Date: TBA
+                  • Start Date: January 1, 2025
                 </Typography>
                 <Typography variant="body1" sx={{ mb: 1 }}>
-                  • Duration: 30 Days
+                  • Duration: 12 months
                 </Typography>
                 <Typography variant="body1">
                   • Unsold tokens will be burned
@@ -112,7 +112,9 @@ const ICO = () => {
                 <Typography variant="body1" sx={{ mb: 1 }}>
                   • Network: Polygon
                 </Typography>
-                <Typography variant="body1">• Accept: MATIC, USDC</Typography>
+                <Typography variant="body1">
+                  • Accept: POL(MATIC), USDC
+                </Typography>
               </Box>
             </GlassPaper>
           </Grid>

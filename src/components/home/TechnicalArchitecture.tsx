@@ -80,13 +80,13 @@ const TechnicalArchitecture = () => {
               </Typography>
               <Box component="ul" sx={{ m: 0, pl: 2 }}>
                 <Typography component="li" variant="body1" sx={{ mb: 1 }}>
-                  • Low transaction fees
+                  Low transaction fees
                 </Typography>
                 <Typography component="li" variant="body1" sx={{ mb: 1 }}>
-                  • High throughput capacity
+                  High throughput capacity
                 </Typography>
                 <Typography component="li" variant="body1">
-                  • Fast confirmation times
+                  Fast confirmation times
                 </Typography>
               </Box>
             </GlassPaper>
@@ -105,13 +105,13 @@ const TechnicalArchitecture = () => {
               </Typography>
               <Box component="ul" sx={{ m: 0, pl: 2 }}>
                 <Typography component="li" variant="body1" sx={{ mb: 1 }}>
-                  • ERC20 compliance
+                  ERC20 compliance
                 </Typography>
                 <Typography component="li" variant="body1" sx={{ mb: 1 }}>
-                  • Rebase functionality
+                  Rebase functionality
                 </Typography>
                 <Typography component="li" variant="body1">
-                  • Ownership controls
+                  Ownership controls
                 </Typography>
               </Box>
             </GlassPaper>
@@ -130,13 +130,13 @@ const TechnicalArchitecture = () => {
               </Typography>
               <Box component="ul" sx={{ m: 0, pl: 2 }}>
                 <Typography component="li" variant="body1" sx={{ mb: 1 }}>
-                  • GonsPerFragment scaling
+                  GonsPerFragment scaling
                 </Typography>
                 <Typography component="li" variant="body1" sx={{ mb: 1 }}>
-                  • Optimized storage
+                  Optimized storage
                 </Typography>
                 <Typography component="li" variant="body1">
-                  • Gas-efficient operations
+                  Gas-efficient operations
                 </Typography>
               </Box>
             </GlassPaper>
@@ -155,13 +155,13 @@ const TechnicalArchitecture = () => {
               </Typography>
               <Box component="ul" sx={{ m: 0, pl: 2 }}>
                 <Typography component="li" variant="body1" sx={{ mb: 1 }}>
-                  • Reentrancy guards
+                  Reentrancy guards
                 </Typography>
                 <Typography component="li" variant="body1" sx={{ mb: 1 }}>
-                  • Pause mechanisms
+                  Pause mechanisms
                 </Typography>
                 <Typography component="li" variant="body1">
-                  • Access controls
+                  Access controls
                 </Typography>
               </Box>
             </GlassPaper>

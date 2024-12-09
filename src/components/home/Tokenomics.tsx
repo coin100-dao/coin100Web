@@ -125,32 +125,6 @@ const Tokenomics = () => {
             </GlassPaper>
           </Grid>
         </Grid>
-
-        <Box sx={{ mt: 6, textAlign: 'center' }}>
-          <Typography variant="h6" sx={{ opacity: 0.9, mb: 2 }}>
-            Rebase Formula
-          </Typography>
-          <Paper
-            sx={{
-              p: 3,
-              display: 'inline-block',
-              background: 'rgba(255, 255, 255, 0.05)',
-              backdropFilter: 'blur(10px)',
-              borderRadius: '12px',
-            }}
-          >
-            <Typography
-              variant="h5"
-              sx={{
-                fontFamily: 'monospace',
-                fontWeight: 600,
-                color: (theme) => theme.palette.primary.main,
-              }}
-            >
-              New Supply = Old Supply × (M_new / M_old)
-            </Typography>
-          </Paper>
-        </Box>
       </Container>
     </Box>
   );
