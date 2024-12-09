@@ -4,7 +4,7 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import Web3 from 'web3';
 import { AbiItem } from 'web3-utils';
 import { Contract } from 'web3-eth-contract';
-import coin100ContractAbi from '../coin100-contract-abi.json';
+import coin100ContractAbi from '../../data/coin100-contract-abi.json';
 
 // Define the EthereumProvider interface based on EIP-1193
 interface EthereumProvider {
@@ -40,8 +40,8 @@ const initialState: Web3State = {
 
 // the ABI and token address
 const tokenABI: AbiItem[] = coin100ContractAbi as AbiItem[];
-const tokenAddress = '0xf2d5f457523d161a0942e5bdd1a9aee708b907fd'; // Replace with the actual token contract address
-// const publicSaleAddress = '0x861b2bf658272408d4f332a2380112040a9e2407';
+const tokenAddress = '0xf2d5f457523d161a0942e5bdd1a9aee708b907fd';
+// const publicSaleAddress = '0xfd1574a607684079f78ab5b90b74fdcc985643c1';
 
 // the ITokenContract type
 type ITokenContract = Contract<typeof tokenABI>;
