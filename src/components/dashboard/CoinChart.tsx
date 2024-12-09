@@ -1,16 +1,15 @@
 // src/components/dashboard/CoinChart.tsx
-import React, { useEffect, useState, FC } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import {
   Box,
-  ButtonGroup,
-  Button,
   Typography,
-  Paper,
   CircularProgress,
   useTheme,
   useMediaQuery,
-  Chip,
 } from '@mui/material';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import TrendingDownIcon from '@mui/icons-material/TrendingDown';
+import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -21,17 +20,15 @@ import {
   Tooltip,
   Legend,
   TimeScale,
-  Filler,
-  BarElement,
   TooltipItem,
+  Filler,
   ChartType,
 } from 'chart.js';
-import { Line, Bar } from 'react-chartjs-2';
 import 'chartjs-adapter-date-fns';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { fetchCoinBySymbol } from '../../store/slices/coin100Slice';
+import { convertPeriodToDates } from '../../utils/dateUtils';
+import { TimePeriod } from '../../types';
 
 // Register ChartJS components
 ChartJS.register(
@@ -39,19 +36,12 @@ ChartJS.register(
   LinearScale,
   PointElement,
   LineElement,
-  BarElement,
   Title,
   Tooltip,
   Legend,
   TimeScale,
   Filler
 );
-
-interface TimePeriod {
-  label: string;
-  value: string;
-  unit: 'minute' | 'hour' | 'day' | 'week' | 'month';
-}
 
 const TIME_PERIODS: TimePeriod[] = [
   { label: '5m', value: '5m', unit: 'minute' },
@@ -74,36 +64,24 @@ const CoinChart: FC<CoinChartProps> = ({ height }) => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [selectedPeriod, setSelectedPeriod] =
     useState<TimePeriod>(DEFAULT_PERIOD);
-
-  const { selectedCoin, coinHistory, loadingSymbols } = useAppSelector(
-    (state) => state.coin100
+  const selectedCoin = useAppSelector((state) => state.coin100.selectedCoin);
+  const coinHistory = useAppSelector((state) => state.coin100.coinHistory);
+  const loadingSymbols = useAppSelector(
+    (state) => state.coin100.loadingSymbols
   );
 
   useEffect(() => {
-    if (!selectedCoin || !selectedCoin.symbol) {
-      return; // Don't fetch if there's no selected coin or symbol is missing
+    if (selectedCoin?.symbol) {
+      const { start, end } = convertPeriodToDates(selectedPeriod.value);
+      dispatch(
+        fetchCoinBySymbol({
+          symbol: selectedCoin.symbol,
+          start,
+          end,
+        })
+      );
     }
-
-    dispatch(
-      fetchCoinBySymbol({
-        symbol: selectedCoin.symbol,
-        period: selectedPeriod.value,
-      })
-    );
-
-    const interval = setInterval(() => {
-      if (selectedCoin && selectedCoin.symbol) {
-        dispatch(
-          fetchCoinBySymbol({
-            symbol: selectedCoin.symbol,
-            period: selectedPeriod.value,
-          })
-        );
-      }
-    }, 30000);
-
-    return () => clearInterval(interval);
-  }, [selectedCoin, selectedPeriod, dispatch]);
+  }, [selectedCoin?.symbol, selectedPeriod, dispatch]);
 
   const handlePeriodChange = (period: TimePeriod) => {
     setSelectedPeriod(period);
@@ -283,7 +261,7 @@ const CoinChart: FC<CoinChartProps> = ({ height }) => {
           <Line data={lineData} options={options} />
         </Box>
         <Box sx={{ flex: 1 }}>
-          <Bar data={barData} options={options} />
+          <Line data={barData} options={options} />
         </Box>
       </Box>
     );
@@ -295,8 +273,7 @@ const CoinChart: FC<CoinChartProps> = ({ height }) => {
     : 0;
 
   return (
-    <Paper
-      elevation={3}
+    <Box
       sx={{
         height: height || '100%',
         p: { xs: 1, sm: 2 },
@@ -327,39 +304,53 @@ const CoinChart: FC<CoinChartProps> = ({ height }) => {
               {selectedCoin.name} (
               {selectedCoin.symbol ? selectedCoin.symbol.toUpperCase() : ''})
             </Typography>
-            <Chip
-              icon={
-                priceChange >= 0 ? <TrendingUpIcon /> : <TrendingDownIcon />
-              }
-              label={`${priceChange.toFixed(2)}%`}
+            <Box
               sx={{
                 backgroundColor: getPriceChangeColor(priceChange),
                 color: 'white',
+                padding: '2px 8px',
+                borderRadius: '4px',
               }}
-            />
+            >
+              {priceChange >= 0 ? <TrendingUpIcon /> : <TrendingDownIcon />}
+              <Typography variant="body2" sx={{ ml: 1 }}>
+                {priceChange.toFixed(2)}%
+              </Typography>
+            </Box>
           </Box>
-          <ButtonGroup
-            size={isMobile ? 'small' : 'medium'}
-            sx={{ flexWrap: 'wrap' }}
+          <Box
+            sx={{
+              display: 'flex',
+              gap: 1,
+              flexWrap: 'wrap',
+            }}
           >
             {TIME_PERIODS.map((period) => (
-              <Button
+              <Box
                 key={period.value}
-                variant={
-                  selectedPeriod.value === period.value
-                    ? 'contained'
-                    : 'outlined'
-                }
+                sx={{
+                  backgroundColor:
+                    selectedPeriod.value === period.value
+                      ? theme.palette.primary.main
+                      : 'transparent',
+                  color:
+                    selectedPeriod.value === period.value
+                      ? 'white'
+                      : theme.palette.text.primary,
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                }}
                 onClick={() => handlePeriodChange(period)}
               >
                 {period.label}
-              </Button>
+              </Box>
             ))}
-          </ButtonGroup>
+          </Box>
         </Box>
       )}
       {renderChartContent()}
-    </Paper>
+    </Box>
   );
 };
 

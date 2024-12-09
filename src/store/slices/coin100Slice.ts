@@ -1,6 +1,5 @@
 // src/store/slices/coin100Slice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { AxiosError } from 'axios';
 import { coinApi, CoinData } from '../../services/api';
 
 // Types
@@ -8,7 +7,8 @@ interface CoinHistory {
   prices: number[];
   volumes: number[];
   timestamps: number[];
-  period: string;
+  start: string;
+  end: string;
   lastUpdated: number;
 }
 
@@ -52,40 +52,35 @@ const initialState: Coin100State = {
 
 interface FetchCoinBySymbolParams {
   symbol: string;
-  period: string;
+  start: string;
+  end: string;
+}
+
+interface FetchCoinBySymbolResult {
+  data: CoinData;
+  symbol: string;
+  timestamp: number;
 }
 
 // Async thunks
 export const fetchAllCoins = createAsyncThunk<
   CoinData[],
-  string,
+  { start: string; end: string },
   { rejectValue: string }
->(
-  'coin100/fetchAllCoins',
-  async (period: string = '5m', { rejectWithValue }) => {
-    try {
-      const response = await coinApi.getAllCoins(period);
-
-      if (!response.success || !response.data) {
-        return rejectWithValue(response.error || 'Failed to fetch coins');
-      }
-      // console.log(response.data);
+>('coin100/fetchAllCoins', async ({ start, end }, { rejectWithValue }) => {
+  try {
+    const response = await coinApi.getAllCoins(start, end);
+    if (response.success && response.data) {
       return response.data;
-    } catch (error: unknown) {
-      const axiosError = error as AxiosError<{ error?: string }>;
-      return rejectWithValue(
-        axiosError.response?.data?.error ?? 'An unknown error occurred'
-      );
     }
+    return rejectWithValue(response.error || 'Failed to fetch coins');
+  } catch (error) {
+    if (error instanceof Error) {
+      return rejectWithValue(error.message);
+    }
+    return rejectWithValue('An unknown error occurred');
   }
-);
-
-interface FetchCoinBySymbolResult {
-  data: CoinData;
-  symbol: string;
-  period: string;
-  timestamp: number;
-}
+});
 
 export const fetchCoinBySymbol = createAsyncThunk<
   FetchCoinBySymbolResult,
@@ -93,53 +88,49 @@ export const fetchCoinBySymbol = createAsyncThunk<
   { rejectValue: string }
 >(
   'coin100/fetchCoinBySymbol',
-  async ({ symbol, period = '5m' }, { rejectWithValue }) => {
+  async ({ symbol, start, end }, { rejectWithValue }) => {
     try {
-      const response = await coinApi.getCoinBySymbol(symbol, period);
-
-      if (!response.success || !response.data) {
-        return rejectWithValue(response.error || 'Failed to fetch coin data');
+      const response = await coinApi.getCoinBySymbol(symbol, start, end);
+      if (response.success && response.data) {
+        return {
+          data: response.data,
+          symbol,
+          timestamp: Date.now(),
+        };
       }
-
-      return {
-        data: response.data,
-        symbol,
-        period,
-        timestamp: Date.now(),
-      };
-    } catch (error: unknown) {
-      const axiosError = error as AxiosError<{ error?: string }>;
-      return rejectWithValue(
-        axiosError.response?.data?.error ?? 'An unknown error occurred'
-      );
+      return rejectWithValue(response.error || 'Failed to fetch coin data');
+    } catch (error) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message);
+      }
+      return rejectWithValue('An unknown error occurred');
     }
   }
 );
 
 export const fetchTotalMarketCap = createAsyncThunk<
   TotalMarketCapData[],
-  string,
-  { rejectValue: { error: string } } // Add type annotation for error response structure
->('coin100/fetchTotalMarketCap', async (period = '5m', { rejectWithValue }) => {
-  try {
-    const response = await coinApi.getTotalMarketCap(period);
-    if (!response.success || !response.data) {
-      return rejectWithValue({
-        error: 'Failed to fetch total market cap data',
-      });
+  { start: string; end: string },
+  { rejectValue: string }
+>(
+  'coin100/fetchTotalMarketCap',
+  async ({ start, end }, { rejectWithValue }) => {
+    try {
+      const response = await coinApi.getTotalMarketCap(start, end);
+      if (response.success && response.data) {
+        return response.data;
+      }
+      return rejectWithValue(
+        response.error || 'Failed to fetch total market cap data'
+      );
+    } catch (error) {
+      if (error instanceof Error) {
+        return rejectWithValue(error.message);
+      }
+      return rejectWithValue('An unknown error occurred');
     }
-    // Map the response data to TotalMarketCapData type
-    return response.data.map((item) => ({
-      timestamp: item.timestamp,
-      total_market_cap: item.total_market_cap,
-    }));
-  } catch (error) {
-    const axiosError = error as AxiosError<{ error: string }>; // Add type annotation for error response structure
-    return rejectWithValue(
-      axiosError.response?.data ?? { error: 'An unknown error occurred' }
-    );
   }
-});
+);
 
 const coin100Slice = createSlice({
   name: 'coin100',
@@ -161,7 +152,8 @@ const coin100Slice = createSlice({
           prices: [],
           volumes: [],
           timestamps: [],
-          period: '',
+          start: '',
+          end: '',
           lastUpdated: 0,
         };
       }
@@ -190,7 +182,8 @@ const coin100Slice = createSlice({
         state.error = null;
       })
       .addCase(fetchCoinBySymbol.fulfilled, (state: Coin100State, action) => {
-        const { symbol, period, timestamp, data } = action.payload;
+        const { symbol, timestamp, data } = action.payload;
+        const { start, end } = action.meta.arg;
         state.loadingSymbols[symbol] = false;
         state.lastSymbolFetch[symbol] = timestamp;
         state.selectedCoin = data;
@@ -201,7 +194,8 @@ const coin100Slice = createSlice({
             prices: [],
             volumes: [],
             timestamps: [],
-            period: '',
+            start: '',
+            end: '',
             lastUpdated: 0,
           };
         }
@@ -210,8 +204,12 @@ const coin100Slice = createSlice({
         const timeSinceLastUpdate = timestamp - history.lastUpdated;
 
         // Only update if period changed or enough time has passed (5 seconds)
-        if (history.period !== period || timeSinceLastUpdate >= 5000) {
-          if (history.period !== period) {
+        if (
+          history.start !== start ||
+          history.end !== end ||
+          timeSinceLastUpdate >= 5000
+        ) {
+          if (history.start !== start || history.end !== end) {
             // Reset history for new period
             history.prices = [data.current_price];
             history.volumes = [data.total_volume];
@@ -231,7 +229,8 @@ const coin100Slice = createSlice({
             }
           }
 
-          history.period = period;
+          history.start = start;
+          history.end = end;
           history.lastUpdated = timestamp;
         }
       })
@@ -253,7 +252,7 @@ const coin100Slice = createSlice({
       .addCase(fetchTotalMarketCap.rejected, (state: Coin100State, action) => {
         state.loadingTotalMarketCap = false;
         state.totalMarketCapError =
-          action.payload?.error || 'Failed to fetch total market cap';
+          action.payload ?? 'Failed to fetch total market cap';
       });
   },
 });

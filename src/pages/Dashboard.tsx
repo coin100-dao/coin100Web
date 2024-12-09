@@ -13,8 +13,6 @@ import {
   CoinChart,
 } from '../components/dashboard';
 
-const DEFAULT_PERIOD = '5m';
-
 const Dashboard: React.FC = () => {
   const dispatch = useAppDispatch();
   const theme = useTheme();
@@ -25,13 +23,19 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     // Initial fetch
-    dispatch(fetchAllCoins(DEFAULT_PERIOD));
-    dispatch(fetchTotalMarketCap(DEFAULT_PERIOD));
+    const endTime = new Date().toISOString(); // Current time in ISO format
+    const startTime = new Date(Date.now() - 5 * 60 * 1000).toISOString(); // 5 minutes ago
+
+    dispatch(fetchAllCoins({ start: startTime, end: endTime }));
+    dispatch(fetchTotalMarketCap({ start: startTime, end: endTime }));
 
     // Set up periodic refresh
     const interval = setInterval(() => {
-      dispatch(fetchAllCoins(DEFAULT_PERIOD));
-      dispatch(fetchTotalMarketCap(DEFAULT_PERIOD));
+      const endTime = new Date().toISOString(); // Current time in ISO format
+      const startTime = new Date(Date.now() - 5 * 60 * 1000).toISOString(); // 5 minutes ago
+
+      dispatch(fetchAllCoins({ start: startTime, end: endTime }));
+      dispatch(fetchTotalMarketCap({ start: startTime, end: endTime }));
     }, 30000); // Refresh every 30 seconds
 
     return () => clearInterval(interval);

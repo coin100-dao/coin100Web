@@ -25,6 +25,8 @@ import {
 import 'chartjs-adapter-date-fns';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { fetchTotalMarketCap } from '../../store/slices/coin100Slice';
+import { convertPeriodToDates } from '../../utils/dateUtils';
+import { TimePeriod } from '../../types';
 
 // Register ChartJS components
 ChartJS.register(
@@ -39,12 +41,6 @@ ChartJS.register(
   Filler
 );
 
-interface TimePeriod {
-  label: string;
-  value: string;
-  unit: 'minute' | 'hour' | 'day' | 'week' | 'month';
-}
-
 const TIME_PERIODS: TimePeriod[] = [
   { label: '5m', value: '5m', unit: 'minute' },
   { label: '1h', value: '1h', unit: 'hour' },
@@ -54,9 +50,9 @@ const TIME_PERIODS: TimePeriod[] = [
 ];
 
 const TotalMarketCap: React.FC = () => {
+  const dispatch = useAppDispatch();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const dispatch = useAppDispatch();
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>(
     TIME_PERIODS[0]
   );
@@ -64,12 +60,23 @@ const TotalMarketCap: React.FC = () => {
     (state) => state.coin100
   );
 
+  const handlePeriodChange = (newPeriod: TimePeriod) => {
+    setSelectedPeriod(newPeriod);
+    const { start, end } = convertPeriodToDates(newPeriod.value);
+    dispatch(fetchTotalMarketCap({ start, end }));
+  };
+
   useEffect(() => {
-    const fetchData = () => dispatch(fetchTotalMarketCap(selectedPeriod.value));
-    fetchData();
-    const interval = setInterval(fetchData, 30000);
+    const { start, end } = convertPeriodToDates(selectedPeriod.value);
+    dispatch(fetchTotalMarketCap({ start, end }));
+
+    const interval = setInterval(() => {
+      const { start, end } = convertPeriodToDates(selectedPeriod.value);
+      dispatch(fetchTotalMarketCap({ start, end }));
+    }, 30000);
+
     return () => clearInterval(interval);
-  }, [dispatch, selectedPeriod]);
+  }, [selectedPeriod, dispatch]);
 
   // Early return for loading state
   if (loadingTotalMarketCap) {
@@ -202,7 +209,7 @@ const TotalMarketCap: React.FC = () => {
           {TIME_PERIODS.map((period) => (
             <Button
               key={period.value}
-              onClick={() => setSelectedPeriod(period)}
+              onClick={() => handlePeriodChange(period)}
               variant={
                 selectedPeriod.value === period.value ? 'contained' : 'outlined'
               }
