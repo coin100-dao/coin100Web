@@ -108,7 +108,7 @@ const Features = () => {
 
         <Grid container spacing={4}>
           {features.map((feature, index) => (
-            <Grid key={index} xs={12} sm={6} md={4}>
+            <Grid key={index} item xs={12} sm={6} md={4}>
               <StyledPaper>
                 <FeatureIcon>{feature.icon}</FeatureIcon>
                 <Typography variant="h5" sx={{ mb: 2, fontWeight: 600 }}>
