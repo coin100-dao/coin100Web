@@ -24,7 +24,7 @@ jobs:
 
       - name: Build React App
         env:
-          VITE_REACT_APP_BACKEND_URL: ${{ secrets.VITE_REACT_APP_BACKEND_URL }}
+          VITE_REACT_API_BASE_URL: ${{ secrets.VITE_REACT_API_BASE_URL }}
           VITE_REACT_APP_DEBUG: ${{ secrets.VITE_REACT_APP_DEBUG }}
           VITE_REACT_API_KEY: ${{ secrets.VITE_REACT_API_KEY }}
 
