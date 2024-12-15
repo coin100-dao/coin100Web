@@ -1,3 +1,5 @@
+// ICO.tsx
+
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../store/store';
@@ -13,7 +15,13 @@ import {
   CircularProgress,
   useTheme,
 } from '@mui/material';
-import { fetchICOData, buyTokensWithPOL } from '../store/slices/web3Slice';
+import {
+  fetchICOData,
+  fetchCOIN100Data,
+  buyTokensWithPOL,
+  fetchAllData,
+  fetchTokenBalance,
+} from '../store/slices/web3Slice';
 import { styled } from '@mui/material/styles';
 import { format } from 'date-fns';
 
@@ -36,7 +44,7 @@ const InfoItem: React.FC<{
         {label}
       </Typography>
       <Typography variant="body1" sx={{ fontWeight: 500 }}>
-        {typeof value === 'boolean' ? (value ? 'Yes' : 'No') : value}
+        {typeof value === 'boolean' ? (value ? 'Yes' : 'No') : value.toString()}
       </Typography>
     </Box>
   );
@@ -44,23 +52,46 @@ const InfoItem: React.FC<{
 
 const ICO: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { walletAddress, icoData, loading, error, tokenBalance } = useSelector(
-    (state: RootState) => state.web3
-  );
+  const { walletAddress, icoData, coin100Data, loading, error, tokenBalance } =
+    useSelector((state: RootState) => state.web3);
   const [polAmount, setPolAmount] = useState<string>('');
+  const [buyError, setBuyError] = useState<string | null>(null);
+  const [buySuccess, setBuySuccess] = useState<string | null>(null);
 
   useEffect(() => {
-    dispatch(fetchICOData());
-    const interval = setInterval(() => {
-      dispatch(fetchICOData());
-    }, 15000);
-    return () => clearInterval(interval);
-  }, [dispatch]);
+    if (walletAddress) {
+      dispatch(fetchAllData());
+      const interval = setInterval(() => {
+        dispatch(fetchICOData());
+        dispatch(fetchCOIN100Data());
+      }, 15000); // Fetch data every 15 seconds
+      return () => clearInterval(interval);
+    }
+  }, [dispatch, walletAddress]);
 
   const handleBuy = async () => {
-    if (!polAmount || isNaN(Number(polAmount))) return;
-    await dispatch(buyTokensWithPOL({ amount: polAmount }));
-    setPolAmount('');
+    if (!polAmount || isNaN(Number(polAmount)) || Number(polAmount) <= 0) {
+      setBuyError('Please enter a valid POL amount.');
+      return;
+    }
+    try {
+      setBuyError(null);
+      setBuySuccess(null);
+      await dispatch(buyTokensWithPOL({ amount: polAmount })).unwrap();
+      setBuySuccess(
+        `Successfully purchased ${(Number(polAmount) * Number(icoData?.polRate || '0')).toFixed(2)} C100 tokens.`
+      );
+      setPolAmount('');
+      // Refresh token balance and ICO data after purchase
+      if (walletAddress) {
+        await dispatch(fetchTokenBalance({ walletAddress })).unwrap();
+        await dispatch(fetchICOData()).unwrap();
+      }
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to buy tokens.';
+      setBuyError(errorMessage);
+    }
   };
 
   // Determine sale state
@@ -93,6 +124,7 @@ const ICO: React.FC = () => {
 
       {icoData && (
         <Grid container spacing={4}>
+          {/* Sale Information */}
           <Grid item xs={12} md={4}>
             <StyledCard>
               <CardContent>
@@ -103,10 +135,16 @@ const ICO: React.FC = () => {
                 <InfoItem label="End Time" value={formattedEnd} />
                 <InfoItem label="Finalized" value={icoData.finalized} />
                 <InfoItem label="Paused" value={icoData.paused} />
+                <InfoItem
+                  label="Governor Contract"
+                  value={icoData.governorContract}
+                />
+                <InfoItem label="Treasury Address" value={icoData.treasury} />
               </CardContent>
             </StyledCard>
           </Grid>
 
+          {/* Token Details */}
           <Grid item xs={12} md={4}>
             <StyledCard>
               <CardContent>
@@ -129,6 +167,67 @@ const ICO: React.FC = () => {
             </StyledCard>
           </Grid>
 
+          {/* COIN100 Information */}
+          <Grid item xs={12} md={4}>
+            <StyledCard>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  COIN100 Information
+                </Typography>
+                {coin100Data ? (
+                  <>
+                    <InfoItem
+                      label="Total Supply"
+                      value={`${coin100Data.totalSupply} C100`}
+                    />
+                    <InfoItem
+                      label="Last Rebase"
+                      value={
+                        coin100Data.lastRebaseTimestamp
+                          ? format(
+                              new Date(coin100Data.lastRebaseTimestamp * 1000),
+                              'PPpp'
+                            )
+                          : 'N/A'
+                      }
+                    />
+                    <InfoItem
+                      label="Rebase Frequency"
+                      value={`${(coin100Data.rebaseFrequency / 86400).toFixed(0)} days`}
+                    />
+                    <InfoItem
+                      label="Transfers with Fee"
+                      value={coin100Data.transfersWithFee}
+                    />
+                    <InfoItem
+                      label="Transfer Fee"
+                      value={`${coin100Data.transferFeeBasisPoints / 100}%`}
+                    />
+                    <InfoItem
+                      label="LP Reward Percentage"
+                      value={`${coin100Data.lpRewardPercentage}%`}
+                    />
+                    <InfoItem
+                      label="Max LP Reward Percentage"
+                      value={`${coin100Data.maxLpRewardPercentage}%`}
+                    />
+                    <InfoItem
+                      label="Governor Contract"
+                      value={coin100Data.governorContract}
+                    />
+                    <InfoItem
+                      label="Treasury Address"
+                      value={coin100Data.treasury}
+                    />
+                  </>
+                ) : (
+                  <Typography variant="body1">Loading...</Typography>
+                )}
+              </CardContent>
+            </StyledCard>
+          </Grid>
+
+          {/* Your Wallet */}
           <Grid item xs={12} md={4}>
             <StyledCard>
               <CardContent>
@@ -153,6 +252,7 @@ const ICO: React.FC = () => {
             </StyledCard>
           </Grid>
 
+          {/* Participate in the ICO */}
           <Grid item xs={12}>
             <StyledCard>
               <CardContent>
@@ -182,10 +282,19 @@ const ICO: React.FC = () => {
                         <CircularProgress size={24} />
                       </Box>
                     )}
-                    {error && (
-                      <Alert severity="error" sx={{ mb: 2 }}>
-                        {error}
-                      </Alert>
+                    {(buyError || buySuccess) && (
+                      <>
+                        {buyError && (
+                          <Alert severity="error" sx={{ mb: 2 }}>
+                            {buyError}
+                          </Alert>
+                        )}
+                        {buySuccess && (
+                          <Alert severity="success" sx={{ mb: 2 }}>
+                            {buySuccess}
+                          </Alert>
+                        )}
+                      </>
                     )}
                     <Box
                       sx={{
@@ -211,7 +320,10 @@ const ICO: React.FC = () => {
                         color="primary"
                         onClick={handleBuy}
                         disabled={
-                          !polAmount || isNaN(Number(polAmount)) || loading
+                          !polAmount ||
+                          isNaN(Number(polAmount)) ||
+                          Number(polAmount) <= 0 ||
+                          loading
                         }
                       >
                         Buy C100 with POL

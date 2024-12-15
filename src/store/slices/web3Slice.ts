@@ -1,11 +1,16 @@
+// web3Slice.ts
+
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import Web3 from 'web3';
 import { AbiItem } from 'web3-utils';
-// import { Contract } from 'web3-eth-contract';
 import coin100ContractAbi from '../../data/coin100-contract-abi.json';
 import coin100PublicSaleContractAbi from '../../data/coin100-public-sale-contract-abi.json';
-import { RootState } from '../store';
 
+// Constants: Replace with your actual deployed contract addresses
+const tokenAddress = '0x6402778921629ffbfeb3b683a4da099f74a2d4c5'; // COIN100 Token Contract Address
+const publicSaleAddress = '0xc79d86e03eda12720ba2f640d908ff9525227dd6'; // C100PublicSale Contract Address
+
+// Ethereum Provider Interface
 interface EthereumProvider {
   request(args: { method: string; params?: unknown[] }): Promise<unknown>;
   on?(eventName: string, callback: (...args: unknown[]) => void): void;
@@ -17,6 +22,7 @@ declare global {
   }
 }
 
+// Data Interfaces
 interface ICOData {
   polRate: string;
   startTime: number;
@@ -25,9 +31,22 @@ interface ICOData {
   paused: boolean;
   c100Balance: string;
   c100TokenAddress: string;
+  governorContract: string;
+  treasury: string;
 }
 
-// State interface
+interface COIN100Data {
+  totalSupply: string;
+  lastRebaseTimestamp: number;
+  rebaseFrequency: number;
+  transfersWithFee: boolean;
+  transferFeeBasisPoints: number;
+  governorContract: string;
+  treasury: string;
+  lpRewardPercentage: number;
+  maxLpRewardPercentage: number;
+}
+
 interface Web3State {
   walletAddress: string | null;
   tokenBalance: string | null;
@@ -36,9 +55,11 @@ interface Web3State {
   connectedAt: number | null;
   chainId: string | null;
   icoData: ICOData | null;
+  coin100Data: COIN100Data | null;
+  lastRebase: number | null;
 }
 
-// Initial state
+// Initial State
 const initialState: Web3State = {
   walletAddress: null,
   tokenBalance: null,
@@ -47,18 +68,19 @@ const initialState: Web3State = {
   connectedAt: null,
   chainId: null,
   icoData: null,
+  coin100Data: null,
+  lastRebase: null,
 };
 
-// Addresses and ABIs
+// ABIs
 const tokenABI: AbiItem[] = coin100ContractAbi as AbiItem[];
-const tokenAddress = '0x6402778921629ffbfeb3b683a4da099f74a2d4c5'; // Example token address
 const publicSaleABI: AbiItem[] = coin100PublicSaleContractAbi as AbiItem[];
-const publicSaleAddress = '0xc79d86e03eda12720ba2f640d908ff9525227dd6'; // Example sale contract address
 
-// Type guard for MetaMask errors
+// Type Guard for MetaMask Errors
 interface MetaMaskError extends Error {
   code: number;
 }
+
 function isMetaMaskError(error: unknown): error is MetaMaskError {
   return (
     typeof error === 'object' &&
@@ -69,6 +91,10 @@ function isMetaMaskError(error: unknown): error is MetaMaskError {
 }
 
 // Thunks
+
+/**
+ * Switch to Polygon Network
+ */
 export const switchToPolygonNetwork = createAsyncThunk<
   void,
   void,
@@ -123,6 +149,9 @@ export const switchToPolygonNetwork = createAsyncThunk<
   }
 });
 
+/**
+ * Connect Wallet
+ */
 export const connectWallet = createAsyncThunk<
   string,
   void,
@@ -160,6 +189,9 @@ export const connectWallet = createAsyncThunk<
   }
 });
 
+/**
+ * Connect and Fetch Balance
+ */
 export const connectAndFetchBalance = createAsyncThunk<
   string,
   void,
@@ -179,6 +211,9 @@ export const connectAndFetchBalance = createAsyncThunk<
   }
 });
 
+/**
+ * Fetch Token Balance
+ */
 interface FetchTokenBalanceParams {
   walletAddress: string;
 }
@@ -202,14 +237,18 @@ export const fetchTokenBalance = createAsyncThunk<
     return web3.utils.fromWei(balance, 'ether');
   } catch (error) {
     const msg =
-      error instanceof Error ? error.message : 'Failed to fetch balance';
+      error instanceof Error ? error.message : 'Failed to fetch token balance';
     return rejectWithValue(msg);
   }
 });
 
+/**
+ * Buy Tokens with POL
+ */
 interface BuyTokensWithPOLParams {
   amount: string;
 }
+
 export const buyTokensWithPOL = createAsyncThunk<
   void,
   BuyTokensWithPOLParams,
@@ -221,6 +260,9 @@ export const buyTokensWithPOL = createAsyncThunk<
     }
     const web3 = new Web3(window.ethereum);
     const accounts = await web3.eth.getAccounts();
+    if (accounts.length === 0) {
+      throw new Error('No accounts found');
+    }
     const contract = new web3.eth.Contract(publicSaleABI, publicSaleAddress);
     await contract.methods.buyWithPOL().send({
       from: accounts[0],
@@ -234,10 +276,13 @@ export const buyTokensWithPOL = createAsyncThunk<
   }
 });
 
+/**
+ * Fetch ICO Data
+ */
 export const fetchICOData = createAsyncThunk<
   ICOData,
   void,
-  { rejectValue: string; state: RootState }
+  { rejectValue: string }
 >('web3/fetchICOData', async (_, { rejectWithValue }) => {
   try {
     if (!window.ethereum) {
@@ -247,34 +292,48 @@ export const fetchICOData = createAsyncThunk<
     const contract = new web3.eth.Contract(publicSaleABI, publicSaleAddress);
 
     // Fetch data from the sale contract
-    const polRate = await contract.methods.polRate().call();
+    const polRate = (await contract.methods
+      .polRate()
+      .call()) as unknown as number;
     const startTime = await contract.methods.startTime().call();
     const endTime = await contract.methods.endTime().call();
     const finalized = await contract.methods.finalized().call();
     const paused = await contract.methods.paused().call();
 
     // Fetch c100 token address and balance
-    const c100TokenAddress = await contract.methods.c100Token().call();
+    const c100TokenAddress: string = await contract.methods.c100Token().call();
+
+    // Validate c100TokenAddress
+    if (
+      !c100TokenAddress ||
+      c100TokenAddress === '0x0000000000000000000000000000000000000000'
+    ) {
+      throw new Error('Invalid C100 Token Address');
+    }
+
     // Create token contract instance and get its balance
-    const tokenContract = new web3.eth.Contract(
-      tokenABI as AbiItem[],
-      String(c100TokenAddress),
-      {
-        from: publicSaleAddress, // Optional: specify the default 'from' address
-      }
-    );
-    const c100Balance = await tokenContract.methods
+    const tokenContract = new web3.eth.Contract(tokenABI, c100TokenAddress);
+    const c100BalanceRaw: string = await tokenContract.methods
       .balanceOf(publicSaleAddress)
       .call();
+    const c100Balance = web3.utils.fromWei(c100BalanceRaw, 'ether');
+
+    // Fetch additional contract data
+    const governorContract: string = await contract.methods
+      .govContract()
+      .call();
+    const treasury: string = await contract.methods.treasury().call();
 
     return {
-      polRate: String(polRate || '0'), // Provide a default value if polRate is undefined
+      polRate: polRate.toString() || '0',
       startTime: Number(startTime),
       endTime: Number(endTime),
-      finalized: Boolean(finalized), // Explicitly convert to boolean
-      paused: Boolean(paused), // Also convert paused to boolean
-      c100Balance: String(c100Balance || '0'), // Provide a default value if c100Balance is undefined
-      c100TokenAddress: String(c100TokenAddress || ''), // Provide a default empty string if undefined
+      finalized: Boolean(finalized),
+      paused: Boolean(paused),
+      c100Balance,
+      c100TokenAddress,
+      governorContract,
+      treasury,
     };
   } catch (error) {
     const msg =
@@ -283,6 +342,80 @@ export const fetchICOData = createAsyncThunk<
   }
 });
 
+/**
+ * Fetch COIN100 Data
+ */
+export const fetchCOIN100Data = createAsyncThunk<
+  COIN100Data,
+  void,
+  { rejectValue: string }
+>('web3/fetchCOIN100Data', async (_, { rejectWithValue }) => {
+  try {
+    if (!window.ethereum) {
+      throw new Error('MetaMask is not installed');
+    }
+    const web3 = new Web3(window.ethereum);
+    const contract = new web3.eth.Contract(tokenABI, tokenAddress);
+
+    const totalSupplyRaw: string = await contract.methods.totalSupply().call();
+    const lastRebaseTimestamp = await contract.methods.lastRebase().call();
+    const rebaseFrequency = await contract.methods.rebaseFrequency().call();
+    const transfersWithFee = await contract.methods.transfersWithFee().call();
+    const transferFeeBasisPoints = await contract.methods
+      .transferFeeBasisPoints()
+      .call();
+    const governorContract: string = await contract.methods
+      .govContract()
+      .call();
+    const treasury: string = await contract.methods.treasury().call();
+    const lpRewardPercentage = await contract.methods
+      .lpRewardPercentage()
+      .call();
+    const maxLpRewardPercentage = await contract.methods
+      .maxLpRewardPercentage()
+      .call();
+
+    const totalSupply = web3.utils.fromWei(totalSupplyRaw, 'ether');
+
+    return {
+      totalSupply,
+      lastRebaseTimestamp: Number(lastRebaseTimestamp),
+      rebaseFrequency: Number(rebaseFrequency),
+      transfersWithFee: Boolean(transfersWithFee),
+      transferFeeBasisPoints: Number(transferFeeBasisPoints),
+      governorContract,
+      treasury,
+      lpRewardPercentage: Number(lpRewardPercentage),
+      maxLpRewardPercentage: Number(maxLpRewardPercentage),
+    };
+  } catch (error) {
+    const msg =
+      error instanceof Error ? error.message : 'Failed to fetch COIN100 data';
+    return rejectWithValue(msg);
+  }
+});
+
+/**
+ * Fetch All Data
+ * This thunk fetches all relevant data sequentially.
+ * It's optional and can be used to initialize the state after connecting the wallet.
+ */
+export const fetchAllData = createAsyncThunk<
+  void,
+  void,
+  { rejectValue: string }
+>('web3/fetchAllData', async (_, { dispatch, rejectWithValue }) => {
+  try {
+    await dispatch(fetchICOData()).unwrap();
+    await dispatch(fetchCOIN100Data()).unwrap();
+  } catch (error) {
+    const msg =
+      error instanceof Error ? error.message : 'Failed to fetch all data';
+    return rejectWithValue(msg);
+  }
+});
+
+// Slice
 const web3Slice = createSlice({
   name: 'web3',
   initialState,
@@ -293,6 +426,9 @@ const web3Slice = createSlice({
       state.error = null;
       state.connectedAt = null;
       state.chainId = null;
+      state.icoData = null;
+      state.coin100Data = null;
+      state.lastRebase = null;
     },
   },
   extraReducers: (builder) => {
@@ -309,6 +445,21 @@ const web3Slice = createSlice({
     builder.addCase(connectWallet.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload ?? 'Failed to connect wallet';
+    });
+
+    // Connect and fetch balance
+    builder.addCase(connectAndFetchBalance.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(connectAndFetchBalance.fulfilled, (state, action) => {
+      state.loading = false;
+      state.walletAddress = action.payload;
+      state.connectedAt = Date.now();
+    });
+    builder.addCase(connectAndFetchBalance.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload ?? 'Failed to connect and fetch balance';
     });
 
     // Fetch token balance
@@ -339,21 +490,6 @@ const web3Slice = createSlice({
       state.error = action.payload ?? 'Failed to switch network';
     });
 
-    // Connect and fetch balance
-    builder.addCase(connectAndFetchBalance.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(connectAndFetchBalance.fulfilled, (state, action) => {
-      state.loading = false;
-      state.walletAddress = action.payload;
-      state.connectedAt = Date.now();
-    });
-    builder.addCase(connectAndFetchBalance.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload ?? 'Failed to connect and fetch balance';
-    });
-
     // Buy tokens with POL
     builder.addCase(buyTokensWithPOL.pending, (state) => {
       state.loading = true;
@@ -382,6 +518,37 @@ const web3Slice = createSlice({
     builder.addCase(fetchICOData.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload ?? 'Failed to fetch ICO data';
+    });
+
+    // Fetch COIN100 Data
+    builder.addCase(fetchCOIN100Data.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(
+      fetchCOIN100Data.fulfilled,
+      (state, action: PayloadAction<COIN100Data>) => {
+        state.loading = false;
+        state.coin100Data = action.payload;
+        state.lastRebase = action.payload.lastRebaseTimestamp; // Update lastRebase
+      }
+    );
+    builder.addCase(fetchCOIN100Data.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload ?? 'Failed to fetch COIN100 data';
+    });
+
+    // Fetch All Data
+    builder.addCase(fetchAllData.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(fetchAllData.fulfilled, (state) => {
+      state.loading = false;
+    });
+    builder.addCase(fetchAllData.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload ?? 'Failed to fetch all data';
     });
   },
 });
