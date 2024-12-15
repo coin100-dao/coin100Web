@@ -185,6 +185,16 @@
           "id": 86,
           "question": "Does C100 track stablecoins if they are in the top 100?",
           "answer": "Yes, it’s a neutral index. Stablecoins in the top 100 would be included."
+        },
+        {
+          "id": 101,
+          "question": "How are liquidity providers rewarded?",
+          "answer": "Liquidity providers receive a 10% reward from the total transaction fees generated in the public sale. This incentivizes providing liquidity and ensures a healthy trading environment."
+        },
+        {
+          "id": 102,
+          "question": "What is the 10% reward for liquidity providers?",
+          "answer": "A portion of the fees collected during token sales is allocated as a 10% reward to liquidity providers. This reward is distributed proportionally based on the amount of liquidity each provider contributes."
         }
       ]
     },
@@ -276,6 +286,16 @@
           "id": 96,
           "question": "What if no one calls rebase?",
           "answer": "Then the index isn’t updated. Market price may drift. Eventually governance or oracles should handle this."
+        },
+        {
+          "id": 103,
+          "question": "How is the polRate updated during rebases?",
+          "answer": "During each rebase, if a new polRate is provided, it is automatically updated in the public sale contract. This ensures that the rate reflects the latest market conditions."
+        },
+        {
+          "id": 104,
+          "question": "Can the polRate be updated without a rebase?",
+          "answer": "No, the polRate is tied to the rebase mechanism and is updated alongside market cap adjustments."
         }
       ]
     },
@@ -322,6 +342,16 @@
           "id": 91,
           "question": "How is liquidity provided initially?",
           "answer": "The owner adds initial liquidity to a DEX, possibly at around $1/C100."
+        },
+        {
+          "id": 105,
+          "question": "How are liquidity providers rewarded during the ICO?",
+          "answer": "Liquidity providers receive a 10% reward from the total transaction fees generated during the ICO. This reward incentivizes providing liquidity, ensuring a stable and liquid trading environment."
+        },
+        {
+          "id": 106,
+          "question": "Can I become a liquidity provider for C100?",
+          "answer": "Yes, anyone can provide liquidity by adding C100 and POL (MATIC) to a supported DEX. In return, you earn a share of the 10% reward based on your contribution."
         }
       ]
     },
@@ -393,6 +423,16 @@
           "id": 77,
           "question": "Where do fees go if introduced?",
           "answer": "Potentially a treasury governed by token holders."
+        },
+        {
+          "id": 107,
+          "question": "How does governance update the polRate in the public sale contract?",
+          "answer": "During each rebase, if a new polRate is proposed and approved via governance voting, the COIN100 contract updates the polRate in the public sale contract accordingly. This ensures that the rate remains aligned with current market conditions."
+        },
+        {
+          "id": 108,
+          "question": "Can governance adjust the liquidity provider reward percentage?",
+          "answer": "Yes, governance can propose and vote on changes to the liquidity provider reward percentage, allowing the community to adjust incentives as needed."
         }
       ]
     },
@@ -419,6 +459,16 @@
           "id": 70,
           "question": "Will liquidity be locked?",
           "answer": "Owner or governance may decide on liquidity locking for added trust."
+        },
+        {
+          "id": 109,
+          "question": "How secure are the liquidity rewards?",
+          "answer": "Liquidity rewards are managed through smart contracts with rigorous security audits to ensure that funds are distributed fairly and without vulnerabilities."
+        },
+        {
+          "id": 110,
+          "question": "What measures are in place to prevent exploitation of the rebase mechanism?",
+          "answer": "The rebase mechanism is governed by decentralized governance and audited smart contracts, minimizing the risk of exploitation. Additionally, any changes to the rebase logic require community approval."
         }
       ]
     },
@@ -445,6 +495,16 @@
           "id": 78,
           "question": "How is the treasury managed?",
           "answer": "By governance votes on how to allocate or use funds."
+        },
+        {
+          "id": 111,
+          "question": "Where are the treasury funds stored?",
+          "answer": "Treasury funds are held in a secure, multi-signature wallet controlled by the governance contract to ensure transparency and security."
+        },
+        {
+          "id": 112,
+          "question": "Can treasury funds be used for liquidity provider rewards?",
+          "answer": "Yes, governance can allocate treasury funds to support liquidity provider rewards or other community incentives as needed."
         }
       ]
     },
@@ -486,6 +546,16 @@
           "id": 94,
           "question": "Can I short C100?",
           "answer": "Only if a DeFi platform offers derivatives. C100 doesn’t provide native shorting."
+        },
+        {
+          "id": 113,
+          "question": "How do liquidity provider rewards impact the market?",
+          "answer": "Liquidity provider rewards encourage more liquidity, reducing price volatility and improving the trading experience for all users."
+        },
+        {
+          "id": 114,
+          "question": "Are there any special trading incentives for early adopters?",
+          "answer": "Yes, early liquidity providers are eligible for a 10% reward from transaction fees, incentivizing them to support the token's liquidity from the outset."
         }
       ]
     },
@@ -537,6 +607,21 @@
           "id": 99,
           "question": "How do I get support?",
           "answer": "Via email, Discord, Reddit, or X as listed in Contact Information."
+        },
+        {
+          "id": 115,
+          "question": "How can the community participate in liquidity provisioning?",
+          "answer": "Community members can provide liquidity by adding C100 and POL (MATIC) to supported DEXs, thereby earning a portion of the 10% liquidity provider rewards."
+        },
+        {
+          "id": 116,
+          "question": "Are there community-led initiatives for liquidity?",
+          "answer": "Yes, community proposals can include initiatives to enhance liquidity, such as incentive programs or partnerships with liquidity pools."
+        },
+        {
+          "id": 117,
+          "question": "How does community governance influence liquidity rewards?",
+          "answer": "Governance can propose and vote on the allocation and distribution of liquidity rewards, ensuring that incentives align with the community’s goals and market conditions."
         }
       ]
     }
