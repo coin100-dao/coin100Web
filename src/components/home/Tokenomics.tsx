@@ -4,6 +4,7 @@ import { styled } from '@mui/system';
 import PieChartIcon from '@mui/icons-material/PieChart';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import LocalAtmIcon from '@mui/icons-material/LocalAtm';
 
 const GlassPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(4),
@@ -62,7 +63,7 @@ const Tokenomics = () => {
         </Box>
 
         <Grid container spacing={4}>
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} md={6} lg={3}>
             <GlassPaper>
               <IconWrapper>
                 <PieChartIcon />
@@ -81,7 +82,7 @@ const Tokenomics = () => {
             </GlassPaper>
           </Grid>
 
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} md={6} lg={3}>
             <GlassPaper>
               <IconWrapper>
                 <TimelineIcon />
@@ -103,7 +104,7 @@ const Tokenomics = () => {
             </GlassPaper>
           </Grid>
 
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} md={6} lg={3}>
             <GlassPaper>
               <IconWrapper>
                 <TrendingUpIcon />
@@ -120,6 +121,31 @@ const Tokenomics = () => {
                 </Typography>
                 <Typography variant="body2" sx={{ opacity: 0.8, mt: 2 }}>
                   Designed for long-term market alignment
+                </Typography>
+              </Box>
+            </GlassPaper>
+          </Grid>
+
+          <Grid item xs={12} md={6} lg={3}>
+            <GlassPaper>
+              <IconWrapper>
+                <LocalAtmIcon />
+              </IconWrapper>
+              <Typography variant="h5" sx={{ mb: 2, fontWeight: 600 }}>
+                Liquidity Rewards
+              </Typography>
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  • 10% transaction fee rewards
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  • Open LP participation
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  • Community-governed
+                </Typography>
+                <Typography variant="body2" sx={{ opacity: 0.8, mt: 2 }}>
+                  Incentivized liquidity provision for sustainable growth
                 </Typography>
               </Box>
             </GlassPaper>

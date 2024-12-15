@@ -41,7 +41,7 @@ const Home = () => {
       >
         <Hero />
 
-        <Box sx={{ position: 'relative' }}>
+        <Box sx={{ position: 'relative' }} id="features">
           <Box
             sx={{
               position: 'absolute',

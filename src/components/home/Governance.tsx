@@ -130,6 +130,12 @@ const Governance = () => {
                 <Typography variant="body1" sx={{ mb: 1 }}>
                   • Treasury management
                 </Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  • LP reward allocation control
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  • Community incentive programs
+                </Typography>
               </Box>
               <Typography variant="body2" sx={{ opacity: 0.8 }}>
                 Future transition to full DAO governance

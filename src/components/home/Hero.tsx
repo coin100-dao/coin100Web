@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Container, Typography, Button, useTheme } from '@mui/material';
 import { styled } from '@mui/system';
+import { useNavigate } from 'react-router-dom';
 import darkLogo from '../../assets/c100-high-resolution-dark-logo-transparent.svg';
 import lightLogo from '../../assets/c100-high-resolution-light-logo-transparent.svg';
 
@@ -13,7 +14,20 @@ const GradientText = styled(Typography)(({ theme }) => ({
 
 const Hero = () => {
   const theme = useTheme();
+  const navigate = useNavigate();
   const logo = theme.palette.mode === 'dark' ? darkLogo : lightLogo;
+
+  const handleJoinICO = () => {
+    navigate('/ico');
+  };
+
+  const handleLearnMore = () => {
+    // Smooth scroll to the Features section
+    const featuresSection = document.querySelector('#features');
+    if (featuresSection) {
+      featuresSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <Box
@@ -68,6 +82,7 @@ const Hero = () => {
               <Button
                 variant="contained"
                 size="large"
+                onClick={handleJoinICO}
                 sx={{
                   borderRadius: '28px',
                   px: 4,
@@ -83,6 +98,7 @@ const Hero = () => {
               <Button
                 variant="outlined"
                 size="large"
+                onClick={handleLearnMore}
                 sx={{
                   borderRadius: '28px',
                   px: 4,

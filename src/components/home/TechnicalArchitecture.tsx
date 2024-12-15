@@ -160,8 +160,14 @@ const TechnicalArchitecture = () => {
                 <Typography component="li" variant="body1" sx={{ mb: 1 }}>
                   Pause mechanisms
                 </Typography>
-                <Typography component="li" variant="body1">
+                <Typography component="li" variant="body1" sx={{ mb: 1 }}>
                   Access controls
+                </Typography>
+                <Typography component="li" variant="body1" sx={{ mb: 1 }}>
+                  Secure LP reward distribution
+                </Typography>
+                <Typography component="li" variant="body1">
+                  Audited smart contracts
                 </Typography>
               </Box>
             </GlassPaper>
