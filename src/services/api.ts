@@ -59,33 +59,31 @@ export const coinApi = {
     return response.data;
   },
 
-  getCoinBySymbol(
+  async getCoinBySymbol(
     symbol: string,
     start: string,
     end: string
   ): Promise<ApiResponse<CoinData>> {
-    return api
-      .get(`/api/coins/symbol/${symbol}`, {
-        params: {
-          start,
-          end,
-        },
-      })
-      .then((response) => response.data);
+    const response = await api.get(`/api/coins/symbol/${symbol}`, {
+      params: {
+        start,
+        end,
+      },
+    });
+    return response.data;
   },
 
-  getTotalMarketCap(
+  async getTotalMarketCap(
     start: string,
     end: string
   ): Promise<ApiResponse<{ timestamp: string; total_market_cap: string }[]>> {
-    return api
-      .get('/api/coins/market/total', {
-        params: {
-          start,
-          end,
-        },
-      })
-      .then((response) => response.data);
+    const response = await api.get('/api/coins/market/total', {
+      params: {
+        start,
+        end,
+      },
+    });
+    return response.data;
   },
 };
 
