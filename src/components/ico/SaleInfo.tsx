@@ -1,120 +1,116 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store/store';
 import {
-  Paper,
+  Card,
+  CardContent,
   Typography,
   Box,
-  List,
-  ListItem,
-  ListItemText,
-  Chip,
-  Divider,
+  Grid,
   useTheme,
+  Chip,
 } from '@mui/material';
+import {
+  AccessTime,
+  LocalOffer,
+  CheckCircle,
+  Cancel,
+} from '@mui/icons-material';
 import { format } from 'date-fns';
 
-interface SaleInfoProps {
-  polRate: string;
-  isActive: boolean;
-  isFinalized: boolean;
-  startTime: number;
-  endTime: number;
-}
-
-const SaleInfo: React.FC<SaleInfoProps> = ({
-  polRate,
-  isActive,
-  isFinalized,
-  startTime,
-  endTime,
-}) => {
+const SaleInfo: React.FC = () => {
   const theme = useTheme();
-  const getStatusChip = () => {
-    if (isFinalized) {
-      return <Chip label="Finalized" color="error" />;
-    }
-    if (isActive) {
-      return <Chip label="Active" color="success" />;
-    }
-    if (Date.now() < startTime * 1000) {
-      return <Chip label="Not Started" color="warning" />;
-    }
-    return <Chip label="Ended" color="error" />;
-  };
+  const { polRate, isIcoActive, isFinalized, icoStartTime, icoEndTime } =
+    useSelector((state: RootState) => state.ico);
+
+  const InfoItem = ({
+    icon,
+    label,
+    value,
+  }: {
+    icon: React.ReactNode;
+    label: string;
+    value: string;
+  }) => (
+    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+      <Box sx={{ mr: 2, color: theme.palette.primary.main }}>{icon}</Box>
+      <Box>
+        <Typography variant="body2" color="textSecondary">
+          {label}
+        </Typography>
+        <Typography variant="body1">{value}</Typography>
+      </Box>
+    </Box>
+  );
 
   return (
-    <Paper
-      elevation={3}
+    <Card
       sx={{
-        p: 3,
-        background: theme.palette.background.paper,
+        background: 'rgba(255, 255, 255, 0.05)',
+        backdropFilter: 'blur(10px)',
         borderRadius: 2,
       }}
     >
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={2}
-      >
-        <Typography variant="h6">Sale Information</Typography>
-        {getStatusChip()}
-      </Box>
+      <CardContent sx={{ p: 4 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            mb: 3,
+          }}
+        >
+          <Typography variant="h5">Sale Information</Typography>
+          <Chip
+            label={isIcoActive ? 'Active' : 'Inactive'}
+            color={isIcoActive ? 'success' : 'error'}
+            icon={isIcoActive ? <CheckCircle /> : <Cancel />}
+            sx={{ borderRadius: 2 }}
+          />
+        </Box>
 
-      <Divider sx={{ my: 2 }} />
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <InfoItem
+              icon={<LocalOffer />}
+              label="Token Rate"
+              value={`1 MATIC = ${polRate} C100`}
+            />
+          </Grid>
 
-      <List disablePadding>
-        <ListItem>
-          <ListItemText
-            primary="Exchange Rate"
-            secondary={`1 POL = ${polRate} C100`}
-          />
-        </ListItem>
-        <ListItem>
-          <ListItemText
-            primary="Start Date"
-            secondary={format(startTime * 1000, 'PPpp')}
-          />
-        </ListItem>
-        <ListItem>
-          <ListItemText
-            primary="End Date"
-            secondary={format(endTime * 1000, 'PPpp')}
-          />
-        </ListItem>
-        <ListItem>
-          <ListItemText
-            primary="Token Distribution"
-            secondary="97% Public Sale, 3% Development & Liquidity"
-          />
-        </ListItem>
-        <ListItem>
-          <ListItemText
-            primary="Token Utility"
-            secondary="Index fund tracking top 100 cryptocurrencies"
-          />
-        </ListItem>
-        <ListItem>
-          <ListItemText
-            primary="Rebase Mechanism"
-            secondary="Automatic supply adjustment to track market cap index"
-          />
-        </ListItem>
-        <ListItem>
-          <ListItemText
-            primary="Liquidity Provider Rewards"
-            secondary="10% of transaction fees"
-          />
-        </ListItem>
-      </List>
+          <Grid item xs={12} sm={6}>
+            <InfoItem
+              icon={<AccessTime />}
+              label="Start Time"
+              value={format(new Date(icoStartTime * 1000), 'PPpp')}
+            />
+          </Grid>
 
-      {!isFinalized && (
-        <Box mt={2}>
-          <Typography variant="body2" color="textSecondary">
-            * Unsold tokens will be burned after sale ends
+          <Grid item xs={12} sm={6}>
+            <InfoItem
+              icon={<AccessTime />}
+              label="End Time"
+              value={format(new Date(icoEndTime * 1000), 'PPpp')}
+            />
+          </Grid>
+        </Grid>
+
+        <Box
+          sx={{ mt: 3, p: 2, bgcolor: 'rgba(0, 0, 0, 0.1)', borderRadius: 2 }}
+        >
+          <Typography variant="subtitle2" color="textSecondary" gutterBottom>
+            Sale Status
+          </Typography>
+          <Typography variant="body1">
+            {isFinalized
+              ? '🎉 Sale has been finalized'
+              : isIcoActive
+                ? '🚀 Sale is currently active'
+                : '⏳ Sale is not active'}
           </Typography>
         </Box>
-      )}
-    </Paper>
+      </CardContent>
+    </Card>
   );
 };
 

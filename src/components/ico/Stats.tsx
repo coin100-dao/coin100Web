@@ -1,114 +1,116 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store/store';
 import {
-  Paper,
+  Card,
+  CardContent,
   Typography,
   Grid,
   Box,
   useTheme,
-  CircularProgress,
 } from '@mui/material';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../store/store';
-
-const StatCard: React.FC<{
-  title: string;
-  value: string;
-  subtitle?: string;
-}> = ({ title, value, subtitle }) => {
-  const theme = useTheme();
-
-  return (
-    <Box
-      sx={{
-        p: 2,
-        borderRadius: 2,
-        background: theme.palette.background.paper,
-        textAlign: 'center',
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-      }}
-    >
-      <Typography variant="body2" color="textSecondary" gutterBottom>
-        {title}
-      </Typography>
-      <Typography variant="h5" component="div" gutterBottom>
-        {value}
-      </Typography>
-      {subtitle && (
-        <Typography variant="caption" color="textSecondary">
-          {subtitle}
-        </Typography>
-      )}
-    </Box>
-  );
-};
+import {
+  TrendingUp,
+  AccountBalance,
+  People,
+  LocalAtm,
+} from '@mui/icons-material';
 
 const Stats: React.FC = () => {
   const theme = useTheme();
-  const { totalSold, remainingTokens, polRate, loading } = useSelector(
-    (state: RootState) => state.web3
+  const { totalSold, remainingTokens } = useSelector(
+    (state: RootState) => state.ico
   );
-
-  if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" p={4}>
-        <CircularProgress />
-      </Box>
-    );
-  }
 
   const totalSupply = parseFloat(totalSold) + parseFloat(remainingTokens);
-  const percentageSold = ((parseFloat(totalSold) / totalSupply) * 100).toFixed(
-    2
-  );
-  const polRateValue = parseFloat(polRate).toFixed(2);
+  const participationRate = (
+    (parseFloat(totalSold) / totalSupply) *
+    100
+  ).toFixed(2);
+
+  const statsData = [
+    {
+      icon: <TrendingUp />,
+      title: 'Total Supply',
+      value: `${totalSupply.toLocaleString()} C100`,
+      color: theme.palette.primary.main,
+    },
+    {
+      icon: <AccountBalance />,
+      title: 'Tokens Sold',
+      value: `${parseFloat(totalSold).toLocaleString()} C100`,
+      color: theme.palette.success.main,
+    },
+    {
+      icon: <LocalAtm />,
+      title: 'Remaining Tokens',
+      value: `${parseFloat(remainingTokens).toLocaleString()} C100`,
+      color: theme.palette.warning.main,
+    },
+    {
+      icon: <People />,
+      title: 'Participation Rate',
+      value: `${participationRate}%`,
+      color: theme.palette.info.main,
+    },
+  ];
 
   return (
-    <Paper
-      elevation={3}
+    <Card
       sx={{
-        p: 3,
-        background: theme.palette.background.default,
+        background: 'rgba(255, 255, 255, 0.05)',
+        backdropFilter: 'blur(10px)',
         borderRadius: 2,
       }}
     >
-      <Typography variant="h6" gutterBottom>
-        Sale Statistics
-      </Typography>
+      <CardContent sx={{ p: 4 }}>
+        <Typography variant="h5" gutterBottom>
+          Sale Statistics
+        </Typography>
 
-      <Grid container spacing={3} mt={1}>
-        <Grid item xs={12} sm={6}>
-          <StatCard
-            title="Total Supply"
-            value={`${totalSupply.toLocaleString()} C100`}
-            subtitle="Maximum Token Supply"
-          />
+        <Grid container spacing={3} sx={{ mt: 1 }}>
+          {statsData.map((stat, index) => (
+            <Grid item xs={12} sm={6} key={index}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  p: 2,
+                  borderRadius: 2,
+                  bgcolor: 'rgba(0, 0, 0, 0.1)',
+                  transition: 'transform 0.2s',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                  },
+                }}
+              >
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 48,
+                    height: 48,
+                    borderRadius: '50%',
+                    bgcolor: `${stat.color}22`,
+                    color: stat.color,
+                    mr: 2,
+                  }}
+                >
+                  {stat.icon}
+                </Box>
+                <Box>
+                  <Typography variant="body2" color="textSecondary">
+                    {stat.title}
+                  </Typography>
+                  <Typography variant="h6">{stat.value}</Typography>
+                </Box>
+              </Box>
+            </Grid>
+          ))}
         </Grid>
-        <Grid item xs={12} sm={6}>
-          <StatCard
-            title="Tokens Sold"
-            value={`${parseFloat(totalSold).toLocaleString()} C100`}
-            subtitle={`${percentageSold}% of Total Supply`}
-          />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <StatCard
-            title="Remaining Tokens"
-            value={`${parseFloat(remainingTokens).toLocaleString()} C100`}
-            subtitle="Available for Purchase"
-          />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <StatCard
-            title="Exchange Rate"
-            value={`${polRateValue} C100`}
-            subtitle="Per 1 POL"
-          />
-        </Grid>
-      </Grid>
-    </Paper>
+      </CardContent>
+    </Card>
   );
 };
 
