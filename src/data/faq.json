@@ -48,7 +48,7 @@
         {
           "id": 3,
           "question": "Is C100 an ERC20 token?",
-          "answer": "Yes. C100 follows the ERC20 standard, but includes additional logic for rebasing and dynamic price (polRate) updates derived from liquidity pools."
+          "answer": "Yes. C100 follows the ERC20 standard, but includes additional logic for rebasing and dynamic price (C100 Price) updates derived from liquidity pools."
         },
         {
           "id": 4,
@@ -134,7 +134,7 @@
         {
           "id": 7,
           "question": "What is the reference price at launch?",
-          "answer": "Initially, the owner sets a reference rate by adding liquidity to a DEX. Over time, the market finds its price. With the new polRate mechanism, the public sale can reference pool prices, ensuring dynamic market-driven pricing."
+          "answer": "Initially, the owner sets a reference rate by adding liquidity to a DEX. Over time, the market finds its price. With the new C100 Price mechanism, the public sale can reference pool prices, ensuring dynamic market-driven pricing."
         },
         {
           "id": 23,
@@ -289,13 +289,13 @@
         },
         {
           "id": 103,
-          "question": "How is the polRate updated during rebases?",
-          "answer": "During each rebase, the C100 contract fetches the latest polRate from liquidity pools. This updated polRate is then pushed to the PublicSale contract, ensuring that the rate remains aligned with current market conditions."
+          "question": "How is the C100 Price updated during rebases?",
+          "answer": "During each rebase, the C100 contract fetches the latest C100 Price from liquidity pools. This updated C100 Price is then pushed to the PublicSale contract, ensuring that the rate remains aligned with current market conditions."
         },
         {
           "id": 104,
-          "question": "Can the polRate be updated without a rebase?",
-          "answer": "No. polRate updates are tied to rebase calls. When a rebase occurs, the contract reads from the pools and updates polRate accordingly."
+          "question": "Can the C100 Price be updated without a rebase?",
+          "answer": "No. C100 Price updates are tied to rebase calls. When a rebase occurs, the contract reads from the pools and updates the C100 Price accordingly."
         }
       ]
     },
@@ -311,7 +311,7 @@
         {
           "id": 18,
           "question": "Is there an ICO?",
-          "answer": "Yes, the PublicSale contract conducts an ICO. Participants can buy C100 with POL (MATIC) or supported ERC20 tokens at a polRate determined dynamically by liquidity pools."
+          "answer": "Yes, the PublicSale contract conducts an ICO. Participants can buy C100 with POL (MATIC) or supported ERC20 tokens at a C100 Price determined dynamically by liquidity pools."
         },
         {
           "id": 19,
@@ -341,7 +341,7 @@
         {
           "id": 91,
           "question": "How is liquidity provided initially?",
-          "answer": "The owner (and potentially other contributors) adds initial liquidity to a DEX. This liquidity, combined with the polRate logic, helps stabilize pricing and ensure continuous trading."
+          "answer": "The owner (and potentially other contributors) adds initial liquidity to a DEX. This liquidity, combined with the C100 Price logic, helps stabilize pricing and ensure continuous trading."
         },
         {
           "id": 105,
@@ -367,7 +367,7 @@
         {
           "id": 34,
           "question": "Could governance change the parameters?",
-          "answer": "Yes. Governance can propose and vote on changes to rebase frequency, polRate fallback methods, LP reward percentages, fee parameters, and more."
+          "answer": "Yes. Governance can propose and vote on changes to rebase frequency, C100 Price fallback methods, LP reward percentages, fee parameters, and more."
         },
         {
           "id": 43,
@@ -426,8 +426,8 @@
         },
         {
           "id": 107,
-          "question": "How does governance update the polRate?",
-          "answer": "While daily polRate updates come from liquidity pools at rebase, governance sets the long-term parameters: which pools to reference, fallback logic, and LP reward policies. Governance can change pool addresses or fallback rates via proposals."
+          "question": "How does governance update the C100 Price?",
+          "answer": "While daily C100 Price updates come from liquidity pools at rebase, governance sets the long-term parameters: which pools to reference, fallback logic, and LP reward policies. Governance can change pool addresses or fallback rates via proposals."
         },
         {
           "id": 108,
@@ -515,7 +515,7 @@
         {
           "id": 22,
           "question": "Will there be a stable price?",
-          "answer": "C100’s price reflects the top 100 crypto index. While not a stablecoin, rebase logic, liquidity pools, and polRate updates help the market find a fair equilibrium."
+          "answer": "C100’s price reflects the top 100 crypto index. While not a stablecoin, rebase logic, liquidity pools, and C100 Price updates help the market find a fair equilibrium."
         },
         {
           "id": 39,
@@ -596,7 +596,7 @@
         {
           "id": 95,
           "question": "Does C100 have a roadmap for oracle integration?",
-          "answer": "Yes. After stabilizing initial operations, the community can prioritize oracle integration for automated market cap and polRate updates."
+          "answer": "Yes. After stabilizing initial operations, the community can prioritize oracle integration for automated market cap and C100 Price updates."
         },
         {
           "id": 97,
