@@ -2,10 +2,7 @@
 import React, { useEffect } from 'react';
 import { Box, Grid } from '@mui/material';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
-import {
-  fetchAllCoins,
-  fetchTotalMarketCap,
-} from '../store/slices/coin100Slice';
+import { fetchTotalMarketCap } from '../store/slices/coin100Slice';
 import { TotalMarketCap, WalletBalance } from '../components/dashboard';
 
 const Dashboard: React.FC = () => {
@@ -17,7 +14,6 @@ const Dashboard: React.FC = () => {
     const endTime = new Date().toISOString(); // Current time in ISO format
     const startTime = new Date(Date.now() - 5 * 60 * 1000).toISOString(); // 5 minutes ago
 
-    dispatch(fetchAllCoins({ start: startTime, end: endTime }));
     dispatch(fetchTotalMarketCap({ start: startTime, end: endTime }));
 
     // Set up periodic refresh
@@ -25,7 +21,6 @@ const Dashboard: React.FC = () => {
       const endTime = new Date().toISOString(); // Current time in ISO format
       const startTime = new Date(Date.now() - 5 * 60 * 1000).toISOString(); // 5 minutes ago
 
-      dispatch(fetchAllCoins({ start: startTime, end: endTime }));
       dispatch(fetchTotalMarketCap({ start: startTime, end: endTime }));
     }, 30000); // Refresh every 30 seconds
 

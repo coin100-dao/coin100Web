@@ -84,7 +84,7 @@ const Navbar: React.FC<NavbarProps> = ({ toggleTheme }) => {
     { name: 'Home', path: '/' },
     { name: 'ICO', path: '/ico' },
     { name: 'FAQ', path: '/faq' },
-    { name: 'Dashboard', path: '/dashboard' },
+    // { name: 'Dashboard', path: '/dashboard' },
   ];
 
   const mobileMenu = (

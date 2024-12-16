@@ -1,246 +1,308 @@
-import React, { useEffect, useState } from 'react';
+// ICO.tsx
+
+import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../store/store';
 import {
   Box,
-  Typography,
+  Container,
   Grid,
+  useTheme,
+  Typography,
+  LinearProgress,
+  Paper,
+  Button,
   Card,
   CardContent,
-  Button,
-  TextField,
-  Alert,
-  CircularProgress,
-  useTheme,
 } from '@mui/material';
-import { fetchICOData, buyTokensWithPOL } from '../store/slices/web3Slice';
-import { styled } from '@mui/material/styles';
-import { format } from 'date-fns';
-
-const StyledCard = styled(Card)(({ theme }) => ({
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: theme.palette.background.paper,
-}));
-
-const InfoItem: React.FC<{
-  label: string;
-  value: string | number | boolean;
-}> = ({ label, value }) => {
-  const theme = useTheme();
-  return (
-    <Box mb={2}>
-      <Typography
-        variant="subtitle2"
-        sx={{ color: theme.palette.text.secondary }}
-      >
-        {label}
-      </Typography>
-      <Typography variant="body1" sx={{ fontWeight: 500 }}>
-        {typeof value === 'boolean' ? (value ? 'Yes' : 'No') : value}
-      </Typography>
-    </Box>
-  );
-};
+import { fetchICOData } from '../store/slices/icoSlice';
+import { connectWallet } from '../store/slices/web3Slice';
+import BuySection from '../components/ico/BuySection';
+import SaleInfo from '../components/ico/SaleInfo';
+import Stats from '../components/ico/Stats';
+import { formatDistanceToNow } from 'date-fns';
+import { AccessTime, AccountBalanceWallet } from '@mui/icons-material';
 
 const ICO: React.FC = () => {
+  const theme = useTheme();
   const dispatch = useDispatch<AppDispatch>();
-  const { walletAddress, icoData, loading, error, tokenBalance } = useSelector(
-    (state: RootState) => state.web3
-  );
-  const [polAmount, setPolAmount] = useState<string>('');
+
+  const {
+    icoStartTime,
+    icoEndTime,
+    isFinalized,
+    totalSold,
+    remainingTokens,
+    isIcoActive,
+    loading: icoLoading,
+    error: icoError,
+  } = useSelector((state: RootState) => state.ico);
+
+  const {
+    walletAddress,
+    balance,
+    loading: walletLoading,
+    error: walletError,
+  } = useSelector((state: RootState) => state.web3);
 
   useEffect(() => {
-    dispatch(fetchICOData());
-    const interval = setInterval(() => {
+    if (walletAddress) {
       dispatch(fetchICOData());
-    }, 15000);
-    return () => clearInterval(interval);
-  }, [dispatch]);
+      const interval = setInterval(() => {
+        dispatch(fetchICOData());
+      }, 15000);
+      return () => clearInterval(interval);
+    }
+  }, [dispatch, walletAddress]);
 
-  const handleBuy = async () => {
-    if (!polAmount || isNaN(Number(polAmount))) return;
-    await dispatch(buyTokensWithPOL({ amount: polAmount }));
-    setPolAmount('');
+  const totalSupply = parseFloat(totalSold) + parseFloat(remainingTokens);
+  const progress = (parseFloat(totalSold) / totalSupply) * 100;
+  const timeLeft = icoEndTime * 1000 - Date.now();
+  const now = Math.floor(Date.now() / 1000);
+  const saleNotStarted = now < icoStartTime;
+  const saleEnded = now > icoEndTime;
+
+  const handleConnectWallet = async () => {
+    try {
+      await dispatch(connectWallet()).unwrap();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  // Determine sale state
-  const now = Date.now() / 1000;
-  const isActive =
-    icoData &&
-    !icoData.finalized &&
-    !icoData.paused &&
-    now >= icoData.startTime &&
-    now <= icoData.endTime;
+  const getStatusMessage = () => {
+    if (saleNotStarted) {
+      return {
+        text: `Sale starts ${formatDistanceToNow(icoStartTime * 1000, { addSuffix: true })}`,
+        color: theme.palette.warning.main,
+      };
+    }
+    if (saleEnded) {
+      return {
+        text: 'Sale has ended',
+        color: theme.palette.error.main,
+      };
+    }
+    if (isIcoActive) {
+      return {
+        text: `Sale ends ${formatDistanceToNow(icoEndTime * 1000, { addSuffix: true })}`,
+        color: theme.palette.success.main,
+      };
+    }
+    if (isFinalized) {
+      return {
+        text: 'Sale has been finalized',
+        color: theme.palette.error.main,
+      };
+    }
+    return {
+      text: 'Sale is not active',
+      color: theme.palette.error.main,
+    };
+  };
 
-  const formattedStart = icoData?.startTime
-    ? format(new Date(icoData.startTime * 1000), 'PPpp')
-    : 'Loading...';
-  const formattedEnd = icoData?.endTime
-    ? format(new Date(icoData.endTime * 1000), 'PPpp')
-    : 'Loading...';
+  const status = getStatusMessage();
+  const loading = icoLoading || walletLoading;
+  const error = icoError || walletError;
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 } }}>
-      <Typography variant="h4" gutterBottom>
-        COIN100 Public Sale
-      </Typography>
-
-      {error && !icoData && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
-        </Alert>
-      )}
-
-      {icoData && (
-        <Grid container spacing={4}>
-          <Grid item xs={12} md={4}>
-            <StyledCard>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Sale Information
-                </Typography>
-                <InfoItem label="Start Time" value={formattedStart} />
-                <InfoItem label="End Time" value={formattedEnd} />
-                <InfoItem label="Finalized" value={icoData.finalized} />
-                <InfoItem label="Paused" value={icoData.paused} />
-              </CardContent>
-            </StyledCard>
-          </Grid>
-
-          <Grid item xs={12} md={4}>
-            <StyledCard>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Token Details
-                </Typography>
-                <InfoItem
-                  label="POL Rate (C100 per 1 POL)"
-                  value={icoData.polRate}
-                />
-                <InfoItem
-                  label="C100 Balance in Sale"
-                  value={icoData.c100Balance}
-                />
-                <InfoItem
-                  label="C100 Token Address"
-                  value={icoData.c100TokenAddress}
-                />
-              </CardContent>
-            </StyledCard>
-          </Grid>
-
-          <Grid item xs={12} md={4}>
-            <StyledCard>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Your Wallet
-                </Typography>
-                {walletAddress ? (
-                  <>
-                    <InfoItem label="Wallet Address" value={walletAddress} />
-                    <InfoItem
-                      label="Your C100 Balance"
-                      value={tokenBalance || '0'}
-                    />
-                  </>
-                ) : (
-                  <Alert severity="info" sx={{ mt: 2 }}>
-                    Please connect your wallet in the header to see your balance
-                    and participate.
-                  </Alert>
-                )}
-              </CardContent>
-            </StyledCard>
-          </Grid>
-
-          <Grid item xs={12}>
-            <StyledCard>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Participate in the ICO
-                </Typography>
-                {icoData.finalized && (
-                  <Alert severity="info" sx={{ mb: 2 }}>
-                    The ICO has been finalized. No further participation is
-                    possible.
-                  </Alert>
-                )}
-                {!icoData.finalized && icoData.paused && (
-                  <Alert severity="warning" sx={{ mb: 2 }}>
-                    The ICO is currently paused.
-                  </Alert>
-                )}
-                {!icoData.finalized && !icoData.paused && !isActive && (
-                  <Alert severity="warning" sx={{ mb: 2 }}>
-                    The ICO is not active at this time.
-                  </Alert>
-                )}
-                {walletAddress && isActive && (
-                  <>
-                    {loading && (
-                      <Box mb={2}>
-                        <CircularProgress size={24} />
-                      </Box>
-                    )}
-                    {error && (
-                      <Alert severity="error" sx={{ mb: 2 }}>
-                        {error}
-                      </Alert>
-                    )}
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 2,
-                        maxWidth: 400,
-                      }}
-                    >
-                      <TextField
-                        label="POL Amount"
-                        type="number"
-                        value={polAmount}
-                        onChange={(e) => setPolAmount(e.target.value)}
-                        helperText={
-                          polAmount && !isNaN(Number(polAmount))
-                            ? `You will receive: ${(Number(polAmount) * Number(icoData.polRate)).toFixed(2)} C100`
-                            : 'Enter a valid POL amount'
-                        }
-                      />
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={handleBuy}
-                        disabled={
-                          !polAmount || isNaN(Number(polAmount)) || loading
-                        }
-                      >
-                        Buy C100 with POL
-                      </Button>
-                    </Box>
-                  </>
-                )}
-
-                {!walletAddress && (
-                  <Alert severity="info" sx={{ mt: 2 }}>
-                    Connect your wallet to participate in the sale.
-                  </Alert>
-                )}
-              </CardContent>
-            </StyledCard>
-          </Grid>
-        </Grid>
-      )}
-
-      {loading && !icoData && (
-        <Box
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          minHeight="50vh"
-        >
-          <CircularProgress />
+    <Box
+      sx={{
+        minHeight: '100vh',
+        py: { xs: 4, md: 6 },
+        background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.background.paper} 50%, ${theme.palette.secondary.dark} 100%)`,
+        position: 'relative',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: `radial-gradient(circle at 50% 50%, ${theme.palette.background.paper}40 0%, ${theme.palette.background.default} 100%)`,
+          pointerEvents: 'none',
+        },
+      }}
+    >
+      <Container maxWidth="xl">
+        {/* Header Section */}
+        <Box mb={6} textAlign="center">
+          <Typography
+            variant="h2"
+            gutterBottom
+            sx={{
+              fontWeight: 700,
+              background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.secondary.main} 90%)`,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              textShadow: `0 2px 10px ${theme.palette.primary.main}40`,
+              position: 'relative',
+              zIndex: 1,
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'inherit',
+                filter: 'blur(10px)',
+                opacity: 0.3,
+                zIndex: -1,
+              },
+            }}
+          >
+            COIN100 ICO/IDO Presale
+          </Typography>
+          <Typography variant="h5" color="textSecondary" gutterBottom>
+            Your Gateway to the Top 100 Cryptocurrencies
+          </Typography>
+          <Typography
+            variant="h6"
+            sx={{
+              color: status.color,
+              mt: 2,
+            }}
+          >
+            {status.text}
+          </Typography>
+          {loading && <LinearProgress sx={{ mt: 2 }} />}
+          {error && (
+            <Typography color="error" sx={{ mt: 2 }}>
+              {error}
+            </Typography>
+          )}
         </Box>
-      )}
+
+        {!walletAddress ? (
+          <Card
+            sx={{
+              maxWidth: 600,
+              mx: 'auto',
+              mb: 4,
+              background: `linear-gradient(135deg, ${theme.palette.background.paper}80 0%, ${theme.palette.background.paper}40 100%)`,
+              backdropFilter: 'blur(10px)',
+              border: `1px solid ${theme.palette.primary.dark}40`,
+            }}
+          >
+            <CardContent sx={{ textAlign: 'center', py: 4 }}>
+              <AccountBalanceWallet
+                sx={{ fontSize: 48, color: theme.palette.primary.main, mb: 2 }}
+              />
+              <Typography variant="h5" gutterBottom>
+                Connect Your Wallet
+              </Typography>
+              <Typography color="textSecondary" sx={{ mb: 3 }}>
+                Connect your wallet to participate in the COIN100 presale
+              </Typography>
+              <Button
+                variant="contained"
+                size="large"
+                onClick={handleConnectWallet}
+                disabled={loading}
+                sx={{
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  px: 4,
+                }}
+              >
+                {loading ? 'Connecting...' : 'Connect Wallet'}
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <Grid container spacing={4}>
+            {/* Sale Progress Card */}
+            <Grid item xs={12}>
+              <Paper
+                elevation={3}
+                sx={{
+                  p: 4,
+                  background: `linear-gradient(135deg, ${theme.palette.background.paper}80 0%, ${theme.palette.background.paper}40 100%)`,
+                  backdropFilter: 'blur(10px)',
+                  borderRadius: 2,
+                  border: `1px solid ${theme.palette.primary.dark}40`,
+                }}
+              >
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    mb: 3,
+                  }}
+                >
+                  <Typography variant="h5">Sale Progress</Typography>
+                  <Typography variant="body1" color="textSecondary">
+                    Your Balance: {parseFloat(balance).toFixed(4)} MATIC
+                  </Typography>
+                </Box>
+                <LinearProgress
+                  variant="determinate"
+                  value={progress}
+                  sx={{
+                    height: 24,
+                    borderRadius: 2,
+                    mb: 2,
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    '& .MuiLinearProgress-bar': {
+                      background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                    },
+                  }}
+                />
+                <Grid
+                  container
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
+                  <Grid item>
+                    <Typography variant="body1">
+                      {totalSold} C100 Sold
+                    </Typography>
+                  </Grid>
+                  <Grid item>
+                    <Typography variant="body1">
+                      {remainingTokens} C100 Remaining
+                    </Typography>
+                  </Grid>
+                </Grid>
+                {isIcoActive && timeLeft > 0 && (
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      mt: 2,
+                    }}
+                  >
+                    <AccessTime sx={{ mr: 1 }} />
+                    <Typography variant="h6">
+                      {formatDistanceToNow(icoEndTime * 1000, {
+                        addSuffix: true,
+                      })}
+                    </Typography>
+                  </Box>
+                )}
+              </Paper>
+            </Grid>
+
+            {/* Main Content Grid */}
+            <Grid container item spacing={4}>
+              <Grid item xs={12} md={6}>
+                <BuySection />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <SaleInfo />
+              </Grid>
+            </Grid>
+
+            {/* Stats Section */}
+            <Grid item xs={12}>
+              <Stats />
+            </Grid>
+          </Grid>
+        )}
+      </Container>
     </Box>
   );
 };

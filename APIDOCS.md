@@ -1,6 +1,24 @@
 ## Coin100 API Documentation
 ## Endpoints
 
+## Health Check
+
+```
+GET /
+```
+
+Check if the API is running.
+
+#### Response
+```json
+{
+    "success": true,
+    "message": "Coin100 API is running!",
+    "version": "1.0.0"
+}
+```
+
+
 ### Get All Coins Data
 
 ```
@@ -147,19 +165,101 @@ Retrieves total market capitalization data.
 }
 ```
 
-## Health Check
 
+### COIN100 Contract Endpoints
+
+#### Execute Rebase Operation
+```http
+POST /api/coin100/rebase
 ```
-GET /
-```
 
-Check if the API is running.
+Executes a rebase operation on the COIN100 contract. Requires admin wallet authorization via MetaMask.
 
-#### Response
+##### Request Body
 ```json
 {
-    "success": true,
-    "message": "Coin100 API is running!",
-    "version": "1.0.0"
+  "newMarketCap": "1000000000",  // New market cap value in wei
+  "walletAddress": "0x..."       // MetaMask wallet address with admin rights
+}
+```
+
+##### Response
+```json
+{
+  "success": true,
+  "data": {
+    "to": "0x6402778921629ffbfeb3b683a4da099f74a2d4c5",
+    "from": "0x...",
+    "data": "0x...",
+    "gasLimit": "0x493e0",
+    "chainId": 137
+  }
+}
+```
+
+##### Error Response
+```json
+{
+  "success": false,
+  "message": "Error message",
+  "error": "Detailed error description"
+}
+```
+
+#### Get Contract Metrics
+```http
+GET /api/coin100/metrics
+```
+
+Retrieves current metrics from the COIN100 contract including total supply and last market cap.
+
+##### Response
+```json
+{
+  "success": true,
+  "data": {
+    "totalSupply": "1000000000",
+    "lastMarketCap": "1000000000",
+    "gonsPerFragment": "1000000000000000000",
+    "network": "Polygon Mainnet",
+    "contractAddress": "0x6402778921629ffbfeb3b683a4da099f74a2d4c5"
+  }
+}
+```
+
+##### Error Response
+```json
+{
+  "success": false,
+  "message": "Error fetching contract metrics",
+  "error": "Detailed error description"
+}
+```
+
+## Error Responses
+
+### Authentication Error (401)
+
+```json
+{
+  "message": "API key is required"
+}
+```
+
+### Invalid Date Format (400)
+
+```json
+{
+  "success": false,
+  "error": "Invalid date format"
+}
+```
+
+### Resource Not Found (404)
+
+```json
+{
+  "success": false,
+  "error": "No data found for the specified coin"
 }
 ```

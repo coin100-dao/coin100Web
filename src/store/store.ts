@@ -12,33 +12,34 @@ import {
   REGISTER,
 } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
-import web3Reducer from './slices/web3Slice';
 import coingeckoReducer from './slices/coingeckoSlice';
 import globalReducer from './slices/globalSlice';
 import coin100Reducer from './slices/coin100Slice';
+import icoReducer from './slices/icoSlice';
+import web3Reducer from './slices/web3Slice';
 
-// Persist configuration for web3 slice
+// Persist configuration for ico slice
 const persistConfig = {
-  key: 'web3',
+  key: 'ico',
   storage,
-  whitelist: ['walletAddress', 'connectedAt'], // Persist walletAddress and connectedAt
+  whitelist: ['walletAddress'], // Only persist wallet address
 };
 
-// Persisted web3 reducer
-const persistedWeb3Reducer = persistReducer(persistConfig, web3Reducer);
+// Persisted ico reducer
+const persistedIcoReducer = persistReducer(persistConfig, icoReducer);
 
 // Configure the Redux store
 export const store = configureStore({
   reducer: {
-    web3: persistedWeb3Reducer,
+    ico: persistedIcoReducer,
     coingecko: coingeckoReducer,
     global: globalReducer,
     coin100: coin100Reducer,
+    web3: web3Reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        // Ignore redux-persist actions
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
     }),

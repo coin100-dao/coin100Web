@@ -8,6 +8,7 @@ import {
   LinearProgress,
 } from '@mui/material';
 import { styled } from '@mui/system';
+import { useNavigate } from 'react-router-dom';
 import Grid from '@mui/material/Grid';
 import TimerIcon from '@mui/icons-material/Timer';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
@@ -40,8 +41,13 @@ const IconWrapper = styled(Box)(({ theme }) => ({
 }));
 
 const ICO = () => {
+  const navigate = useNavigate();
   // This would come from your web3 integration
   const progress = 65;
+
+  const handleParticipateClick = () => {
+    navigate('/ico');
+  };
 
   return (
     <Box
@@ -173,6 +179,7 @@ const ICO = () => {
             <Button
               variant="contained"
               size="large"
+              onClick={handleParticipateClick}
               sx={{
                 borderRadius: '28px',
                 py: 1.5,

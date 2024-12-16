@@ -1,11 +1,30 @@
+// web3Slice.ts
+
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import Web3 from 'web3';
 import { AbiItem } from 'web3-utils';
-// import { Contract } from 'web3-eth-contract';
 import coin100ContractAbi from '../../data/coin100-contract-abi.json';
 import coin100PublicSaleContractAbi from '../../data/coin100-public-sale-contract-abi.json';
-import { RootState } from '../store';
 
+// Constants: Replace with your actual deployed contract addresses
+const tokenAddress = import.meta.env.VITE_REACT_C100_CONTRACT_ADDRESS; // COIN100 Token Contract Address
+const publicSaleAddress = import.meta.env
+  .VITE_REACT_PUBLIC_SALE_CONTRACT_ADDRESS; // C100PublicSale Contract Address
+
+// Helper function to validate contract address
+const validateContractAddress = (
+  address: string | undefined,
+  name: string
+): string => {
+  if (!address) {
+    throw new Error(
+      `${name} not configured. Please check your environment variables.`
+    );
+  }
+  return address;
+};
+
+// Ethereum Provider Interface
 interface EthereumProvider {
   request(args: { method: string; params?: unknown[] }): Promise<unknown>;
   on?(eventName: string, callback: (...args: unknown[]) => void): void;
@@ -13,52 +32,91 @@ interface EthereumProvider {
 
 declare global {
   interface Window {
-    ethereum?: EthereumProvider;
+    ethereum: EthereumProvider;
   }
 }
 
+// Data Interfaces
 interface ICOData {
-  polRate: string;
+  polRate: string; // Changed to string to ensure serializability
   startTime: number;
   endTime: number;
   finalized: boolean;
   paused: boolean;
   c100Balance: string;
   c100TokenAddress: string;
+  governorContract: string;
+  treasury: string;
 }
 
-// State interface
+interface COIN100Data {
+  totalSupply: string;
+  lastRebaseTimestamp: number;
+  rebaseFrequency: number;
+  transfersWithFee: boolean;
+  transferFeeBasisPoints: number;
+  governorContract: string;
+  treasury: string;
+  lpRewardPercentage: number;
+  maxLpRewardPercentage: number;
+}
+
 interface Web3State {
-  walletAddress: string | null;
-  tokenBalance: string | null;
+  walletAddress: string;
+  balance: string;
+  icoStartTime: number;
+  icoEndTime: number;
+  polRate: string;
+  isFinalized: boolean;
+  totalSold: string;
+  remainingTokens: string;
+  treasury: string;
+  isIcoActive: boolean;
   loading: boolean;
   error: string | null;
-  connectedAt: number | null;
-  chainId: string | null;
-  icoData: ICOData | null;
+  totalSupply: string;
+  lastRebaseTimestamp: number;
+  rebaseFrequency: number;
+  transfersWithFee: boolean;
+  transferFeeBasisPoints: number;
+  governorContract: string;
+  lpRewardPercentage: number;
+  maxLpRewardPercentage: number;
 }
 
-// Initial state
+// Initial State
 const initialState: Web3State = {
-  walletAddress: null,
-  tokenBalance: null,
+  walletAddress: '',
+  balance: '0',
+  icoStartTime: 0,
+  icoEndTime: 0,
+  polRate: '0',
+  isFinalized: false,
+  totalSold: '0',
+  remainingTokens: '0',
+  treasury: '',
+  isIcoActive: false,
   loading: false,
   error: null,
-  connectedAt: null,
-  chainId: null,
-  icoData: null,
+  totalSupply: '0',
+  lastRebaseTimestamp: 0,
+  rebaseFrequency: 0,
+  transfersWithFee: false,
+  transferFeeBasisPoints: 0,
+  governorContract: '',
+  lpRewardPercentage: 0,
+  maxLpRewardPercentage: 0,
 };
 
-// Addresses and ABIs
+// ABIs
 const tokenABI: AbiItem[] = coin100ContractAbi as AbiItem[];
-const tokenAddress = '0x6402778921629ffbfeb3b683a4da099f74a2d4c5'; // Example token address
 const publicSaleABI: AbiItem[] = coin100PublicSaleContractAbi as AbiItem[];
-const publicSaleAddress = '0xc79d86e03eda12720ba2f640d908ff9525227dd6'; // Example sale contract address
 
-// Type guard for MetaMask errors
+// Type Guard for MetaMask Errors
 interface MetaMaskError extends Error {
   code: number;
 }
+
 function isMetaMaskError(error: unknown): error is MetaMaskError {
   return (
     typeof error === 'object' &&
@@ -69,6 +127,10 @@ function isMetaMaskError(error: unknown): error is MetaMaskError {
 }
 
 // Thunks
+
+/**
+ * Switch to Polygon Network
+ */
 export const switchToPolygonNetwork = createAsyncThunk<
   void,
   void,
@@ -123,6 +185,9 @@ export const switchToPolygonNetwork = createAsyncThunk<
   }
 });
 
+/**
+ * Connect Wallet
+ */
 export const connectWallet = createAsyncThunk<
   string,
   void,
@@ -160,6 +225,9 @@ export const connectWallet = createAsyncThunk<
   }
 });
 
+/**
+ * Connect and Fetch Balance
+ */
 export const connectAndFetchBalance = createAsyncThunk<
   string,
   void,
@@ -179,6 +247,9 @@ export const connectAndFetchBalance = createAsyncThunk<
   }
 });
 
+/**
+ * Fetch Token Balance
+ */
 interface FetchTokenBalanceParams {
   walletAddress: string;
 }
@@ -194,22 +265,31 @@ export const fetchTokenBalance = createAsyncThunk<
     }
 
     const web3 = new Web3(window.ethereum);
-    const contract = new web3.eth.Contract(tokenABI, tokenAddress);
+    const contract = new web3.eth.Contract(
+      tokenABI,
+      validateContractAddress(tokenAddress, 'COIN100 Token Contract Address')
+    );
 
-    const balance: string = await contract.methods
+    // Explicitly assert the return type as string
+    const balance: string = (await contract.methods
       .balanceOf(walletAddress)
-      .call();
+      .call()) as string;
+
     return web3.utils.fromWei(balance, 'ether');
   } catch (error) {
     const msg =
-      error instanceof Error ? error.message : 'Failed to fetch balance';
+      error instanceof Error ? error.message : 'Failed to fetch token balance';
     return rejectWithValue(msg);
   }
 });
 
+/**
+ * Buy Tokens with POL
+ */
 interface BuyTokensWithPOLParams {
   amount: string;
 }
+
 export const buyTokensWithPOL = createAsyncThunk<
   void,
   BuyTokensWithPOLParams,
@@ -221,7 +301,16 @@ export const buyTokensWithPOL = createAsyncThunk<
     }
     const web3 = new Web3(window.ethereum);
     const accounts = await web3.eth.getAccounts();
-    const contract = new web3.eth.Contract(publicSaleABI, publicSaleAddress);
+    if (accounts.length === 0) {
+      throw new Error('No accounts found');
+    }
+    const contract = new web3.eth.Contract(
+      publicSaleABI,
+      validateContractAddress(
+        publicSaleAddress,
+        'C100PublicSale Contract Address'
+      )
+    );
     await contract.methods.buyWithPOL().send({
       from: accounts[0],
       value: web3.utils.toWei(amount, 'ether'),
@@ -234,47 +323,87 @@ export const buyTokensWithPOL = createAsyncThunk<
   }
 });
 
+/**
+ * Fetch ICO Data
+ */
 export const fetchICOData = createAsyncThunk<
   ICOData,
   void,
-  { rejectValue: string; state: RootState }
+  { rejectValue: string }
 >('web3/fetchICOData', async (_, { rejectWithValue }) => {
   try {
     if (!window.ethereum) {
       throw new Error('MetaMask is not installed');
     }
     const web3 = new Web3(window.ethereum);
-    const contract = new web3.eth.Contract(publicSaleABI, publicSaleAddress);
+    const contract = new web3.eth.Contract(
+      publicSaleABI,
+      validateContractAddress(
+        publicSaleAddress,
+        'C100PublicSale Contract Address'
+      )
+    );
 
     // Fetch data from the sale contract
-    const polRate = await contract.methods.polRate().call();
-    const startTime = await contract.methods.startTime().call();
-    const endTime = await contract.methods.endTime().call();
-    const finalized = await contract.methods.finalized().call();
-    const paused = await contract.methods.paused().call();
+    // Explicitly assert the return types
+    const polRateRaw = (await contract.methods.polRate().call()) as string;
+    const polRate = polRateRaw || '0';
+
+    const startTimeRaw = (await contract.methods.startTime().call()) as string;
+    const startTime = parseInt(startTimeRaw) || 0;
+
+    const endTimeRaw = (await contract.methods.endTime().call()) as string;
+    const endTime = parseInt(endTimeRaw) || 0;
+
+    const finalizedRaw = (await contract.methods.finalized().call()) as boolean;
+    const finalized = finalizedRaw;
+
+    const pausedRaw = (await contract.methods.paused().call()) as boolean;
+    const paused = pausedRaw;
 
     // Fetch c100 token address and balance
-    const c100TokenAddress = await contract.methods.c100Token().call();
+    const c100TokenAddress: string = (await contract.methods
+      .c100Token()
+      .call()) as string;
+
+    // Validate c100TokenAddress
+    if (
+      !c100TokenAddress ||
+      c100TokenAddress === '0x0000000000000000000000000000000000000000'
+    ) {
+      throw new Error('Invalid C100 Token Address');
+    }
+
     // Create token contract instance and get its balance
-    const tokenContract = new web3.eth.Contract(
-      tokenABI as AbiItem[],
-      String(c100TokenAddress),
-      {
-        from: publicSaleAddress, // Optional: specify the default 'from' address
-      }
-    );
-    const c100Balance = await tokenContract.methods
-      .balanceOf(publicSaleAddress)
-      .call();
+    const tokenContract = new web3.eth.Contract(tokenABI, c100TokenAddress);
+    const c100BalanceRaw: string = (await tokenContract.methods
+      .balanceOf(
+        validateContractAddress(
+          publicSaleAddress,
+          'C100PublicSale Contract Address'
+        )
+      )
+      .call()) as string;
+    const c100Balance = web3.utils.fromWei(c100BalanceRaw, 'ether');
+
+    // Fetch additional contract data
+    const governorContract: string = (await contract.methods
+      .govContract()
+      .call()) as string;
+    const treasury: string = (await contract.methods
+      .treasury()
+      .call()) as string;
 
     return {
-      polRate: String(polRate || '0'), // Provide a default value if polRate is undefined
-      startTime: Number(startTime),
-      endTime: Number(endTime),
-      finalized: Boolean(finalized), // Explicitly convert to boolean
-      paused: Boolean(paused), // Also convert paused to boolean
-      c100Balance: String(c100Balance || '0'), // Provide a default value if c100Balance is undefined
-      c100TokenAddress: String(c100TokenAddress || ''), // Provide a default empty string if undefined
+      polRate,
+      startTime,
+      endTime,
+      finalized,
+      paused,
+      c100Balance,
+      c100TokenAddress,
+      governorContract,
+      treasury,
     };
   } catch (error) {
     const msg =
@@ -283,16 +412,224 @@ export const fetchICOData = createAsyncThunk<
   }
 });
 
+/**
+ * Fetch COIN100 Data
+ */
+export const fetchCOIN100Data = createAsyncThunk<
+  COIN100Data,
+  void,
+  { rejectValue: string }
+>('web3/fetchCOIN100Data', async (_, { rejectWithValue }) => {
+  try {
+    if (!window.ethereum) {
+      throw new Error('MetaMask is not installed');
+    }
+    const web3 = new Web3(window.ethereum);
+    const contract = new web3.eth.Contract(
+      tokenABI,
+      validateContractAddress(tokenAddress, 'COIN100 Token Contract Address')
+    );
+
+    // Explicitly assert the return types
+    const totalSupplyRaw: string = (await contract.methods
+      .totalSupply()
+      .call()) as string;
+    const totalSupply = web3.utils.fromWei(totalSupplyRaw, 'ether');
+
+    const lastRebaseTimestampRaw = (await contract.methods
+      .lastRebase()
+      .call()) as string;
+    const lastRebaseTimestamp = Number(lastRebaseTimestampRaw) || 0;
+
+    const rebaseFrequencyRaw = (await contract.methods
+      .rebaseFrequency()
+      .call()) as string;
+    const rebaseFrequency = Number(rebaseFrequencyRaw) || 0;
+
+    const transfersWithFeeRaw = (await contract.methods
+      .transfersWithFee()
+      .call()) as boolean;
+    const transfersWithFee = transfersWithFeeRaw;
+
+    const transferFeeBasisPointsRaw = (await contract.methods
+      .transferFeeBasisPoints()
+      .call()) as string;
+    const transferFeeBasisPoints = Number(transferFeeBasisPointsRaw) || 0;
+
+    const governorContract: string = (await contract.methods
+      .govContract()
+      .call()) as string;
+    const treasury: string = (await contract.methods
+      .treasury()
+      .call()) as string;
+
+    const lpRewardPercentageRaw = (await contract.methods
+      .lpRewardPercentage()
+      .call()) as string;
+    const lpRewardPercentage = Number(lpRewardPercentageRaw) || 0;
+
+    const maxLpRewardPercentageRaw = (await contract.methods
+      .maxLpRewardPercentage()
+      .call()) as string;
+    const maxLpRewardPercentage = Number(maxLpRewardPercentageRaw) || 0;
+
+    return {
+      totalSupply,
+      lastRebaseTimestamp,
+      rebaseFrequency,
+      transfersWithFee,
+      transferFeeBasisPoints,
+      governorContract,
+      treasury,
+      lpRewardPercentage,
+      maxLpRewardPercentage,
+    };
+  } catch (error) {
+    const msg =
+      error instanceof Error ? error.message : 'Failed to fetch COIN100 data';
+    return rejectWithValue(msg);
+  }
+});
+
+/**
+ * Fetch All Data
+ * This thunk fetches all relevant data sequentially.
+ * It's optional and can be used to initialize the state after connecting the wallet.
+ */
+export const fetchAllData = createAsyncThunk<
+  {
+    icoStartTime: number;
+    icoEndTime: number;
+    polRate: string;
+    isFinalized: boolean;
+    treasury: string;
+    totalSold: string;
+    remainingTokens: string;
+    isIcoActive: boolean;
+  },
+  void,
+  { rejectValue: string }
+>('web3/fetchAllData', async (_, { rejectWithValue }) => {
+  try {
+    if (!window.ethereum) {
+      throw new Error('Please install MetaMask');
+    }
+    const web3 = new Web3(window.ethereum);
+    const contract = await getPublicSaleContract();
+    const c100Contract = await getC100Contract();
+
+    // Fetch each piece of data separately to ensure correct typing
+    const startTimeRaw = (await contract.methods.startTime().call()) as string;
+    const startTime = parseInt(startTimeRaw) || 0;
+
+    const endTimeRaw = (await contract.methods.endTime().call()) as string;
+    const endTime = parseInt(endTimeRaw) || 0;
+
+    const polRateRaw = (await contract.methods.polRate().call()) as string;
+    const polRate = polRateRaw || '0';
+
+    const finalizedRaw = (await contract.methods.finalized().call()) as boolean;
+    const finalized = finalizedRaw;
+
+    const treasuryRaw = (await contract.methods.treasury().call()) as string;
+    const treasury = treasuryRaw || '0';
+
+    const contractBalanceRaw = (await c100Contract.methods
+      .balanceOf(
+        validateContractAddress(
+          publicSaleAddress,
+          'C100PublicSale Contract Address'
+        )
+      )
+      .call()) as string;
+    const remainingTokensEther = web3.utils.fromWei(
+      contractBalanceRaw,
+      'ether'
+    );
+
+    const totalSupplyRaw: string = (await c100Contract.methods
+      .totalSupply()
+      .call()) as string;
+    const totalSupply = totalSupplyRaw || '0';
+
+    const now = Math.floor(Date.now() / 1000);
+
+    // Convert Wei values to Ether where needed
+    const totalSoldEther = (
+      BigInt(totalSupply) - BigInt(contractBalanceRaw)
+    ).toString();
+    const totalSoldInEther = web3.utils.fromWei(totalSoldEther, 'ether');
+
+    return {
+      icoStartTime: startTime,
+      icoEndTime: endTime,
+      polRate,
+      isFinalized: finalized,
+      treasury,
+      totalSold: totalSoldInEther,
+      remainingTokens: remainingTokensEther,
+      isIcoActive: now >= startTime && now <= endTime && !finalized,
+    };
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    const msg =
+      error instanceof Error ? error.message : 'Failed to fetch all data';
+    return rejectWithValue(msg);
+  }
+});
+
+// Helper functions to get contract instances
+async function getPublicSaleContract() {
+  if (!window.ethereum) {
+    throw new Error('Please install MetaMask');
+  }
+  const web3 = new Web3(window.ethereum);
+  return new web3.eth.Contract(
+    publicSaleABI as AbiItem[],
+    validateContractAddress(
+      publicSaleAddress,
+      'C100PublicSale Contract Address'
+    )
+  );
+}
+
+async function getC100Contract() {
+  if (!window.ethereum) {
+    throw new Error('Please install MetaMask');
+  }
+  const web3 = new Web3(window.ethereum);
+  return new web3.eth.Contract(
+    tokenABI as AbiItem[],
+    validateContractAddress(tokenAddress, 'COIN100 Token Contract Address')
+  );
+}
+
+// Slice
 const web3Slice = createSlice({
   name: 'web3',
   initialState,
   reducers: {
     disconnectWallet(state) {
-      state.walletAddress = null;
-      state.tokenBalance = null;
+      state.walletAddress = '';
+      state.balance = '0';
+      state.icoStartTime = 0;
+      state.icoEndTime = 0;
+      state.polRate = '0';
+      state.isFinalized = false;
+      state.totalSold = '0';
+      state.remainingTokens = '0';
+      state.treasury = '';
+      state.isIcoActive = false;
       state.error = null;
-      state.connectedAt = null;
-      state.chainId = null;
+      state.loading = false;
+      state.totalSupply = '0';
+      state.lastRebaseTimestamp = 0;
+      state.rebaseFrequency = 0;
+      state.transfersWithFee = false;
+      state.transferFeeBasisPoints = 0;
+      state.governorContract = '';
+      state.lpRewardPercentage = 0;
+      state.maxLpRewardPercentage = 0;
     },
   },
   extraReducers: (builder) => {
@@ -304,11 +641,24 @@ const web3Slice = createSlice({
     builder.addCase(connectWallet.fulfilled, (state, action) => {
       state.loading = false;
       state.walletAddress = action.payload;
-      state.connectedAt = Date.now();
     });
     builder.addCase(connectWallet.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload ?? 'Failed to connect wallet';
+    });
+
+    // Connect and fetch balance
+    builder.addCase(connectAndFetchBalance.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(connectAndFetchBalance.fulfilled, (state, action) => {
+      state.loading = false;
+      state.walletAddress = action.payload;
+    });
+    builder.addCase(connectAndFetchBalance.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload ?? 'Failed to connect and fetch balance';
     });
 
     // Fetch token balance
@@ -318,7 +668,7 @@ const web3Slice = createSlice({
     });
     builder.addCase(fetchTokenBalance.fulfilled, (state, action) => {
       state.loading = false;
-      state.tokenBalance = action.payload;
+      state.balance = action.payload;
     });
     builder.addCase(fetchTokenBalance.rejected, (state, action) => {
       state.loading = false;
@@ -332,26 +682,10 @@ const web3Slice = createSlice({
     });
     builder.addCase(switchToPolygonNetwork.fulfilled, (state) => {
       state.loading = false;
-      state.chainId = '0x89';
     });
     builder.addCase(switchToPolygonNetwork.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload ?? 'Failed to switch network';
-    });
-
-    // Connect and fetch balance
-    builder.addCase(connectAndFetchBalance.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(connectAndFetchBalance.fulfilled, (state, action) => {
-      state.loading = false;
-      state.walletAddress = action.payload;
-      state.connectedAt = Date.now();
-    });
-    builder.addCase(connectAndFetchBalance.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload ?? 'Failed to connect and fetch balance';
     });
 
     // Buy tokens with POL
@@ -376,12 +710,66 @@ const web3Slice = createSlice({
       fetchICOData.fulfilled,
       (state, action: PayloadAction<ICOData>) => {
         state.loading = false;
-        state.icoData = action.payload;
+        state.icoStartTime = action.payload.startTime;
+        state.icoEndTime = action.payload.endTime;
+        state.polRate = action.payload.polRate;
+        state.isFinalized = action.payload.finalized;
+        state.treasury = action.payload.treasury;
+        // You can add more fields from ICOData if needed
       }
     );
     builder.addCase(fetchICOData.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload ?? 'Failed to fetch ICO data';
+    });
+
+    // Fetch COIN100 Data
+    builder.addCase(fetchCOIN100Data.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(
+      fetchCOIN100Data.fulfilled,
+      (state, action: PayloadAction<COIN100Data>) => {
+        state.loading = false;
+        state.totalSupply = action.payload.totalSupply;
+        state.lastRebaseTimestamp = action.payload.lastRebaseTimestamp;
+        state.rebaseFrequency = action.payload.rebaseFrequency;
+        state.transfersWithFee = action.payload.transfersWithFee;
+        state.transferFeeBasisPoints = action.payload.transferFeeBasisPoints;
+        state.governorContract = action.payload.governorContract;
+        state.treasury = action.payload.treasury;
+        state.lpRewardPercentage = action.payload.lpRewardPercentage;
+        state.maxLpRewardPercentage = action.payload.maxLpRewardPercentage;
+      }
+    );
+    builder.addCase(fetchCOIN100Data.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload ?? 'Failed to fetch COIN100 data';
+    });
+
+    // Fetch All Data
+    builder.addCase(fetchAllData.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(fetchAllData.fulfilled, (state, action) => {
+      state.loading = false;
+      state.icoStartTime = action.payload.icoStartTime;
+      state.icoEndTime = action.payload.icoEndTime;
+      state.polRate = action.payload.polRate;
+      state.isFinalized = action.payload.isFinalized;
+      state.treasury = action.payload.treasury;
+      state.totalSold = action.payload.totalSold;
+      state.remainingTokens = action.payload.remainingTokens;
+      state.isIcoActive = action.payload.isIcoActive;
+    });
+    builder.addCase(fetchAllData.rejected, (state, action) => {
+      state.loading = false;
+      state.error =
+        typeof action.payload === 'string'
+          ? action.payload
+          : 'Failed to fetch all data';
     });
   },
 });
