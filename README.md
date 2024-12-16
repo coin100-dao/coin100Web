@@ -530,7 +530,7 @@ After the ICO:
 For further inquiries, support, or to engage with the COIN100 team, please reach out through the following channels:
 
 - **Website:** [https://coin100.link](https://coin100.link)
-- **Email:** [support@coin100.link](mailto:support@coin100.link)
+- **Email:** [mayor@coin100.link](mailto:mayor@coin100.link)
 - **Discord:** [Join Our Discord](https://discord.com/channels/1312498183485784236/1312498184500674693)
 - **Reddit:** [r/Coin100](https://www.reddit.com/r/Coin100)
 - **X:** [@Coin100token](https://x.com/Coin100token)

@@ -48,7 +48,7 @@ const Footer = () => {
               >
                 <RedditIcon />
               </IconButton>
-              <IconButton href="mailto:support@coin100.link" color="primary">
+              <IconButton href="mailto:mayor@coin100.link" color="primary">
                 <EmailIcon />
               </IconButton>
             </Box>
