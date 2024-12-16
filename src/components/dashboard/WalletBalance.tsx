@@ -16,7 +16,7 @@ interface WalletBalanceProps {
 
 const WalletBalance: React.FC<WalletBalanceProps> = ({ isWalletConnected }) => {
   const dispatch = useAppDispatch();
-  const { walletAddress, tokenBalance, loading } = useAppSelector(
+  const { walletAddress, balance, loading } = useAppSelector(
     (state) => state.web3
   );
 
@@ -75,7 +75,7 @@ const WalletBalance: React.FC<WalletBalanceProps> = ({ isWalletConnected }) => {
               fontSize: { xs: '1.25rem', sm: '1.5rem' },
             }}
           >
-            {tokenBalance ? parseFloat(tokenBalance).toFixed(4) : '0'} COIN100
+            {balance ? parseFloat(balance).toFixed(4) : '0'} COIN100
           </Typography>
         </Box>
       ) : (
