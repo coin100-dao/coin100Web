@@ -26,6 +26,10 @@
   "dependencies": {
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
+    "@fortawesome/fontawesome-svg-core": "^6.7.2",
+    "@fortawesome/free-brands-svg-icons": "^6.7.2",
+    "@fortawesome/free-solid-svg-icons": "^6.7.2",
+    "@fortawesome/react-fontawesome": "^0.2.2",
     "@hookform/resolvers": "^3.9.1",
     "@mui/icons-material": "^6.1.6",
     "@mui/lab": "^6.0.0-beta.18",
@@ -37,6 +41,7 @@
     "chart.js": "^4.4.7",
     "chartjs-adapter-date-fns": "^3.0.0",
     "ethers": "^6.13.4",
+    "font-awesome": "^4.7.0",
     "framer-motion": "^11.13.1",
     "jwt-decode": "^4.0.0",
     "react": "^18.3.1",
