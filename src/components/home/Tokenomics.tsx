@@ -73,7 +73,7 @@ const Tokenomics = () => {
               </Typography>
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body1" sx={{ mb: 1 }}>
-                  • 97% Public Sale (ICO)
+                  • 90% Public Sale (ICO)
                 </Typography>
                 <Typography variant="body2" sx={{ opacity: 0.8, mt: 2 }}>
                   Fair distribution model with majority allocated to public sale
