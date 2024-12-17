@@ -7,6 +7,7 @@ import {
   faXTwitter,
   faDiscord,
   faReddit,
+  faTelegram,
 } from '@fortawesome/free-brands-svg-icons';
 import { faEnvelope } from '@fortawesome/free-solid-svg-icons';
 
@@ -70,6 +71,19 @@ const Footer = () => {
                   aria-label="Join our Reddit community"
                 >
                   <FontAwesomeIcon icon={faReddit} />
+                </StyledIconButton>
+              </a>
+              <a
+                href="https://t.me/coin100token"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ textDecoration: 'none' }}
+              >
+                <StyledIconButton
+                  color="primary"
+                  aria-label="Join our Telegram"
+                >
+                  <FontAwesomeIcon icon={faTelegram} />
                 </StyledIconButton>
               </a>
               <a
