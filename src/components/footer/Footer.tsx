@@ -50,7 +50,7 @@ const Footer = () => {
                 </StyledIconButton>
               </a>
               <a
-                href="https://discord.com/channels/1312498183485784236/1312498184500674693"
+                href="https://discord.com/channels/1318664310490398770/1318664310490398773"
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ textDecoration: 'none' }}

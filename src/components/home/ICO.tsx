@@ -135,7 +135,7 @@ const ICO = () => {
               </Typography>
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body1" sx={{ mb: 1 }}>
-                  • Min: 100 USDC
+                  • Min: No Minimum
                 </Typography>
                 <Typography variant="body1" sx={{ mb: 1 }}>
                   • Max: No limit
