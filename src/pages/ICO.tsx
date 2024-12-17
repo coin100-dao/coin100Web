@@ -234,7 +234,8 @@ const ICO: React.FC = () => {
                 >
                   <Typography variant="h5">Sale Progress</Typography>
                   <Typography variant="body1" color="textSecondary">
-                    Your Balance: {parseFloat(balance).toFixed(4)} MATIC
+                    Your Balance: {parseFloat(balance).toFixed(4)} POL (ex
+                    MATIC)
                   </Typography>
                 </Box>
                 <LinearProgress

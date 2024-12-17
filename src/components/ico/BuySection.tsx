@@ -79,21 +79,23 @@ const BuySection: React.FC = () => {
 
         <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle2" color="textSecondary" gutterBottom>
-            Current Rate: 1 MATIC = {polRate} C100
+            Current Rate: 1 POL (ex MATIC) = {polRate} C100
           </Typography>
           <Typography variant="subtitle2" color="textSecondary">
-            Your Balance: {parseFloat(balance).toFixed(4)} MATIC
+            Your Balance: {parseFloat(balance).toFixed(4)} POL (ex MATIC)
           </Typography>
         </Box>
 
         <TextField
           fullWidth
-          label="Amount in MATIC"
+          label="Amount in POL (ex MATIC)"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           type="number"
           InputProps={{
-            endAdornment: <InputAdornment position="end">MATIC</InputAdornment>,
+            endAdornment: (
+              <InputAdornment position="end">POL (ex MATIC)</InputAdornment>
+            ),
           }}
           sx={{ mb: 2 }}
           disabled={!isIcoActive || loading}
