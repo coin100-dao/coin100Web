@@ -74,7 +74,7 @@ const SaleInfo: React.FC = () => {
             <InfoItem
               icon={<LocalOffer />}
               label="Token Rate"
-              value={`1 MATIC = ${polRate} C100`}
+              value={`1 POL (ex MATIC) = ${polRate} C100`}
             />
           </Grid>
 
