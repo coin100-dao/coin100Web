@@ -83,6 +83,7 @@ const Navbar: React.FC<NavbarProps> = ({ toggleTheme }) => {
   const pages = [
     { name: 'Home', path: '/' },
     { name: 'ICO', path: '/ico' },
+    { name: 'Whitepaper', path: '/whitepaper' },
     { name: 'FAQ', path: '/faq' },
     // { name: 'Dashboard', path: '/dashboard' },
   ];
