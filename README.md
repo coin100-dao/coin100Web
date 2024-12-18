@@ -618,6 +618,11 @@ For further inquiries, support, or to engage with the COIN100 team, please reach
 - **coin100:** `0x1459884924e7e973d1579ee4ebcaa4ef0b1c8f21`
 - **publicSale:** `0x2cdac1848b1c14d36e173e10315da97bb17b5489`
 
+https://discord.com/channels/1318664310490398770/1318664310490398773
+https://www.reddit.com/r/Coin100
+https://x.com/Coin100token
+https://t.me/coin100token
+
 ---
 
 ## Conclusion
