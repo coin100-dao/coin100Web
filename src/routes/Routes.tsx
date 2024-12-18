@@ -5,6 +5,7 @@ import Home from '../pages/Home';
 import ICO from '../pages/ICO';
 import FAQPage from '../pages/FAQPage';
 import Dashboard from '../pages/Dashboard';
+import Whitepaper from '../pages/Whitepaper';
 
 const AppRoutes: React.FC = () => {
   const routes = [
@@ -23,6 +24,10 @@ const AppRoutes: React.FC = () => {
     {
       path: '/dashboard',
       element: <Dashboard />,
+    },
+    {
+      path: '/whitepaper',
+      element: <Whitepaper />,
     },
   ];
 
