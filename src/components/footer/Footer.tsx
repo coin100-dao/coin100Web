@@ -8,6 +8,7 @@ import {
   faDiscord,
   faReddit,
   faTelegram,
+  faGithub,
 } from '@fortawesome/free-brands-svg-icons';
 import { faEnvelope } from '@fortawesome/free-solid-svg-icons';
 
@@ -84,6 +85,16 @@ const Footer = () => {
                   aria-label="Join our Telegram"
                 >
                   <FontAwesomeIcon icon={faTelegram} />
+                </StyledIconButton>
+              </a>
+              <a
+                href="https://github.com/coin100-dao"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ textDecoration: 'none' }}
+              >
+                <StyledIconButton color="primary" aria-label="Visit our GitHub">
+                  <FontAwesomeIcon icon={faGithub} />
                 </StyledIconButton>
               </a>
               <a
