@@ -20,6 +20,7 @@ import { connectWallet } from '../store/slices/web3Slice';
 import BuySection from '../components/ico/BuySection';
 import SaleInfo from '../components/ico/SaleInfo';
 import Stats from '../components/ico/Stats';
+import ICOHero from '../components/home/ICOHero';
 import { formatDistanceToNow } from 'date-fns';
 import { AccessTime, AccountBalanceWallet } from '@mui/icons-material';
 
@@ -172,6 +173,22 @@ const ICO: React.FC = () => {
               {error}
             </Typography>
           )}
+        </Box>
+
+        <Box sx={{ position: 'relative', mb: 1 }}>
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '200px',
+              background:
+                'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(255,111,97,0.05) 100%)',
+              pointerEvents: 'none',
+            }}
+          />
+          <ICOHero />
         </Box>
 
         {!walletAddress ? (

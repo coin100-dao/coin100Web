@@ -1,14 +1,6 @@
 import React from 'react';
-import {
-  Box,
-  Container,
-  Typography,
-  Paper,
-  Button,
-  LinearProgress,
-} from '@mui/material';
+import { Box, Container, Typography, Paper } from '@mui/material';
 import { styled } from '@mui/system';
-import { useNavigate } from 'react-router-dom';
 import Grid from '@mui/material/Grid';
 import TimerIcon from '@mui/icons-material/Timer';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
@@ -40,25 +32,17 @@ const IconWrapper = styled(Box)(({ theme }) => ({
   },
 }));
 
-const ICO = () => {
-  const navigate = useNavigate();
-  // This would come from your web3 integration
-  const progress = 65;
-
-  const handleParticipateClick = () => {
-    navigate('/ico');
-  };
-
+const ICOHero = () => {
   return (
     <Box
       sx={{
-        py: 10,
+        py: 2,
         background: (theme) =>
           `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.background.paper} 100%)`,
       }}
     >
       <Container maxWidth="lg">
-        <Box sx={{ textAlign: 'center', mb: 8 }}>
+        <Box sx={{ textAlign: 'center', mb: 11 }}>
           <Typography
             variant="h2"
             sx={{
@@ -80,7 +64,7 @@ const ICO = () => {
           </Typography>
         </Box>
 
-        <Grid container spacing={4}>
+        <Grid container spacing={2}>
           <Grid item xs={12} md={4}>
             <GlassPaper>
               <IconWrapper>
@@ -145,58 +129,9 @@ const ICO = () => {
             </GlassPaper>
           </Grid>
         </Grid>
-
-        <Box sx={{ mt: 6 }}>
-          <GlassPaper>
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="h5" sx={{ mb: 2, fontWeight: 600 }}>
-                ICO Progress
-              </Typography>
-              <LinearProgress
-                variant="determinate"
-                value={progress}
-                sx={{
-                  height: 10,
-                  borderRadius: 5,
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  '& .MuiLinearProgress-bar': {
-                    background: (theme) =>
-                      `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-                  },
-                }}
-              />
-            </Box>
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                mb: 3,
-              }}
-            >
-              <Typography variant="body1">Raised: {progress}%</Typography>
-              <Typography variant="body1">Target: 100%</Typography>
-            </Box>
-            <Button
-              variant="contained"
-              size="large"
-              onClick={handleParticipateClick}
-              sx={{
-                borderRadius: '28px',
-                py: 1.5,
-                fontSize: '1.1rem',
-                textTransform: 'none',
-                background: (theme) =>
-                  `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-                alignSelf: 'center',
-              }}
-            >
-              Participate in ICO
-            </Button>
-          </GlassPaper>
-        </Box>
       </Container>
     </Box>
   );
 };
 
-export default ICO;
+export default ICOHero;
