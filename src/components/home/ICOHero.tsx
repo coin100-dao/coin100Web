@@ -36,13 +36,13 @@ const ICOHero = () => {
   return (
     <Box
       sx={{
-        py: 10,
+        py: 2,
         background: (theme) =>
           `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.background.paper} 100%)`,
       }}
     >
       <Container maxWidth="lg">
-        <Box sx={{ textAlign: 'center', mb: 8 }}>
+        <Box sx={{ textAlign: 'center', mb: 11 }}>
           <Typography
             variant="h2"
             sx={{
@@ -64,7 +64,7 @@ const ICOHero = () => {
           </Typography>
         </Box>
 
-        <Grid container spacing={4}>
+        <Grid container spacing={2}>
           <Grid item xs={12} md={4}>
             <GlassPaper>
               <IconWrapper>

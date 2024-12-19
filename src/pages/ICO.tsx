@@ -175,7 +175,7 @@ const ICO: React.FC = () => {
           )}
         </Box>
 
-        <Box sx={{ position: 'relative' }}>
+        <Box sx={{ position: 'relative', mb: 1 }}>
           <Box
             sx={{
               position: 'absolute',
