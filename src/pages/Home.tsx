@@ -6,7 +6,6 @@ import Tokenomics from '../components/home/Tokenomics';
 import TechnicalArchitecture from '../components/home/TechnicalArchitecture';
 import Governance from '../components/home/Governance';
 import Roadmap from '../components/home/Roadmap';
-import ICO from '../components/home/ICO';
 
 const Home = () => {
   const theme = useTheme();
@@ -104,23 +103,6 @@ const Home = () => {
           />
           <Governance />
         </Box>
-
-        <Box sx={{ position: 'relative' }}>
-          <Box
-            sx={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: '200px',
-              background:
-                'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(255,111,97,0.05) 100%)',
-              pointerEvents: 'none',
-            }}
-          />
-          <ICO />
-        </Box>
-
         <Box sx={{ position: 'relative' }}>
           <Box
             sx={{
