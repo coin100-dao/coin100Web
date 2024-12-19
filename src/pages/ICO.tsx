@@ -61,7 +61,7 @@ const ICO: React.FC = () => {
   const timeLeft = icoEndTime * 1000 - Date.now();
   const now = Math.floor(Date.now() / 1000);
   const saleNotStarted = now < icoStartTime;
-  const saleEnded = now > icoEndTime;
+  // const saleEnded = now > icoEndTime;
 
   const handleConnectWallet = async () => {
     try {
@@ -78,12 +78,12 @@ const ICO: React.FC = () => {
         color: theme.palette.warning.main,
       };
     }
-    if (saleEnded) {
-      return {
-        text: 'Sale has ended',
-        color: theme.palette.error.main,
-      };
-    }
+    // if (saleEnded) {
+    //   return {
+    //     text: 'Sale has ended',
+    //     color: theme.palette.error.main,
+    //   };
+    // }
     if (isIcoActive) {
       return {
         text: `Sale ends ${formatDistanceToNow(icoEndTime * 1000, { addSuffix: true })}`,
