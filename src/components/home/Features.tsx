@@ -1,3 +1,5 @@
+// src/components/home/Features.tsx
+
 import React from 'react';
 import { Box, Container, Typography, Grid, Paper } from '@mui/material';
 import { styled, Theme } from '@mui/material/styles';
@@ -45,36 +47,37 @@ const features = [
     icon: <AccountBalanceWalletIcon />,
     title: 'Easy Investment',
     description:
-      'Gain exposure to the top 100 cryptocurrencies with a single token.',
+      'Gain exposure to the top 100 cryptocurrencies with a single, easily manageable token.',
   },
   {
     icon: <AutoGraphIcon />,
-    title: 'Market Tracking',
+    title: 'Automated Rebase',
     description:
-      'Automatically adjusts to reflect the overall crypto market performance.',
+      'Automatically adjusts your balance to reflect changes in the top 100 market cap, ensuring your investment stays aligned with the market.',
   },
   {
     icon: <SecurityIcon />,
     title: 'Secure & Audited',
     description:
-      'Built with robust security measures and following best practices.',
+      'Built with robust security measures and audited by multiple independent firms to ensure the safety of your investments.',
   },
   {
     icon: <BalanceIcon />,
     title: 'Fair Distribution',
-    description: 'Equal treatment of all holders during rebases and updates.',
+    description:
+      'Equal treatment of all holders during rebases and updates, maintaining proportional ownership without favoritism.',
   },
   {
     icon: <UpdateIcon />,
     title: 'Regular Updates',
     description:
-      'Frequent rebase mechanism keeps the index current with market changes.',
+      'Frequent rebasing mechanisms keep the index current with real-time market cap changes, providing up-to-date exposure.',
   },
   {
     icon: <AccountTreeIcon />,
     title: 'Polygon Network',
     description:
-      'Built on Polygon for low fees and high transaction throughput.',
+      'Leveraging Polygon for low fees, high transaction throughput, and seamless integration with DeFi protocols.',
   },
 ];
 

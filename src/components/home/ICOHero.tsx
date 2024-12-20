@@ -102,9 +102,7 @@ const ICOHero = () => {
                 <Typography variant="body1" sx={{ mb: 1 }}>
                   • Network: Polygon
                 </Typography>
-                <Typography variant="body1">
-                  • Accept: POL(MATIC), USDC
-                </Typography>
+                <Typography variant="body1">• Accept: USDC</Typography>
               </Box>
             </GlassPaper>
           </Grid>

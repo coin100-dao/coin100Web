@@ -1,3 +1,5 @@
+// src/components/home/Governance.tsx
+
 import React from 'react';
 import { Box, Container, Typography, Grid, Paper } from '@mui/material';
 import { styled } from '@mui/system';

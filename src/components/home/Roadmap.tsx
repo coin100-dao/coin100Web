@@ -1,3 +1,5 @@
+// src/components/home/Roadmap.tsx
+
 import React from 'react';
 import { Box, Container, Typography, Paper } from '@mui/material';
 import {
@@ -27,45 +29,84 @@ const StyledTimelineDot = styled(TimelineDot)(({ theme }) => ({
   boxShadow: 'none',
 }));
 
-const roadmapItems = [
+const roadmapPhases = [
   {
     icon: <LaunchIcon />,
     title: 'Phase 1: Launch',
     items: [
       'Smart Contract Development',
-      'Security Audits',
+      'Core Token Contract Implementation',
+      'Public Sale Contract Development',
+      'Security Features Integration',
+      'Multiple Independent Security Audits',
+      'Bug Bounty Program Initiation',
+      'Community Code Reviews',
       'Initial Community Building',
-      'ICO Launch',
+      'Social Media Presence Establishment',
+      'Community Channels Setup',
+      'Educational Content Creation',
+      'Public Sale Launch',
+      'ICO Initiation',
+      'Liquidity Pool Creation',
+      'Initial Market Making',
     ],
   },
   {
     icon: <GroupsIcon />,
     title: 'Phase 2: Growth',
     items: [
-      'Exchange Listings',
-      'Marketing Campaigns',
-      'Community Expansion',
-      'Partnership Development',
+      'Exchange Listings on Major Platforms',
+      'DEX Integrations',
+      'CEX Partnerships Formation',
+      'Market Maker Relationships Development',
+      'Comprehensive Marketing Campaigns',
+      'Brand Awareness Initiatives',
+      'Influencer Collaborations',
+      'Educational Webinars and Workshops',
+      'Community Expansion Strategies',
+      'Ambassador Program Launch',
+      'Regional Community Groups Formation',
+      'Content Creator Network Establishment',
+      'Strategic Partnership Development',
+      'Integration Partnerships with Other Protocols',
+      'Cross-Protocol Collaborations',
     ],
   },
   {
     icon: <AutoGraphIcon />,
     title: 'Phase 3: Evolution',
     items: [
-      'Oracle Integration',
-      'Automated Rebase System',
-      'Enhanced Market Analytics',
-      'Additional Trading Pairs',
+      'Governance Integration',
+      'Deploy Governor Contract and Timelock Controller',
+      'Enable Community Voting on Proposals',
+      'Automated Rebase System Implementation',
+      'Automated Rebase Triggers via Oracles',
+      'Introduction of Fail-Safe Mechanisms',
+      'Enhanced Market Analytics Development',
+      'Real-Time Tracking Dashboard Launch',
+      'Performance Metrics Monitoring',
+      'Market Insight Tools Deployment',
+      'Additional Trading Pairs Introduction',
+      'New Liquidity Pools Creation',
+      'Cross-Chain Bridges Establishment',
+      'Synthetic Asset Integration',
     ],
   },
   {
     icon: <SecurityIcon />,
     title: 'Phase 4: Maturity',
     items: [
-      'Governance Implementation',
-      'Community DAO',
-      'Advanced Security Features',
-      'Cross-chain Integration',
+      'Full Decentralization Achieved',
+      'Complete Transition to Community Governance',
+      'Multi-Signature Treasury Management',
+      'Advanced Security Features Implementation',
+      'Multi-Sig Implementations for Enhanced Security',
+      'Emergency Response System Deployment',
+      'Enhanced Audit Coverage Expansion',
+      'Comprehensive Cross-Chain Integration',
+      'Layer 2 Solutions Implementation',
+      'Multiple Blockchain Support Expansion',
+      'Unified Liquidity Management Systems',
     ],
   },
 ];
@@ -80,6 +121,7 @@ const Roadmap = () => {
       }}
     >
       <Container maxWidth="lg">
+        {/* Header */}
         <Box sx={{ textAlign: 'center', mb: 8 }}>
           <Typography
             variant="h2"
@@ -98,24 +140,25 @@ const Roadmap = () => {
             variant="h5"
             sx={{ opacity: 0.8, maxWidth: '800px', mx: 'auto' }}
           >
-            Our journey to revolutionize crypto index investing
+            Our journey towards a decentralized future
           </Typography>
         </Box>
 
+        {/* Timeline */}
         <Timeline position="alternate">
-          {roadmapItems.map((item, index) => (
+          {roadmapPhases.map((phase, index) => (
             <TimelineItem key={index}>
               <TimelineSeparator>
-                <StyledTimelineDot>{item.icon}</StyledTimelineDot>
-                {index < roadmapItems.length - 1 && <TimelineConnector />}
+                <StyledTimelineDot>{phase.icon}</StyledTimelineDot>
+                {index < roadmapPhases.length - 1 && <TimelineConnector />}
               </TimelineSeparator>
               <TimelineContent>
                 <GlassPaper>
                   <Typography variant="h5" sx={{ mb: 2, fontWeight: 600 }}>
-                    {item.title}
+                    {phase.title}
                   </Typography>
                   <Box component="ul" sx={{ m: 0, pl: 2 }}>
-                    {item.items.map((listItem, listIndex) => (
+                    {phase.items.map((listItem, listIndex) => (
                       <Typography
                         key={listIndex}
                         component="li"
