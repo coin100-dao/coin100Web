@@ -1,3 +1,5 @@
+// src/components/home/Tokenomics.tsx
+
 import React from 'react';
 import { Box, Container, Typography, Grid, Paper } from '@mui/material';
 import { styled } from '@mui/system';
@@ -136,10 +138,7 @@ const Tokenomics = () => {
               </Typography>
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body1" sx={{ mb: 1 }}>
-                  • 10% transaction fee rewards
-                </Typography>
-                <Typography variant="body1" sx={{ mb: 1 }}>
-                  • Open LP participation
+                  • 1% transaction fee rewards
                 </Typography>
                 <Typography variant="body1" sx={{ mb: 1 }}>
                   • Community-governed

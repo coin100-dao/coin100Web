@@ -63,7 +63,7 @@ const Whitepaper: React.FC = () => {
       icon: faChartLine,
       content: `COIN100 (C100) is a decentralized cryptocurrency index fund built on the Polygon network. 
       It represents the top 100 cryptocurrencies by market capitalization, mirroring the performance of the overall crypto market. 
-      Inspired by traditional index funds like the S&P 500, C100 provides a diversified, market-wide exposure to the crypto industry 
+      Inspired by traditional index funds like the S&P 500, C100 provides diversified, market-wide exposure to the crypto industry 
       without requiring active portfolio management from investors.`,
     },
     {
@@ -129,15 +129,15 @@ const Whitepaper: React.FC = () => {
         {
           title: 'Initial Parameters',
           content: `- **Total Supply:** Equal to the initial top 100 crypto market cap (denominated in C100 units).  
-          - **Initial Price:** Approximately $1 per C100 token, assuming pairing with a stable asset in a DEX.`,
+          - **Initial Price:** Fixed at approximately 0.001 USDC per C100 token during presale.`,
         },
         {
-          title: 'Distribution (Owner Allocation & ICO)',
-          content: `- **Owner Allocation:** 3% of total supply is retained by the owner for development, liquidity provision, and other strategic purposes.  
-          - **ICO Allocation:** 90% of total supply is allocated for the Initial Coin Offering (ICO), enabling widespread distribution and community participation.`,
+          title: 'Distribution (Treasury Allocation & ICO)',
+          content: `- **Treasury Allocation:** 100% of the initial supply is allocated to the treasury for distribution during the ICO and liquidity provisioning.  
+          - **ICO Allocation:** The treasury manages the sale of C100 tokens during the ICO, allowing widespread distribution and community participation.`,
         },
         {
-          title: 'Rebase Formula ("Genius" Formula)',
+          title: 'Rebase Formula',
           content: `**ratio = M_new / M_old**  
           - **New Supply = Old Supply * ratio**  
           - Every holder’s balance is multiplied by the same ratio.  
@@ -149,11 +149,11 @@ const Whitepaper: React.FC = () => {
         },
         {
           title: 'Liquidity Provider Rewards',
-          content: `A dedicated percentage of the supply changes during rebases is allocated as rewards to liquidity providers. Initially set to 5%, this can be adjusted up to 10% based on governance decisions. This incentivizes users to provide liquidity, ensuring deep liquidity pools, reducing slippage, and fostering a robust trading environment.`,
+          content: `Liquidity providers are incentivized through a fixed reward system. A dedicated 1% fee from each transaction is allocated to the liquidity pool, ensuring deep liquidity pools, reducing slippage, and fostering a robust trading environment.`,
         },
         {
           title: 'Fee-Based Treasury',
-          content: `When enabled, transfer fees are collected and sent to a designated treasury address. This mechanism supports the growth and sustainability of the project by funding development, marketing, audits, and other strategic initiatives.`,
+          content: `A 1% transaction fee is collected and sent to the treasury address. This mechanism supports the growth and sustainability of the project by funding development, marketing, audits, and other strategic initiatives.`,
         },
       ],
     },
@@ -168,19 +168,19 @@ const Whitepaper: React.FC = () => {
         },
         {
           title: 'C100 Token Contract',
-          content: `Implements ERC20 standards, rebase logic, ownership control, pause/unpause functionalities, transfer fee mechanisms, liquidity provider rewards allocation, and integration points for future governance.`,
+          content: `Implements ERC20 standards with a rebasing mechanism, ownership control, pause/unpause functionalities, fee splitting between treasury and liquidity pool, and integration points for future governance.`,
         },
         {
-          title: 'ICO (Public Sale) Contract',
-          content: `Handles the initial distribution of 90% tokens. Investors purchase C100 with POL or approved ERC20 tokens (e.g., USDC) during the ICO period. Unsold tokens are burned at the end, ensuring only the circulating supply reflects real participants. Additionally, during the ICO, a configurable reward percentage is allocated to liquidity providers from the transaction fees to incentivize liquidity provisioning.`,
+          title: 'Public Sale Contract',
+          content: `Handles the initial distribution of C100 tokens. Investors purchase C100 with USDC at a fixed rate during the ICO period. Unsold tokens are burned at the end, ensuring only the circulating supply reflects real participants.`,
         },
         {
           title: 'Scaling and GonsPerFragment',
           content: `Balances are tracked in a large integer unit called “gons.” The global \`gonsPerFragment\` variable determines how these translate into user balances. On rebase, adjusting \`gonsPerFragment\` updates everyone’s balance proportionally in O(1) complexity.`,
         },
         {
-          title: 'Dynamic `polRate` Mechanism',
-          content: `The \`polRate\` is dynamically determined based on the reserves in the \`C100-POL\` liquidity pool. If unavailable, it falls back to the \`C100-USDC\` pool using a predefined \`polInUSDCRate\`. This ensures accurate pricing aligned with market conditions.`,
+          title: 'Rebase Mechanism',
+          content: `The rebase mechanism adjusts the total supply based on the new market capitalization and current price. During presale, a fixed price is used, and post-presale, the price is determined by the single liquidity pool (C100/USDC). This ensures accurate and real-time supply adjustments aligned with market conditions.`,
         },
       ],
     },
@@ -191,15 +191,15 @@ const Whitepaper: React.FC = () => {
       subSections: [
         {
           title: 'Transition from Owner to Governor',
-          content: `Initially, the owner manages the contract. Later, a governor contract can be introduced. The governor can propose and vote on changes (parameters, treasury usage, etc.), enabling community-driven evolution.`,
+          content: `Initially, the treasury manages the contract. Over time, a governor contract can be introduced. The governor can propose and vote on changes (parameters, treasury usage, etc.), enabling community-driven evolution.`,
         },
         {
           title: 'Future Governor Contract',
-          content: `By deploying a governor contract and timelock controller, the project gradually moves towards full decentralization. Governance token holders can vote on upgrades, new features, or parameter changes (e.g., adjusting the rebase frequency, transfer fees, or liquidity rewards).`,
+          content: `By deploying a governor contract and timelock controller, the project gradually moves towards full decentralization. Governance token holders can vote on upgrades, new features, or parameter changes (e.g., adjusting the rebase frequency, fees, or liquidity rewards).`,
         },
         {
           title: 'Community Involvement',
-          content: `Over time, the community will shape the project’s future. They can propose:
+          content: `The community will shape the project’s future by proposing:
           - Adjusting parameters (fees, rebase frequency)
           - Allocating treasury funds for development, marketing, or liquidity
           - Introducing new features or improvements
@@ -214,7 +214,7 @@ const Whitepaper: React.FC = () => {
       subSections: [
         {
           title: 'Ownership Controls',
-          content: `The \`onlyAdmin\` modifiers ensure that only authorized parties (owner or governor) can make critical changes, safeguarding the contract against unauthorized modifications.`,
+          content: `The \`onlyAdmin\` modifiers ensure that only authorized parties (treasury or governor) can make critical changes, safeguarding the contract against unauthorized modifications.`,
         },
         {
           title: 'Pause/Unpause Mechanisms',
@@ -226,7 +226,7 @@ const Whitepaper: React.FC = () => {
         },
         {
           title: 'Audits and Best Practices',
-          content: `Smart contract auditing and community code reviews will enhance trust and security. Following industry standards, best practices, and thorough testing before mainnet deployment is crucial.`,
+          content: `Smart contract auditing and community code reviews enhance trust and security. Following industry standards, best practices, and thorough testing before mainnet deployment is crucial.`,
         },
         {
           title: 'Token Rescue and Burning',
@@ -244,7 +244,7 @@ const Whitepaper: React.FC = () => {
           items: [
             'Smart Contract Development',
             'Core token contract implementation',
-            'ICO contract development',
+            'Public sale contract development',
             'Security features integration',
             'Security Audits',
             'Multiple independent audits',
@@ -254,8 +254,8 @@ const Whitepaper: React.FC = () => {
             'Social media presence establishment',
             'Community channels setup',
             'Educational content creation',
-            'ICO Launch',
-            'Public sale initiation',
+            'Public Sale Launch',
+            'ICO initiation',
             'Liquidity pool creation',
             'Initial market making',
           ],
@@ -284,14 +284,12 @@ const Whitepaper: React.FC = () => {
         {
           phase: 'Phase 3: Evolution',
           items: [
-            'Oracle Integration',
-            'Chainlink implementation',
-            'Automated market cap tracking',
-            'Price feed optimization',
+            'Governance Integration',
+            'Deploy governor contract and timelock controller',
+            'Enable community voting on proposals',
             'Automated Rebase System',
-            'Smart contract upgrades',
-            'Automated execution',
-            'Fail-safe mechanisms',
+            'Implement automated rebase triggers via oracles',
+            'Introduce fail-safe mechanisms',
             'Enhanced Market Analytics',
             'Real-time tracking dashboard',
             'Performance metrics',
@@ -305,14 +303,9 @@ const Whitepaper: React.FC = () => {
         {
           phase: 'Phase 4: Maturity',
           items: [
-            'Governance Implementation',
-            'DAO structure setup',
-            'Voting mechanisms',
-            'Proposal framework',
-            'Community DAO',
-            'Treasury management',
-            'Parameter control',
-            'Development funding',
+            'Full Decentralization',
+            'Complete transition to community governance',
+            'Multi-signature treasury management',
             'Advanced Security Features',
             'Multi-sig implementations',
             'Emergency response system',
@@ -333,15 +326,15 @@ const Whitepaper: React.FC = () => {
         {
           title: 'ICO Parameters',
           content: `- **Duration:** 12 months.  
-          - **Accepted Currencies:** POL, USDC, and other approved ERC20 tokens.  
-          - **Rate:** Fixed C100 per POL/USDC, with dynamic updates based on \`polRate\`.  
-          - **Liquidity Provider Reward:** Configurable percentage of transaction fees allocated to liquidity providers during the ICO.`,
+          - **Accepted Currency:** USDC.  
+          - **Rate:** Fixed at 1 C100 = 0.001 USDC.  
+          - **Liquidity Provider Reward:** 1% of each transaction fee allocated to the liquidity pool.`,
         },
         {
           title: 'During the ICO',
-          content: `- **Purchases:** Investors buy C100 directly from the public sale contract using POL or approved ERC20 tokens.  
-          - **Rebase Operations:** Owner or governor periodically calls rebase to keep C100 supply aligned with the top 100 market cap.  
-          - **Liquidity Provision:** Liquidity providers contribute to the C100-POL and C100-USDC liquidity pools and earn rewards based on their contribution.`,
+          content: `- **Purchases:** Investors buy C100 directly from the public sale contract using USDC at a fixed rate.  
+          - **Rebase Operations:** Admins periodically call rebase to keep C100 supply aligned with the top 100 market cap.  
+          - **Liquidity Provision:** Liquidity providers contribute to the C100/USDC liquidity pool and earn rewards based on their contribution.`,
         },
         {
           title: 'Post-ICO Finalization and Burning Unsold Tokens',
@@ -352,23 +345,23 @@ const Whitepaper: React.FC = () => {
         {
           title: 'Maintaining the Index Post-ICO',
           content: `After the ICO:
-          - **Continuous Rebasing:** Continue daily/periodic rebases to adjust supply based on market cap changes.
+          - **Continuous Rebasing:** Continue periodic rebases to adjust supply based on market cap changes.
           - **Automated Upkeep:** Transition to automated rebase operations using oracles and governance decisions.
           - **Governance Enhancements:** Introduce advanced features such as treasury management, automated liquidity rewards, and fee adjustments through community proposals.`,
         },
         {
           title: 'Liquidity Provider Participation During ICO',
-          content: `- **Incentives:** During the ICO, liquidity providers are rewarded with a configurable percentage of the total transaction fees generated.
-          - **Participation:** Anyone can become a liquidity provider by adding C100 and POL (MATIC) or other approved tokens to supported DEXs.
+          content: `- **Incentives:** During the ICO, liquidity providers are rewarded with a fixed percentage of the transaction fees.
+          - **Participation:** Anyone can become a liquidity provider by adding C100 and USDC to the supported DEXs.
           - **Rewards Distribution:** Rewards are distributed proportionally based on the amount of liquidity each provider contributes, ensuring fair compensation for contributions.`,
         },
       ],
     },
     {
       id: 'faq',
-      title: 'FAQ (112 Questions & Answers)',
+      title: 'FAQ',
       icon: faInfoCircle,
-      content: [], // This will be handled separately
+      content: [], // FAQ is handled separately
     },
     {
       id: 'contact-information',
@@ -378,20 +371,64 @@ const Whitepaper: React.FC = () => {
 
 - **Website:** [https://coin100.link](https://coin100.link)
 - **Email:** [mayor@coin100.link](mailto:mayor@coin100.link)
+- **Github:** [coin100-dao](https://github.com/coin100-dao)
 - **Discord:** [Join Our Discord](https://discord.com/channels/1318664310490398770/1318664310490398773)
 - **Reddit:** [r/Coin100](https://www.reddit.com/r/Coin100)
 - **X:** [@Coin100token](https://x.com/Coin100token)
 - **Telegram:** [@Coin100token](https://t.me/coin100token)
-- **coin100:** \`0x1459884924e7e973d1579ee4ebcaa4ef0b1c8f21\`
-- **publicSale:** \`0x2cdac1848b1c14d36e173e10315da97bb17b5489\``,
+- **coin100 Contract Address:** \`0x1459884924e7e973d1579ee4ebcaa4ef0b1c8f21\`
+- **PublicSale Contract Address:** \`0x2cdac1848b1c14d36e173e10315da97bb17b5489\``,
     },
     {
       id: 'conclusion',
       title: 'Conclusion',
       icon: faHandshake,
-      content: `COIN100 (C100) provides a seamless, fair, and transparent way to invest in the top 100 cryptocurrencies. Through a global rebase mechanism, dynamic pricing adjustments, fee-based treasury growth, configurable liquidity provider incentives, and robust security, it aims to become a trusted and stable representation of the crypto market’s collective growth. With a clear path towards decentralized governance and community-driven evolution, C100 empowers investors to participate in a diversified crypto index without the complexities of active portfolio management. Join the community, contribute to liquidity provisioning, and help shape the future of decentralized index investing.`,
+      content: `COIN100 (C100) offers a robust and transparent mechanism for investors to gain diversified exposure to the top 100 cryptocurrencies. Through its rebasing supply model, fee-based treasury and liquidity growth, and streamlined public sale mechanics, C100 stands as a reliable and scalable index fund in the decentralized finance ecosystem. With a clear governance roadmap and community-driven initiatives, C100 is poised to evolve and adapt, ensuring long-term stability and value for its holders. Join the COIN100 community today and be part of the future of decentralized index investing.`,
     },
   ];
+
+  /**
+   * Helper function to render subSection content.
+   * If the content includes list items (starting with '- '), it renders a list.
+   * Otherwise, it renders the content as a paragraph.
+   */
+  const renderSubSectionContent = (content: string) => {
+    const lines = content.split('\n').filter((line) => line.trim() !== '');
+    const hasListItems = lines.some((line) => line.trim().startsWith('- '));
+
+    if (hasListItems) {
+      const listItems = lines
+        .filter((line) => line.trim().startsWith('- '))
+        .map((line) => line.replace(/^- /, '').trim());
+
+      return (
+        <List dense>
+          {listItems.map((item, index) => (
+            <ListItem key={index} disableGutters>
+              <ListItemIcon>
+                <Box
+                  sx={{
+                    width: '6px',
+                    height: '6px',
+                    borderRadius: '50%',
+                    bgcolor: theme.palette.primary.main,
+                    mt: '4px',
+                  }}
+                />
+              </ListItemIcon>
+              <ListItemText primary={item} />
+            </ListItem>
+          ))}
+        </List>
+      );
+    } else {
+      return (
+        <Typography variant="body1" paragraph>
+          {content}
+        </Typography>
+      );
+    }
+  };
 
   return (
     <Box
@@ -557,6 +594,7 @@ const Whitepaper: React.FC = () => {
                           p: 3,
                           height: '100%',
                           background: `linear-gradient(135deg, ${theme.palette.background.paper}40 0%, ${theme.palette.background.paper}20 100%)`,
+                          borderRadius: '16px',
                         }}
                       >
                         <Typography variant="h6" gutterBottom>
@@ -573,6 +611,7 @@ const Whitepaper: React.FC = () => {
                                       height: '6px',
                                       borderRadius: '50%',
                                       bgcolor: theme.palette.primary.main,
+                                      mt: '4px',
                                     }}
                                   />
                                 </ListItemIcon>
@@ -618,9 +657,7 @@ const Whitepaper: React.FC = () => {
                     <Typography variant="h5" gutterBottom>
                       {sub.title}
                     </Typography>
-                    <Typography variant="body1" paragraph>
-                      {sub.content}
-                    </Typography>
+                    {renderSubSectionContent(sub.content)}
                   </Box>
                 ))}
               </Box>
@@ -631,11 +668,6 @@ const Whitepaper: React.FC = () => {
             )}
           </Paper>
         ))}
-
-        {/* Contact Information */}
-        {/* Already handled in sections */}
-
-        {/* Footer or Additional Sections can be added here */}
       </Container>
     </Box>
   );

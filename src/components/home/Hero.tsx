@@ -1,3 +1,5 @@
+// src/components/home/Hero.tsx
+
 import React from 'react';
 import { Box, Container, Typography, Button, useTheme } from '@mui/material';
 import { styled } from '@mui/system';
@@ -91,6 +93,10 @@ const Hero = () => {
                   textTransform: 'none',
                   background: (theme) =>
                     `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                  '&:hover': {
+                    background: (theme) =>
+                      `linear-gradient(45deg, ${theme.palette.primary.dark}, ${theme.palette.secondary.dark})`,
+                  },
                 }}
               >
                 Join ICO
@@ -105,6 +111,12 @@ const Hero = () => {
                   py: 1.5,
                   fontSize: '1.1rem',
                   textTransform: 'none',
+                  borderColor: theme.palette.primary.main,
+                  color: theme.palette.text.primary,
+                  '&:hover': {
+                    borderColor: theme.palette.primary.dark,
+                    backgroundColor: 'rgba(0,0,0,0.04)',
+                  },
                 }}
               >
                 Learn More

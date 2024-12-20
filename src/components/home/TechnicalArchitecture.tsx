@@ -1,3 +1,5 @@
+// src/components/home/TechnicalArchitecture.tsx
+
 import React from 'react';
 import { Box, Container, Typography, Grid, Paper } from '@mui/material';
 import { styled } from '@mui/system';
@@ -13,10 +15,6 @@ const GlassPaper = styled(Paper)(({ theme }) => ({
   borderRadius: '24px',
   border: '1px solid rgba(255, 255, 255, 0.1)',
   height: '100%',
-  transition: 'transform 0.3s ease-in-out',
-  '&:hover': {
-    transform: 'translateY(-8px)',
-  },
 }));
 
 const IconWrapper = styled(Box)(({ theme }) => ({
@@ -105,13 +103,13 @@ const TechnicalArchitecture = () => {
               </Typography>
               <Box component="ul" sx={{ m: 0, pl: 2 }}>
                 <Typography component="li" variant="body1" sx={{ mb: 1 }}>
-                  ERC20 compliance
+                  ERC20 compliance with rebasing functionality
                 </Typography>
                 <Typography component="li" variant="body1" sx={{ mb: 1 }}>
-                  Rebase functionality
+                  Ownership controls for secure management
                 </Typography>
                 <Typography component="li" variant="body1">
-                  Ownership controls
+                  Pause/unpause functionalities to handle emergencies
                 </Typography>
               </Box>
             </GlassPaper>
@@ -126,17 +124,17 @@ const TechnicalArchitecture = () => {
                 Scaling Solution
               </Typography>
               <Typography variant="body1" sx={{ mb: 2, opacity: 0.8 }}>
-                Efficient data handling:
+                Efficient data handling with:
               </Typography>
               <Box component="ul" sx={{ m: 0, pl: 2 }}>
                 <Typography component="li" variant="body1" sx={{ mb: 1 }}>
-                  GonsPerFragment scaling
+                  GonsPerFragment scaling for proportional balance adjustments
                 </Typography>
                 <Typography component="li" variant="body1" sx={{ mb: 1 }}>
-                  Optimized storage
+                  Optimized storage mechanisms to reduce gas costs
                 </Typography>
                 <Typography component="li" variant="body1">
-                  Gas-efficient operations
+                  Gas-efficient operations ensuring cost-effective transactions
                 </Typography>
               </Box>
             </GlassPaper>
@@ -151,23 +149,23 @@ const TechnicalArchitecture = () => {
                 Security Features
               </Typography>
               <Typography variant="body1" sx={{ mb: 2, opacity: 0.8 }}>
-                Multiple security layers:
+                Multiple security layers include:
               </Typography>
               <Box component="ul" sx={{ m: 0, pl: 2 }}>
                 <Typography component="li" variant="body1" sx={{ mb: 1 }}>
-                  Reentrancy guards
+                  Reentrancy guards to prevent complex attacks
                 </Typography>
                 <Typography component="li" variant="body1" sx={{ mb: 1 }}>
-                  Pause mechanisms
+                  Pause mechanisms to halt operations during emergencies
                 </Typography>
                 <Typography component="li" variant="body1" sx={{ mb: 1 }}>
-                  Access controls
+                  Access controls ensuring only authorized modifications
                 </Typography>
                 <Typography component="li" variant="body1" sx={{ mb: 1 }}>
-                  Secure LP reward distribution
+                  Secure liquidity provider reward distribution
                 </Typography>
                 <Typography component="li" variant="body1">
-                  Audited smart contracts
+                  Audited smart contracts for enhanced trust and reliability
                 </Typography>
               </Box>
             </GlassPaper>
