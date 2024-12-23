@@ -29,6 +29,15 @@ const AppRoutes: React.FC = () => {
       path: '/whitepaper',
       element: <Whitepaper />,
     },
+    {
+      path: '/whitepaper/c100.md',
+      element: (
+        <Navigate
+          to="https://raw.githubusercontent.com/coin100-dao/.github/main/profile/README.md"
+          replace
+        />
+      ),
+    },
   ];
 
   return (
