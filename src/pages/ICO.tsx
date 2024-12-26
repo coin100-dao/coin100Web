@@ -23,10 +23,12 @@ import Stats from '../components/ico/Stats';
 import ICOHero from '../components/home/ICOHero';
 import { formatDistanceToNow } from 'date-fns';
 import { AccessTime, AccountBalanceWallet } from '@mui/icons-material';
+import { useWeb3Init } from '../hooks/useWeb3Init';
 
 const ICO: React.FC = () => {
   const theme = useTheme();
   const dispatch = useDispatch<AppDispatch>();
+  const { isInitialized } = useWeb3Init();
 
   const {
     icoStartTime,
@@ -47,14 +49,14 @@ const ICO: React.FC = () => {
   } = useSelector((state: RootState) => state.web3);
 
   useEffect(() => {
-    if (walletAddress) {
+    if (isInitialized && walletAddress) {
       dispatch(fetchICOData());
       const interval = setInterval(() => {
         dispatch(fetchICOData());
       }, 15000);
       return () => clearInterval(interval);
     }
-  }, [dispatch, walletAddress]);
+  }, [dispatch, walletAddress, isInitialized]);
 
   const totalSupply = parseFloat(totalSold) + parseFloat(remainingTokens);
   const progress = (parseFloat(totalSold) / totalSupply) * 100;
