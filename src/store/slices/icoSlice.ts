@@ -1,17 +1,47 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import Web3 from 'web3';
 import { AbiItem } from 'web3-utils';
-import coin100ContractAbi from '../../data/coin100-contract-abi.json';
-import coin100PublicSaleContractAbi from '../../data/coin100-public-sale-contract-abi.json';
+import {
+  fetchContractABI,
+  fetchContractAddresses,
+} from '../../services/github';
 
-// Constants
-// const POLYGON_CHAIN_ID = '0x89'; // 137 in hex
-// const POLYGON_RPC_URL = 'https://polygon-mainnet.infura.io';
+// Initialize contract data
+let tokenAddress: string = '';
+let publicSaleAddress: string = '';
+let coin100ContractAbi: AbiItem[] = [];
+let coin100PublicSaleContractAbi: AbiItem[] = [];
 
-// Contract addresses from environment variables
-const tokenAddress = import.meta.env.VITE_REACT_C100_CONTRACT_ADDRESS;
-const publicSaleAddress = import.meta.env
-  .VITE_REACT_PUBLIC_SALE_CONTRACT_ADDRESS;
+// Function to initialize contract data
+export const initializeContractData = createAsyncThunk<
+  { tokenAddress: string; publicSaleAddress: string },
+  void,
+  { rejectValue: string }
+>('ico/initializeContractData', async (_, { rejectWithValue }) => {
+  try {
+    // Fetch contract addresses
+    const addresses = await fetchContractAddresses();
+    tokenAddress = addresses.c100TokenAddress;
+    publicSaleAddress = addresses.publicSaleAddress;
+
+    // Fetch contract ABIs
+    const [c100Abi, publicSaleAbi] = await Promise.all([
+      fetchContractABI('c100'),
+      fetchContractABI('public-sale'),
+    ]);
+
+    coin100ContractAbi = c100Abi;
+    coin100PublicSaleContractAbi = publicSaleAbi;
+
+    return { tokenAddress, publicSaleAddress };
+  } catch (error) {
+    return rejectWithValue(
+      error instanceof Error
+        ? error.message
+        : 'Failed to initialize contract data'
+    );
+  }
+});
 
 // Types
 interface ICOState {
@@ -24,6 +54,7 @@ interface ICOState {
   totalSold: string;
   remainingTokens: string;
   isIcoActive: boolean;
+  isInitialized: boolean;
 }
 
 // Helper functions
@@ -57,6 +88,7 @@ const initialState: ICOState = {
   totalSold: '0',
   remainingTokens: '0',
   isIcoActive: false,
+  isInitialized: false,
 };
 
 // Thunks
@@ -133,6 +165,20 @@ const icoSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // Initialize Contract Data
+      .addCase(initializeContractData.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(initializeContractData.fulfilled, (state) => {
+        state.loading = false;
+        state.isInitialized = true;
+      })
+      .addCase(initializeContractData.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload ?? 'Failed to initialize contract data';
+      })
+
       // Fetch ICO Data
       .addCase(fetchICOData.pending, (state) => {
         state.loading = true;

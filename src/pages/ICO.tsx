@@ -15,7 +15,7 @@ import {
   Card,
   CardContent,
 } from '@mui/material';
-import { fetchICOData } from '../store/slices/icoSlice';
+import { fetchICOData, initializeContractData } from '../store/slices/icoSlice';
 import { connectWallet } from '../store/slices/web3Slice';
 import BuySection from '../components/ico/BuySection';
 import SaleInfo from '../components/ico/SaleInfo';
@@ -23,12 +23,10 @@ import Stats from '../components/ico/Stats';
 import ICOHero from '../components/home/ICOHero';
 import { formatDistanceToNow } from 'date-fns';
 import { AccessTime, AccountBalanceWallet } from '@mui/icons-material';
-import { useWeb3Init } from '../hooks/useWeb3Init';
 
 const ICO: React.FC = () => {
   const theme = useTheme();
   const dispatch = useDispatch<AppDispatch>();
-  const { isInitialized } = useWeb3Init();
 
   const {
     icoStartTime,
@@ -39,6 +37,7 @@ const ICO: React.FC = () => {
     isIcoActive,
     loading: icoLoading,
     error: icoError,
+    isInitialized,
   } = useSelector((state: RootState) => state.ico);
 
   const {
@@ -47,6 +46,17 @@ const ICO: React.FC = () => {
     loading: walletLoading,
     error: walletError,
   } = useSelector((state: RootState) => state.web3);
+
+  useEffect(() => {
+    const init = async () => {
+      try {
+        await dispatch(initializeContractData()).unwrap();
+      } catch (error) {
+        console.error('Failed to initialize contract data:', error);
+      }
+    };
+    init();
+  }, [dispatch]);
 
   useEffect(() => {
     if (isInitialized && walletAddress) {

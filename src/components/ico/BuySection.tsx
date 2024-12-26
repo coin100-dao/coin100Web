@@ -44,8 +44,9 @@ const BuySection: React.FC = () => {
     try {
       await dispatch(buyTokensWithPOL(amount)).unwrap();
       setAmount('');
-    } catch {
+    } catch (error) {
       // Error will be handled by the slice
+      console.error('Failed to buy tokens:', error);
     }
   };
 
