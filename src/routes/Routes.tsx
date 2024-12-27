@@ -18,6 +18,10 @@ const AppRoutes: React.FC = () => {
       element: <PublicSale />,
     },
     {
+      path: '/ico',
+      element: <Navigate to="/sale" replace />,
+    },
+    {
       path: '/faq',
       element: <FAQPage />,
     },
