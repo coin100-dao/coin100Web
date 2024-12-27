@@ -15,15 +15,8 @@ import { format, formatDistanceToNow } from 'date-fns';
 
 const SaleInfo: React.FC = () => {
   const theme = useTheme();
-  const {
-    startTime,
-    endTime,
-    isFinalized,
-    isSaleActive,
-    isPaused,
-    totalSold,
-    remainingTokens,
-  } = useSelector((state: RootState) => state.publicSale);
+  const { startTime, endTime, isFinalized, isSaleActive, isPaused } =
+    useSelector((state: RootState) => state.publicSale);
 
   const now = Math.floor(Date.now() / 1000);
   const saleNotStarted = now < startTime;
@@ -157,33 +150,6 @@ const SaleInfo: React.FC = () => {
               gutterBottom
             >
               {getTimeInfo()}
-            </Typography>
-          </Grid>
-
-          <Grid item xs={12}>
-            <Typography variant="body2" color="textSecondary">
-              Total Tokens Sold
-            </Typography>
-            <Typography variant="body1" gutterBottom>
-              {Number(totalSold).toLocaleString()} C100
-            </Typography>
-          </Grid>
-
-          <Grid item xs={12}>
-            <Typography variant="body2" color="textSecondary">
-              Remaining Tokens
-            </Typography>
-            <Typography variant="body1" gutterBottom>
-              {Number(remainingTokens).toLocaleString()} C100
-            </Typography>
-          </Grid>
-
-          <Grid item xs={12}>
-            <Typography variant="body2" color="textSecondary">
-              Token Price
-            </Typography>
-            <Typography variant="body1" gutterBottom>
-              0.001 USDC per C100
             </Typography>
           </Grid>
         </Grid>

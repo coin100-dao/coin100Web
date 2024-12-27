@@ -15,6 +15,7 @@ import globalReducer from './slices/globalSlice';
 import coin100Reducer from './slices/coin100Slice';
 import web3Reducer from './slices/web3Slice';
 import publicSaleReducer from './slices/publicSaleSlice';
+import coin100ActivityReducer from './slices/coin100ActivitySlice';
 
 // Configure the Redux store
 export const store = configureStore({
@@ -24,6 +25,7 @@ export const store = configureStore({
     coin100: coin100Reducer,
     web3: web3Reducer,
     publicSale: publicSaleReducer,
+    coin100Activity: coin100ActivityReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

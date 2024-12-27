@@ -25,9 +25,7 @@ jobs:
         env:
           VITE_REACT_API_BASE_URL: ${{ secrets.VITE_REACT_API_BASE_URL }}
           VITE_REACT_APP_DEBUG: ${{ secrets.VITE_REACT_APP_DEBUG }}
-          VITE_REACT_C100_CONTRACT_ADDRESS: ${{ vars.VITE_REACT_C100_CONTRACT_ADDRESS }}
-          VITE_REACT_PUBLIC_SALE_CONTRACT_ADDRESS: ${{ vars.VITE_REACT_PUBLIC_SALE_CONTRACT_ADDRESS }}
-
+          
         run: npm run build
 
       - name: Configure AWS Credentials

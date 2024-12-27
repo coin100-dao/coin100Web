@@ -187,14 +187,9 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Contact
 
-- Email: mayor@coin100.link
-- Discord: [Join Our Discord](https://discord.com/channels/1318664310490398770/1318664310490398773)
-- Reddit: [r/Coin100](https://www.reddit.com/r/Coin100)
-- X: [@Coin100token](https://x.com/Coin100token)
-- Telegram: [@Coin100token](https://t.me/coin100token)
-
-## Smart Contract Addresses
-
-- COIN100: `0x1459884924e7e973d1579ee4ebcaa4ef0b1c8f21`
-- Public Sale: `0x2cdac1848b1c14d36e173e10315da97bb17b5489`
-</rewritten_file>
+- **Email:** mayor@coin100.link
+- **Discord:** [Join Our Discord](https://discord.com/channels/1318664310490398770/1318664310490398773)
+- **Reddit:** [r/Coin100](https://www.reddit.com/r/Coin100)
+- **X:** [@Coin100token](https://x.com/Coin100token)
+- **Telegram:** [@Coin100token](https://t.me/coin100token)
+- **Github:** [coin100-dao](https://github.com/coin100-dao)
