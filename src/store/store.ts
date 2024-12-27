@@ -17,6 +17,7 @@ import globalReducer from './slices/globalSlice';
 import coin100Reducer from './slices/coin100Slice';
 import icoReducer from './slices/icoSlice';
 import web3Reducer from './slices/web3Slice';
+import publicSaleReducer from './slices/publicSaleSlice';
 
 // Persist configuration for ico slice
 const persistConfig = {
@@ -36,6 +37,7 @@ export const store = configureStore({
     global: globalReducer,
     coin100: coin100Reducer,
     web3: web3Reducer,
+    publicSale: publicSaleReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

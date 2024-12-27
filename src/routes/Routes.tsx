@@ -2,7 +2,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Home from '../pages/Home';
-import ICO from '../pages/ICO';
+import PublicSale from '../pages/PublicSale';
 import FAQPage from '../pages/FAQPage';
 import Dashboard from '../pages/Dashboard';
 import Whitepaper from '../pages/Whitepaper';
@@ -14,8 +14,8 @@ const AppRoutes: React.FC = () => {
       element: <Home />,
     },
     {
-      path: '/ico',
-      element: <ICO />,
+      path: '/sale',
+      element: <PublicSale />,
     },
     {
       path: '/faq',
