@@ -11,6 +11,7 @@ import {
   Card,
   CardContent,
   Button,
+  Divider,
 } from '@mui/material';
 import {
   fetchPublicSaleData,
@@ -20,6 +21,7 @@ import { connectWallet } from '../store/slices/web3Slice';
 import BuySection from '../components/sale/BuySection';
 import SaleInfo from '../components/sale/SaleInfo';
 import Stats from '../components/sale/Stats';
+import ActivityLog from '../components/sale/ActivityLog';
 import { AccountBalanceWallet } from '@mui/icons-material';
 
 const PublicSale: React.FC = () => {
@@ -182,6 +184,17 @@ const PublicSale: React.FC = () => {
               <Grid item xs={12} md={6}>
                 <SaleInfo />
               </Grid>
+            </Grid>
+
+            {/* Activity Log Section */}
+            <Grid item xs={12}>
+              <Box mt={4}>
+                <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
+                  Recent Transactions
+                </Typography>
+                <Divider sx={{ mb: 3 }} />
+                <ActivityLog />
+              </Box>
             </Grid>
           </Grid>
         )}
