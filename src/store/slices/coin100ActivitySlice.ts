@@ -103,7 +103,6 @@ export const fetchTransferEvents = createAsyncThunk<FetchTransfersResult, void>(
     try {
       const web3 = new Web3(POLYGON_RPC);
       const addresses = await fetchContractAddresses();
-      console.log('Contract address:', addresses.c100TokenAddress);
 
       const currentBlock = await web3.eth.getBlockNumber();
       const state = getState() as { coin100Activity: ActivityState };
@@ -114,21 +113,8 @@ export const fetchTransferEvents = createAsyncThunk<FetchTransfersResult, void>(
           ? Math.max(Number(currentBlock) - BLOCKS_TO_FETCH, 0).toString()
           : state.coin100Activity.lastBlock;
 
-      console.log(
-        'Fetching events from block:',
-        fromBlock,
-        'to:',
-        currentBlock
-      );
-
       // Check if contract exists
       const code = await web3.eth.getCode(addresses.c100TokenAddress);
-      console.log(
-        'Contract code exists:',
-        code !== '0x',
-        'at address:',
-        addresses.c100TokenAddress
-      );
 
       if (code === '0x') {
         throw new Error('Contract not found at the specified address');
@@ -141,7 +127,6 @@ export const fetchTransferEvents = createAsyncThunk<FetchTransfersResult, void>(
       if (!transferEventSignature) {
         throw new Error('Failed to generate transfer event signature');
       }
-      console.log('Using transfer event signature:', transferEventSignature);
 
       const rawLogs = await web3.eth.getPastLogs({
         address: addresses.c100TokenAddress,
@@ -149,8 +134,6 @@ export const fetchTransferEvents = createAsyncThunk<FetchTransfersResult, void>(
         toBlock: 'latest',
         topics: [transferEventSignature],
       });
-
-      console.log('Found', rawLogs.length, 'transfer events');
 
       // Process events in batches
       const transfers = await processBatch(
@@ -186,8 +169,6 @@ export const fetchTransferEvents = createAsyncThunk<FetchTransfersResult, void>(
           return batchTransfers;
         }
       );
-
-      console.log('Processed', transfers.length, 'transfers');
 
       const oldestBlock =
         transfers.length > 0

@@ -16,8 +16,8 @@ import {
 import {
   fetchPublicSaleData,
   initializeContractData,
+  connectWallet,
 } from '../store/slices/publicSaleSlice';
-import { connectWallet } from '../store/slices/web3Slice';
 import BuySection from '../components/sale/BuySection';
 import SaleInfo from '../components/sale/SaleInfo';
 import Stats from '../components/sale/Stats';
@@ -28,17 +28,9 @@ const PublicSale: React.FC = () => {
   const theme = useTheme();
   const dispatch = useDispatch<AppDispatch>();
 
-  const {
-    loading: saleLoading,
-    error: saleError,
-    isInitialized,
-  } = useSelector((state: RootState) => state.publicSale);
-
-  const {
-    walletAddress,
-    loading: walletLoading,
-    error: walletError,
-  } = useSelector((state: RootState) => state.web3);
+  const { loading, error, isInitialized, walletAddress } = useSelector(
+    (state: RootState) => state.publicSale
+  );
 
   useEffect(() => {
     const init = async () => {
@@ -68,9 +60,6 @@ const PublicSale: React.FC = () => {
       console.error(err);
     }
   };
-
-  const loading = saleLoading || walletLoading;
-  const error = saleError || walletError;
 
   return (
     <Box
