@@ -12,9 +12,6 @@ let publicSaleAddress: string = '';
 let coin100ContractAbi: AbiItem[] = [];
 let coin100PublicSaleContractAbi: AbiItem[] = [];
 
-// Constants
-const C100_PRICE_USDC = '0.001'; // Price in USDC
-
 // Function to initialize contract data
 export const initializeContractData = createAsyncThunk<
   { tokenAddress: string; publicSaleAddress: string },
@@ -83,12 +80,9 @@ const getWeb3Instance = (): Web3 => {
 
 // Calculate C100 amount from USDC amount
 export const calculateC100Amount = (usdcAmount: string): string => {
-  const web3 = getWeb3Instance();
-  const usdcAmountWei = web3.utils.toWei(usdcAmount, 'mwei'); // USDC has 6 decimals
-  const c100Amount = (
-    Number(usdcAmountWei) / Number(C100_PRICE_USDC)
-  ).toString();
-  return web3.utils.fromWei(c100Amount, 'ether');
+  // Convert the USDC amount to the equivalent C100 amount (1 USDC = 1000 C100)
+  const c100Amount = (Number(usdcAmount) * 1000).toString();
+  return c100Amount;
 };
 
 // Initial state
