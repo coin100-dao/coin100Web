@@ -2,7 +2,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Home from '../pages/Home';
-import ICO from '../pages/ICO';
+import PublicSale from '../pages/PublicSale';
 import FAQPage from '../pages/FAQPage';
 import Dashboard from '../pages/Dashboard';
 import Whitepaper from '../pages/Whitepaper';
@@ -14,8 +14,12 @@ const AppRoutes: React.FC = () => {
       element: <Home />,
     },
     {
+      path: '/sale',
+      element: <PublicSale />,
+    },
+    {
       path: '/ico',
-      element: <ICO />,
+      element: <Navigate to="/sale" replace />,
     },
     {
       path: '/faq',
@@ -28,6 +32,15 @@ const AppRoutes: React.FC = () => {
     {
       path: '/whitepaper',
       element: <Whitepaper />,
+    },
+    {
+      path: '/whitepaper/c100.md',
+      element: (
+        <Navigate
+          to="https://raw.githubusercontent.com/coin100-dao/.github/main/profile/README.md"
+          replace
+        />
+      ),
     },
   ];
 

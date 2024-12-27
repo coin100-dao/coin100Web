@@ -35,8 +35,6 @@ Required environment variables:
 ```env
 VITE_REACT_API_BASE_URL=
 VITE_REACT_APP_DEBUG=false
-VITE_REACT_C100_CONTRACT_ADDRESS=
-VITE_REACT_PUBLIC_SALE_CONTRACT_ADDRESS=
 ```
 
 ### 4. Development Server

@@ -3,13 +3,47 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import Web3 from 'web3';
 import { AbiItem } from 'web3-utils';
-import coin100ContractAbi from '../../data/coin100-contract-abi.json';
-import coin100PublicSaleContractAbi from '../../data/coin100-public-sale-contract-abi.json';
+import {
+  fetchContractABI,
+  fetchContractAddresses,
+} from '../../services/github';
 
-// Constants: Replace with your actual deployed contract addresses
-const tokenAddress = import.meta.env.VITE_REACT_C100_CONTRACT_ADDRESS; // COIN100 Token Contract Address
-const publicSaleAddress = import.meta.env
-  .VITE_REACT_PUBLIC_SALE_CONTRACT_ADDRESS; // C100PublicSale Contract Address
+// Initialize contract data
+let tokenAddress: string = '';
+let publicSaleAddress: string = '';
+let coin100ContractAbi: AbiItem[] = [];
+let coin100PublicSaleContractAbi: AbiItem[] = [];
+
+// Function to initialize contract data
+export const initializeContractData = createAsyncThunk<
+  { tokenAddress: string; publicSaleAddress: string },
+  void,
+  { rejectValue: string }
+>('web3/initializeContractData', async (_, { rejectWithValue }) => {
+  try {
+    // Fetch contract addresses
+    const addresses = await fetchContractAddresses();
+    tokenAddress = addresses.c100TokenAddress;
+    publicSaleAddress = addresses.publicSaleAddress;
+
+    // Fetch contract ABIs
+    const [c100Abi, publicSaleAbi] = await Promise.all([
+      fetchContractABI('c100'),
+      fetchContractABI('public-sale'),
+    ]);
+
+    coin100ContractAbi = c100Abi;
+    coin100PublicSaleContractAbi = publicSaleAbi;
+
+    return { tokenAddress, publicSaleAddress };
+  } catch (error) {
+    return rejectWithValue(
+      error instanceof Error
+        ? error.message
+        : 'Failed to initialize contract data'
+    );
+  }
+});
 
 // Helper function to validate contract address
 const validateContractAddress = (
@@ -82,6 +116,7 @@ interface Web3State {
   governorContract: string;
   lpRewardPercentage: number;
   maxLpRewardPercentage: number;
+  isInitialized: boolean;
 }
 
 // Initial State
@@ -106,6 +141,7 @@ const initialState: Web3State = {
   governorContract: '',
   lpRewardPercentage: 0,
   maxLpRewardPercentage: 0,
+  isInitialized: false,
 };
 
 // ABIs
@@ -630,6 +666,7 @@ const web3Slice = createSlice({
       state.governorContract = '';
       state.lpRewardPercentage = 0;
       state.maxLpRewardPercentage = 0;
+      state.isInitialized = false;
     },
   },
   extraReducers: (builder) => {
@@ -770,6 +807,20 @@ const web3Slice = createSlice({
         typeof action.payload === 'string'
           ? action.payload
           : 'Failed to fetch all data';
+    });
+
+    // Initialize contract data
+    builder.addCase(initializeContractData.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(initializeContractData.fulfilled, (state) => {
+      state.loading = false;
+      state.isInitialized = true;
+    });
+    builder.addCase(initializeContractData.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload ?? 'Failed to initialize contract data';
     });
   },
 });
