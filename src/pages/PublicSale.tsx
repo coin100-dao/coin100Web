@@ -11,7 +11,6 @@ import {
   Card,
   CardContent,
   Button,
-  Divider,
 } from '@mui/material';
 import {
   fetchPublicSaleData,
@@ -21,7 +20,6 @@ import { connectWallet } from '../store/slices/walletSlice';
 import { BuySection } from '../components/sale/BuySection';
 import SaleInfo from '../components/sale/SaleInfo';
 import Stats from '../components/sale/Stats';
-import ActivityLog from '../components/sale/ActivityLog';
 import { AccountBalanceWallet } from '@mui/icons-material';
 import MetaMaskPopup from '../components/wallet/MetaMaskPopup';
 
@@ -176,20 +174,14 @@ const PublicSale: React.FC = () => {
           </Card>
         ) : (
           <Grid container spacing={4}>
+            <Grid item xs={12}>
+              <Stats />
+            </Grid>
             <Grid item xs={12} md={8}>
               <BuySection />
             </Grid>
             <Grid item xs={12} md={4}>
               <SaleInfo />
-            </Grid>
-            <Grid item xs={12}>
-              <Divider sx={{ my: 4 }} />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Stats />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <ActivityLog />
             </Grid>
           </Grid>
         )}

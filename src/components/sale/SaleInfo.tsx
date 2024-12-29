@@ -9,9 +9,11 @@ import {
   useTheme,
   Grid,
   Chip,
+  Divider,
 } from '@mui/material';
 import { AccessTime, CheckCircle, Error, Pause } from '@mui/icons-material';
 import { format, formatDistanceToNow } from 'date-fns';
+import ActivityLog from './ActivityLog';
 
 const SaleInfo: React.FC = () => {
   const theme = useTheme();
@@ -119,7 +121,24 @@ const SaleInfo: React.FC = () => {
           Sale Information
         </Typography>
 
-        <Box sx={{ mb: 3 }}>{getStatusChip()}</Box>
+        <Box
+          sx={{
+            mb: 3,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 2,
+            flexWrap: 'wrap',
+          }}
+        >
+          {getStatusChip()}
+          <Typography
+            variant="body2"
+            color={isSaleActive ? 'success.main' : 'text.secondary'}
+          >
+            {getTimeInfo()}
+          </Typography>
+        </Box>
 
         <Grid container spacing={2}>
           <Grid item xs={12}>
@@ -139,20 +158,11 @@ const SaleInfo: React.FC = () => {
               {formatDate(endTime)}
             </Typography>
           </Grid>
-
-          <Grid item xs={12}>
-            <Typography variant="body2" color="textSecondary">
-              Time Remaining
-            </Typography>
-            <Typography
-              variant="body1"
-              color={isSaleActive ? 'success.main' : 'text.primary'}
-              gutterBottom
-            >
-              {getTimeInfo()}
-            </Typography>
-          </Grid>
         </Grid>
+
+        <Divider sx={{ my: 3 }} />
+
+        <ActivityLog />
       </CardContent>
     </Card>
   );

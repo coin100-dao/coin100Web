@@ -3,8 +3,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/store';
 import {
   Box,
-  Card,
-  CardContent,
   Typography,
   List,
   ListItem,
@@ -12,7 +10,6 @@ import {
   CircularProgress,
   Button,
   Link,
-  useTheme,
   Divider,
 } from '@mui/material';
 import { fetchTransferEvents } from '../../store/slices/coin100ActivitySlice';
@@ -21,7 +18,6 @@ import Web3 from 'web3';
 import { TransferEvent } from '../../store/slices/coin100ActivitySlice';
 
 const ActivityLog: React.FC = () => {
-  const theme = useTheme();
   const dispatch = useDispatch<AppDispatch>();
 
   const { transfers, loading, error, hasMore, oldestLoadedBlock } = useSelector(
@@ -61,43 +57,28 @@ const ActivityLog: React.FC = () => {
 
   if (!isConnected) {
     return (
-      <Card
-        sx={{
-          background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.background.default} 100%)`,
-          boxShadow: theme.shadows[10],
-        }}
-      >
-        <CardContent>
-          <Typography variant="h6" gutterBottom>
-            Activity Log
-          </Typography>
-          <Typography color="textSecondary">
-            Connect your wallet to view transaction history
-          </Typography>
-        </CardContent>
-      </Card>
+      <Box sx={{ mt: 2 }}>
+        <Typography color="textSecondary" variant="body2">
+          Connect your wallet to view transaction history
+        </Typography>
+      </Box>
     );
   }
 
   return (
-    <Card
-      sx={{
-        background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.background.default} 100%)`,
-        boxShadow: theme.shadows[10],
-      }}
-    >
-      <CardContent>
-        <Typography variant="h6" gutterBottom>
-          Activity Log
+    <Box sx={{ mt: 3 }}>
+      <Typography variant="h6" gutterBottom>
+        Activity Log
+      </Typography>
+
+      {error && (
+        <Typography color="error" variant="body2" sx={{ mb: 2 }}>
+          {error}
         </Typography>
+      )}
 
-        {error && (
-          <Typography color="error" sx={{ mb: 2 }}>
-            {error}
-          </Typography>
-        )}
-
-        <List sx={{ width: '100%' }}>
+      <Box sx={{ maxHeight: 300, overflow: 'auto' }}>
+        <List sx={{ width: '100%' }} dense>
           {transfers.map((transfer: TransferEvent, index: number) => {
             return (
               <React.Fragment key={transfer.transactionHash}>
@@ -105,7 +86,8 @@ const ActivityLog: React.FC = () => {
                   alignItems="flex-start"
                   sx={{
                     flexDirection: 'column',
-                    gap: 1,
+                    gap: 0.5,
+                    py: 1,
                   }}
                 >
                   <Box
@@ -116,7 +98,7 @@ const ActivityLog: React.FC = () => {
                       gap: 1,
                     }}
                   >
-                    <SwapHoriz color="action" />
+                    <SwapHoriz color="action" sx={{ fontSize: 20 }} />
                     <ListItemText
                       primary={
                         <Typography variant="body2">
@@ -129,7 +111,7 @@ const ActivityLog: React.FC = () => {
                           sx={{
                             display: 'flex',
                             alignItems: 'center',
-                            gap: 1,
+                            gap: 0.5,
                             flexWrap: 'wrap',
                           }}
                         >
@@ -141,7 +123,7 @@ const ActivityLog: React.FC = () => {
                             From: {shortenAddress(transfer.returnValues.from)}
                           </Typography>
                           <ArrowForward
-                            sx={{ fontSize: 12, color: 'text.secondary' }}
+                            sx={{ fontSize: 10, color: 'text.secondary' }}
                           />
                           <Typography
                             variant="caption"
@@ -178,13 +160,13 @@ const ActivityLog: React.FC = () => {
         </List>
 
         {loading && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
-            <CircularProgress size={24} />
+          <Box sx={{ display: 'flex', justifyContent: 'center', my: 1 }}>
+            <CircularProgress size={20} />
           </Box>
         )}
 
         {hasMore && !loading && transfers.length > 0 && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>
             <Button
               onClick={handleLoadMore}
               variant="outlined"
@@ -197,12 +179,17 @@ const ActivityLog: React.FC = () => {
         )}
 
         {!loading && transfers.length === 0 && (
-          <Typography color="textSecondary" align="center" sx={{ my: 2 }}>
+          <Typography
+            color="textSecondary"
+            align="center"
+            variant="body2"
+            sx={{ my: 1 }}
+          >
             No transactions found.
           </Typography>
         )}
-      </CardContent>
-    </Card>
+      </Box>
+    </Box>
   );
 };
 
