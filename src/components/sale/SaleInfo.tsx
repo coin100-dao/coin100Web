@@ -119,7 +119,24 @@ const SaleInfo: React.FC = () => {
           Sale Information
         </Typography>
 
-        <Box sx={{ mb: 3 }}>{getStatusChip()}</Box>
+        <Box
+          sx={{
+            mb: 3,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 2,
+            flexWrap: 'wrap',
+          }}
+        >
+          {getStatusChip()}
+          <Typography
+            variant="body2"
+            color={isSaleActive ? 'success.main' : 'text.secondary'}
+          >
+            {getTimeInfo()}
+          </Typography>
+        </Box>
 
         <Grid container spacing={2}>
           <Grid item xs={12}>
@@ -137,19 +154,6 @@ const SaleInfo: React.FC = () => {
             </Typography>
             <Typography variant="body1" gutterBottom>
               {formatDate(endTime)}
-            </Typography>
-          </Grid>
-
-          <Grid item xs={12}>
-            <Typography variant="body2" color="textSecondary">
-              Time Remaining
-            </Typography>
-            <Typography
-              variant="body1"
-              color={isSaleActive ? 'success.main' : 'text.primary'}
-              gutterBottom
-            >
-              {getTimeInfo()}
             </Typography>
           </Grid>
         </Grid>

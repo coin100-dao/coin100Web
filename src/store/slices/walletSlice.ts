@@ -1,3 +1,4 @@
+// src/store/slices/walletSlice.ts
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { MetaMaskInpageProvider } from '@metamask/providers';
 import { executeContractCall } from '../../utils/web3Utils';
@@ -13,7 +14,7 @@ interface WalletState {
   address: string;
   chainId: string;
   isConnected: boolean;
-  loading: boolean;
+  isConnecting: boolean;
   error: string | null;
 }
 
@@ -22,7 +23,7 @@ const initialState: WalletState = {
   address: '',
   chainId: '',
   isConnected: false,
-  loading: false,
+  isConnecting: false,
   error: null,
 };
 
@@ -152,31 +153,31 @@ const walletSlice = createSlice({
     builder
       // Connect Wallet
       .addCase(connectWallet.pending, (state) => {
-        state.loading = true;
+        state.isConnecting = true;
         state.error = null;
       })
       .addCase(connectWallet.fulfilled, (state, action) => {
-        state.loading = false;
+        state.isConnecting = false;
         state.address = action.payload.address;
         state.chainId = action.payload.chainId;
         state.isConnected = true;
       })
       .addCase(connectWallet.rejected, (state, action) => {
-        state.loading = false;
+        state.isConnecting = false;
         state.error = action.payload as string;
       })
 
       // Switch Network
       .addCase(switchToPolygonNetwork.pending, (state) => {
-        state.loading = true;
+        state.isConnecting = true;
         state.error = null;
       })
       .addCase(switchToPolygonNetwork.fulfilled, (state, action) => {
-        state.loading = false;
+        state.isConnecting = false;
         state.chainId = action.payload.chainId;
       })
       .addCase(switchToPolygonNetwork.rejected, (state, action) => {
-        state.loading = false;
+        state.isConnecting = false;
         state.error = action.error.message || 'Failed to switch network';
       });
   },

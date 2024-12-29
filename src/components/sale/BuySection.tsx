@@ -1,3 +1,4 @@
+// src/components/sale/BuySection.tsx
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
@@ -23,6 +24,7 @@ import {
   checkVestingSchedule,
   claimVestedTokens,
   checkUsdcAllowance,
+  selectToken,
 } from '../../store/slices/publicSaleSlice';
 import { RootState, AppDispatch } from '../../store/store';
 
@@ -70,11 +72,14 @@ export const BuySection: React.FC = () => {
     setAmount(event.target.value);
   };
 
-  const handleTokenSelect = (event: SelectChangeEvent<string>) => {
-    const token = allowedTokens.find((t) => t.address === event.target.value);
-    if (token) {
-      dispatch({ type: 'publicSale/selectToken', payload: token });
+  const handleTokenSelect = async (event: SelectChangeEvent<string>) => {
+    const tokenAddress = event.target.value;
+    try {
+      await dispatch(selectToken(tokenAddress)).unwrap();
       setHasAllowance(false); // Reset allowance state when token changes
+    } catch (error) {
+      console.error('Failed to select token:', error);
+      // Optionally, handle the error in the UI (e.g., show an error message)
     }
   };
 
@@ -137,7 +142,7 @@ export const BuySection: React.FC = () => {
           >
             {allowedTokens.map((token) => (
               <MenuItem key={token.address} value={token.address}>
-                {token.symbol} (Balance: {token.balance})
+                {token.symbol}
               </MenuItem>
             ))}
           </Select>
