@@ -33,7 +33,6 @@ const ActivityLog: React.FC = () => {
   );
 
   useEffect(() => {
-    console.log('Fetching transfer events...');
     dispatch(fetchTransferEvents());
     const interval = setInterval(() => {
       dispatch(fetchTransferEvents());

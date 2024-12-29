@@ -36,28 +36,38 @@ const PublicSale: React.FC = () => {
     const init = async () => {
       try {
         await dispatch(initializeContractData()).unwrap();
+        // After initialization, try to fetch data if wallet is connected
+        if (walletAddress) {
+          dispatch(fetchPublicSaleData());
+        }
       } catch (error) {
         console.error('Failed to initialize contract data:', error);
       }
     };
     init();
-  }, [dispatch]);
+  }, [dispatch, isInitialized, walletAddress]);
 
   useEffect(() => {
     if (isInitialized && walletAddress) {
       dispatch(fetchPublicSaleData());
+
       const interval = setInterval(() => {
         dispatch(fetchPublicSaleData());
       }, 15000);
-      return () => clearInterval(interval);
+
+      return () => {
+        clearInterval(interval);
+      };
     }
   }, [dispatch, walletAddress, isInitialized]);
 
   const handleConnectWallet = async () => {
     try {
       await dispatch(connectWallet()).unwrap();
+
+      dispatch(fetchPublicSaleData());
     } catch (err) {
-      console.error(err);
+      console.error('Failed to connect wallet:', err);
     }
   };
 
