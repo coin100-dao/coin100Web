@@ -47,6 +47,7 @@ interface PublicSaleState {
   treasuryAddress: string;
   allowedTokens: USDCToken[];
   selectedToken: USDCToken | null;
+  vestingSchedules: VestingSchedule[];
   purchaseState: {
     isApproving: boolean;
     isBuying: boolean;
@@ -55,6 +56,12 @@ interface PublicSaleState {
     approvalHash: string;
     purchaseHash: string;
   };
+}
+
+interface VestingSchedule {
+  amount: string;
+  releaseTime: number;
+  isClaimable: boolean;
 }
 
 // Initial state
@@ -72,6 +79,7 @@ const initialState: PublicSaleState = {
   treasuryAddress: '',
   allowedTokens: [],
   selectedToken: null,
+  vestingSchedules: [],
   purchaseState: {
     isApproving: false,
     isBuying: false,
@@ -295,9 +303,9 @@ export const fetchAllowedTokens = createAsyncThunk(
           }
 
           // Convert rate to decimal format based on token decimals
-          const rateInDecimal = (
-            Number(rate) / Math.pow(10, decimals)
-          ).toString();
+          // The rate from contract is in the format: 1e15 (0.001 * 1e18)
+          // We need to convert it to 0.001 by dividing by 1e18
+          const rateInDecimal = (Number(rate) / Math.pow(10, 18)).toString();
 
           return {
             address: tokenAddress,
@@ -323,11 +331,22 @@ export const calculateC100Amount = (
   tokenAmount: string,
   rate: string
 ): string => {
-  // The rate is price per 1 C100 (e.g., 0.001 USDC.e per C100)
+  // The rate is price per 1 C100 (e.g., 0.001 USDC per C100)
   // So to get C100 amount: tokenAmount / rate
   if (Number(rate) === 0) return '0';
+
+  // For example:
+  // If user inputs 1 USDC and rate is 0.001 USDC per C100
+  // Then they should receive 1/0.001 = 1000 C100 tokens
   const c100Amount = (Number(tokenAmount) / Number(rate)).toString();
-  return c100Amount;
+
+  // Format the number to avoid scientific notation and round to 6 decimal places
+  const formattedAmount = Number(c100Amount).toLocaleString('fullwide', {
+    useGrouping: false,
+    maximumFractionDigits: 6,
+  });
+
+  return formattedAmount;
 };
 
 // Connect wallet function
@@ -483,14 +502,19 @@ export const approveUsdcSpending = createAsyncThunk(
         selectedToken.address
       );
 
-      console.log('Approving exact amount:', {
-        spender: publicSaleAddress,
-        amount: amountInSmallestUnit,
-        token: selectedToken.address,
-      });
-
       // Get current gas price
       const gasPrice = await web3.eth.getGasPrice();
+
+      // First, reset allowance to 0
+      const resetTx = await tokenContract.methods
+        .approve(publicSaleAddress, '0')
+        .send({
+          from: walletAddress,
+          gasPrice: Math.floor(Number(gasPrice) * 1.1).toString(),
+        });
+
+      // Wait for the reset transaction to be mined
+      await web3.eth.getTransactionReceipt(resetTx.transactionHash);
 
       // Estimate gas for approval
       const estimatedGas = await tokenContract.methods
@@ -536,7 +560,10 @@ export const approveUsdcSpending = createAsyncThunk(
         );
       }
 
-      return { transactionHash: tx.transactionHash };
+      return {
+        transactionHash: tx.transactionHash,
+        allowance: amountInSmallestUnit,
+      };
     } catch (error) {
       console.error('Error approving spending:', error);
       throw error;
@@ -603,13 +630,6 @@ export const buyC100Tokens = createAsyncThunk(
       // Add 20% buffer to gas estimate
       const gasLimit = Math.floor(Number(estimatedGas) * 1.2).toString();
 
-      console.log('Sending purchase transaction:', {
-        tokenAddress: selectedToken.address,
-        amount: amountInSmallestUnit,
-        gasLimit,
-        gasPrice: Math.floor(Number(gasPrice) * 1.1).toString(),
-      });
-
       // Send purchase transaction
       const tx = await contract.methods
         .buyWithToken(selectedToken.address, amountInSmallestUnit)
@@ -646,13 +666,28 @@ export const buyC100Tokens = createAsyncThunk(
         );
       }
 
+      // Get C100 token contract
+      const c100Contract = new web3.eth.Contract(
+        coin100ContractAbi,
+        validateContractAddress(tokenAddress, 'Token Contract')
+      );
+
+      // Check C100 balance before refresh
+      const c100Balance = (await c100Contract.methods
+        .balanceOf(walletAddress)
+        .call()) as string;
+      const c100BalanceInEther = web3.utils.fromWei(c100Balance, 'ether');
+
       // Refresh data after successful purchase
       await Promise.all([
         dispatch(fetchPublicSaleData()),
         dispatch(fetchAllowedTokens()),
       ]);
 
-      return { transactionHash: tx.transactionHash };
+      return {
+        transactionHash: tx.transactionHash,
+        c100Balance: c100BalanceInEther,
+      };
     } catch (error) {
       console.error('Error buying tokens:', error);
       throw error;
@@ -672,6 +707,131 @@ export const selectToken = createAsyncThunk(
       throw new Error('Invalid token selected');
     }
     return selectedToken;
+  }
+);
+
+// Check vesting schedule
+export const checkVestingSchedule = createAsyncThunk(
+  'publicSale/checkVesting',
+  async (_, { getState }) => {
+    try {
+      const web3 = getWeb3Instance();
+      const state = getState() as {
+        wallet: { address: string };
+      };
+      const { address: walletAddress } = state.wallet;
+
+      if (!walletAddress) {
+        throw new Error('No wallet connected');
+      }
+
+      const contract = new web3.eth.Contract(
+        coin100PublicSaleContractAbi,
+        validateContractAddress(publicSaleAddress, 'Public Sale Contract')
+      );
+
+      // Get the vesting schedule directly
+      const schedule = (await contract.methods
+        .vestings(walletAddress, 0)
+        .call()) as {
+        amount: string;
+        releaseTime: string;
+      };
+
+      const vestingSchedules: VestingSchedule[] = [];
+
+      if (schedule && schedule.amount !== '0') {
+        vestingSchedules.push({
+          amount: web3.utils.fromWei(schedule.amount, 'ether'),
+          releaseTime: Number(schedule.releaseTime),
+          isClaimable: Date.now() / 1000 >= Number(schedule.releaseTime),
+        });
+      }
+
+      return vestingSchedules;
+    } catch (error) {
+      console.error('Error checking vesting schedule:', error);
+      throw error;
+    }
+  }
+);
+
+// Claim vested tokens
+export const claimVestedTokens = createAsyncThunk(
+  'publicSale/claimTokens',
+  async (_, { getState, dispatch }) => {
+    try {
+      const web3 = getWeb3Instance();
+      const state = getState() as {
+        wallet: { address: string };
+      };
+      const { address: walletAddress } = state.wallet;
+
+      if (!walletAddress) {
+        throw new Error('No wallet connected');
+      }
+
+      const contract = new web3.eth.Contract(
+        coin100PublicSaleContractAbi,
+        validateContractAddress(publicSaleAddress, 'Public Sale Contract')
+      );
+
+      // Get current gas price
+      const gasPrice = await web3.eth.getGasPrice();
+
+      // Estimate gas for claim
+      const estimatedGas = await contract.methods
+        .claimTokens()
+        .estimateGas({ from: walletAddress });
+
+      // Add 20% buffer to gas estimate
+      const gasLimit = Math.floor(Number(estimatedGas) * 1.2).toString();
+
+      // Send claim transaction
+      const tx = await contract.methods.claimTokens().send({
+        from: walletAddress,
+        gas: gasLimit,
+        gasPrice: Math.floor(Number(gasPrice) * 1.1).toString(), // 10% above current gas price
+      });
+
+      // Wait for confirmation with timeout
+      let receipt = null;
+      const maxAttempts = 30;
+      let attempts = 0;
+
+      while (!receipt && attempts < maxAttempts) {
+        try {
+          receipt = await web3.eth.getTransactionReceipt(tx.transactionHash);
+          if (receipt) {
+            if (!receipt.status) {
+              throw new Error('Claim transaction failed');
+            }
+            break;
+          }
+        } catch (error) {
+          console.warn('Error checking receipt:', error);
+        }
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        attempts++;
+      }
+
+      if (!receipt) {
+        throw new Error(
+          'Transaction not confirmed. Please check your wallet or try again.'
+        );
+      }
+
+      // Refresh data after successful claim
+      await Promise.all([
+        dispatch(fetchPublicSaleData()),
+        dispatch(fetchAllowedTokens()),
+      ]);
+
+      return { transactionHash: tx.transactionHash };
+    } catch (error) {
+      console.error('Error claiming tokens:', error);
+      throw error;
+    }
   }
 );
 
@@ -785,6 +945,35 @@ const publicSaleSlice = createSlice({
         state.loading = false;
         state.error =
           action.error.message || 'Failed to fetch public sale data';
+      })
+
+      // Check Vesting Schedule
+      .addCase(checkVestingSchedule.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(checkVestingSchedule.fulfilled, (state, action) => {
+        state.loading = false;
+        state.vestingSchedules = action.payload;
+      })
+      .addCase(checkVestingSchedule.rejected, (state, action) => {
+        state.loading = false;
+        state.error =
+          action.error.message || 'Failed to check vesting schedule';
+      })
+
+      // Claim Vested Tokens
+      .addCase(claimVestedTokens.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(claimVestedTokens.fulfilled, (state) => {
+        state.loading = false;
+        state.vestingSchedules = []; // Clear vesting schedules after claim
+      })
+      .addCase(claimVestedTokens.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to claim vested tokens';
       });
   },
 });

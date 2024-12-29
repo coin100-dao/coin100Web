@@ -1,22 +1,5 @@
 import Web3 from 'web3';
-
-// Define Ethereum provider interface
-declare global {
-  interface Window {
-    ethereum?: {
-      request: (args: {
-        method: string;
-        params?: unknown[];
-      }) => Promise<unknown>;
-      on: (event: string, callback: (params?: unknown) => void) => void;
-      removeListener: (
-        event: string,
-        callback: (params?: unknown) => void
-      ) => void;
-      isMetaMask?: boolean;
-    };
-  }
-}
+import { MetaMaskInpageProvider } from '@metamask/providers';
 
 // Network constants
 export const POLYGON_CHAIN_ID = '0x89'; // Polygon Mainnet Chain ID
@@ -27,9 +10,6 @@ export const RPC_ENDPOINTS = [
   'https://polygon.llamarpc.com',
   'https://polygon-bor-rpc.publicnode.com',
   'https://polygon.meowrpc.com',
-  'https://polygon.drpc.org',
-  'https://1rpc.io/matic',
-  'https://polygon-pokt.nodies.app',
 ];
 
 interface RpcState {
@@ -135,7 +115,7 @@ setInterval(async () => {
 export const getWeb3Instance = (): Web3 => {
   // For transactions, use the connected wallet
   if (window.ethereum) {
-    return new Web3(window.ethereum);
+    return new Web3(window.ethereum as MetaMaskInpageProvider);
   }
 
   // For contract reads, use the public RPC with fallback
