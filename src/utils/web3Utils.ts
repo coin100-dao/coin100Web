@@ -24,12 +24,12 @@ export const POLYGON_CHAIN_ID = '0x89'; // Polygon Mainnet Chain ID
 // RPC endpoints with fallbacks, ordered by reliability
 export const RPC_ENDPOINTS = [
   'https://polygon-rpc.com',
-  'https://rpc-mainnet.matic.network',
-  'https://matic-mainnet.chainstacklabs.com',
-  'https://rpc-mainnet.maticvigil.com',
-  'https://rpc-mainnet.matic.quiknode.pro',
-  'https://polygon-mainnet.public.blastapi.io',
-  'https://poly-rpc.gateway.pokt.network',
+  'https://polygon.llamarpc.com',
+  'https://polygon-bor-rpc.publicnode.com',
+  'https://polygon.meowrpc.com',
+  'https://polygon.drpc.org',
+  'https://1rpc.io/matic',
+  'https://polygon-pokt.nodies.app',
 ];
 
 interface RpcState {

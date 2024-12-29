@@ -160,7 +160,8 @@ export const connectWallet = createAsyncThunk<
     }
 
     const accounts = accountsResult as string[];
-    console.log('Connected account:', accounts[0]);
+    const walletAddress = accounts[0];
+    console.log('Connected account:', walletAddress);
 
     const chainIdResult = await executeContractCall(async () => {
       const result = await ethereum.request({
@@ -177,34 +178,32 @@ export const connectWallet = createAsyncThunk<
     }
 
     // Initialize Web3 instance after successful connection
-    getWeb3Instance();
+    const web3 = getWeb3Instance();
 
     // After successful connection, fetch token balances
     try {
       // Get the list of allowed tokens from the public sale contract
-      const web3 = getWeb3Instance();
       const addresses = await fetchContractAddresses();
 
       // Get the ABI from the public sale contract
       const publicSaleAbi = [
         {
-          constant: true,
           inputs: [],
           name: 'getAllowedTokens',
           outputs: [
             {
               components: [
                 { name: 'token', type: 'address' },
-                { name: 'name', type: 'string' },
-                { name: 'symbol', type: 'string' },
-                { name: 'decimals', type: 'uint8' },
                 { name: 'rate', type: 'uint256' },
+                { name: 'symbol', type: 'string' },
+                { name: 'name', type: 'string' },
+                { name: 'decimals', type: 'uint8' },
               ],
+              internalType: 'struct C100PublicSale.AllowedToken[]',
               name: '',
               type: 'tuple[]',
             },
           ],
-          payable: false,
           stateMutability: 'view',
           type: 'function',
         },
@@ -226,13 +225,21 @@ export const connectWallet = createAsyncThunk<
         decimals: Number(token.decimals),
       }));
 
-      // Fetch balances for all allowed tokens
+      // First return the wallet connection data
+      const connectionData = {
+        address: walletAddress,
+        chainId: POLYGON_CHAIN_ID,
+      };
+
+      // Then fetch token balances
       await dispatch(fetchTokenBalances(tokenList)).unwrap();
+
+      return connectionData;
     } catch (error) {
       console.error('Failed to fetch initial token balances:', error);
+      // Even if token balance fetch fails, return the wallet connection data
+      return { address: walletAddress, chainId: POLYGON_CHAIN_ID };
     }
-
-    return { address: accounts[0], chainId: POLYGON_CHAIN_ID };
   } catch (error) {
     console.error('Error connecting wallet:', error);
     return rejectWithValue(
@@ -309,7 +316,8 @@ export const fetchTokenBalances = createAsyncThunk(
       const { address: walletAddress } = state.wallet;
 
       if (!walletAddress) {
-        throw new Error('No wallet connected');
+        console.log('Wallet not connected yet, skipping balance fetch');
+        return {};
       }
 
       console.log('Fetching balances for tokens:', tokens);
