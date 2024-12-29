@@ -17,7 +17,7 @@ import {
   fetchPublicSaleData,
   initializeContractData,
 } from '../store/slices/publicSaleSlice';
-import BuySection from '../components/sale/BuySection';
+import { BuySection } from '../components/sale/BuySection';
 import SaleInfo from '../components/sale/SaleInfo';
 import Stats from '../components/sale/Stats';
 import ActivityLog from '../components/sale/ActivityLog';

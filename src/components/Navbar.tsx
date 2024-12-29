@@ -29,7 +29,7 @@ import {
 import { Link as RouterLink } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { RootState } from '../store/store';
-import { disconnectWallet } from '../store/slices/walletSlice';
+import { disconnectWallet, connectWallet } from '../store/slices/walletSlice';
 import MetaMaskIcon from '../assets/MetaMask_Fox.png';
 import PolygonIcon from '../assets/polygon-matic-logo.svg';
 import MetaMaskPopup from './wallet/MetaMaskPopup';
@@ -226,6 +226,10 @@ const Navbar: React.FC<NavbarProps> = ({ toggleTheme }) => {
       <MetaMaskPopup
         open={connectDialogOpen}
         onClose={() => setConnectDialogOpen(false)}
+        onSuccess={() => {
+          setConnectDialogOpen(false);
+          void dispatch(connectWallet());
+        }}
       />
     </>
   );

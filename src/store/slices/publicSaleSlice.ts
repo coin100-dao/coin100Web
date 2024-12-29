@@ -1,14 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import Web3 from 'web3';
 import { AbiItem } from 'web3-utils';
 import {
   fetchContractABI,
   fetchContractAddresses,
   ContractAddresses,
 } from '../../services/github';
-
-// Constants
-const POLYGON_RPC = 'https://polygon-rpc.com';
+import { executeContractCall, getWeb3Instance } from '../../utils/web3Utils';
 
 // Initialize contract data
 let tokenAddress: string = '';
@@ -16,20 +13,23 @@ let publicSaleAddress: string = '';
 let coin100ContractAbi: AbiItem[] = [];
 let coin100PublicSaleContractAbi: AbiItem[] = [];
 
-// Define a minimal provider interface that matches window.ethereum
-interface EthereumProvider {
-  request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
-  on: (event: string, callback: (params?: unknown) => void) => void;
-  removeListener: (event: string, callback: (params?: unknown) => void) => void;
-}
-
-interface USDCToken {
+// Types
+export interface USDCToken {
   address: string;
   name: string;
   symbol: string;
   decimals: number;
   balance: string;
   rate?: string; // Rate for token/C100 conversion
+}
+
+// Contract types
+interface AllowedToken {
+  token: string;
+  rate: string;
+  symbol: string;
+  name: string;
+  decimals: string;
 }
 
 // Types
@@ -82,7 +82,7 @@ const initialState: PublicSaleState = {
   },
 };
 
-// Helper functions
+// Helper function to validate contract address
 const validateContractAddress = (
   address: string | undefined,
   name: string
@@ -95,81 +95,13 @@ const validateContractAddress = (
   return address;
 };
 
-// Helper function to get Web3 instance
-export const getWeb3Instance = (): Web3 => {
-  // For contract reads, use the public RPC
-  if (!window.ethereum) {
-    return new Web3(POLYGON_RPC);
-  }
-  // For transactions, use the connected wallet
-  return new Web3(window.ethereum as EthereumProvider);
-};
-
-// Helper function to get token balance
-const fetchTokenBalance = async (
-  web3: Web3,
-  tokenAddress: string,
-  walletAddress: string,
-  decimals: number
-): Promise<string> => {
-  try {
-    console.log('Fetching balance for:', {
-      tokenAddress,
-      walletAddress,
-      decimals,
-    });
-
-    const tokenContract = new web3.eth.Contract(
-      [
-        {
-          constant: true,
-          inputs: [{ name: '_owner', type: 'address' }],
-          name: 'balanceOf',
-          outputs: [{ name: 'balance', type: 'uint256' }],
-          type: 'function',
-        },
-      ] as AbiItem[],
-      tokenAddress
-    );
-
-    const balance = (await tokenContract.methods
-      .balanceOf(walletAddress)
-      .call()) as string;
-
-    console.log('Raw balance:', balance);
-
-    // Convert based on token decimals
-    const formattedBalance = fromTokenDecimals(balance, decimals);
-    console.log('Formatted balance:', formattedBalance);
-
-    return formattedBalance;
-  } catch (error) {
-    console.error('Error fetching token balance:', error);
-    return '0';
-  }
-};
-
-// Helper function to convert from smallest unit to decimal
-const fromTokenDecimals = (amount: string, decimals: number): string => {
-  try {
-    console.log('Converting from token decimals:', { amount, decimals });
-    const divisor = BigInt(10) ** BigInt(decimals);
-    const result = (BigInt(amount) * BigInt(1000)) / divisor / BigInt(1000);
-    console.log('Conversion result:', result.toString());
-    return result.toString();
-  } catch (error) {
-    console.error('Error converting from token decimals:', error);
-    return '0';
-  }
-};
-
 // Helper function to convert to smallest unit
 const toTokenDecimals = (amount: string, decimals: number): string => {
   try {
     console.log('Converting to token decimals:', { amount, decimals });
     // Convert to base unit (e.g., cents for USDC)
     const baseAmount = Math.floor(Number(amount) * Math.pow(10, decimals));
-    const result = BigInt(baseAmount).toString();
+    const result = baseAmount.toString();
     console.log('Conversion result:', result);
     return result;
   } catch (error) {
@@ -178,62 +110,76 @@ const toTokenDecimals = (amount: string, decimals: number): string => {
   }
 };
 
-// Contract types
-interface ContractAllowedToken {
-  token: string;
-  rate: string;
-  symbol: string;
-  name: string;
-  decimals: string;
-}
-
 // Initialize contract data
 export const initializeContractData = createAsyncThunk<
   ContractAddresses,
   void,
   { rejectValue: string }
->('publicSale/initializeContractData', async (_, { rejectWithValue }) => {
-  try {
-    const addresses = await fetchContractAddresses();
+>(
+  'publicSale/initializeContractData',
+  async (_, { dispatch, rejectWithValue }) => {
+    try {
+      console.log('Initializing contract data...');
+      const addresses = await fetchContractAddresses();
 
-    tokenAddress = addresses.c100TokenAddress;
-    publicSaleAddress = addresses.publicSaleAddress;
+      tokenAddress = addresses.c100TokenAddress;
+      publicSaleAddress = addresses.publicSaleAddress;
 
-    const [c100Abi, publicSaleAbi] = await Promise.all([
-      fetchContractABI('c100'),
-      fetchContractABI('public-sale'),
-    ]);
+      console.log('Fetched addresses:', { tokenAddress, publicSaleAddress });
 
-    coin100ContractAbi = c100Abi;
-    coin100PublicSaleContractAbi = publicSaleAbi;
+      const [c100Abi, publicSaleAbi] = await Promise.all([
+        fetchContractABI('c100'),
+        fetchContractABI('public-sale'),
+      ]);
 
-    // Verify contracts exist
-    const web3 = new Web3(POLYGON_RPC);
-    const tokenCode = await web3.eth.getCode(addresses.c100TokenAddress);
-    const saleCode = await web3.eth.getCode(addresses.publicSaleAddress);
+      coin100ContractAbi = c100Abi;
+      coin100PublicSaleContractAbi = publicSaleAbi;
 
-    if (tokenCode === '0x' || saleCode === '0x') {
-      throw new Error(
-        'One or more contracts not found at the specified addresses'
+      console.log('Fetched ABIs:', {
+        tokenAbiLength: c100Abi.length,
+        saleAbiLength: publicSaleAbi.length,
+      });
+
+      // Verify contracts exist
+      const web3 = getWeb3Instance();
+      const [tokenCode, saleCode] = await Promise.all([
+        executeContractCall(() => web3.eth.getCode(addresses.c100TokenAddress)),
+        executeContractCall(() =>
+          web3.eth.getCode(addresses.publicSaleAddress)
+        ),
+      ]);
+
+      if (tokenCode === '0x' || saleCode === '0x') {
+        throw new Error(
+          'One or more contracts not found at the specified addresses'
+        );
+      }
+
+      // After initialization, fetch initial data
+      await Promise.all([
+        dispatch(fetchPublicSaleData()),
+        dispatch(fetchAllowedTokens()),
+      ]);
+
+      return addresses;
+    } catch (error) {
+      console.error('Error initializing contract data:', error);
+      return rejectWithValue(
+        error instanceof Error
+          ? error.message
+          : 'Failed to initialize contract data'
       );
     }
-
-    return addresses;
-  } catch (error) {
-    return rejectWithValue(
-      error instanceof Error
-        ? error.message
-        : 'Failed to initialize contract data'
-    );
   }
-});
+);
 
 // Fetch public sale data
 export const fetchPublicSaleData = createAsyncThunk<PublicSaleData>(
   'publicSale/fetchData',
   async () => {
     try {
-      const web3 = new Web3(POLYGON_RPC);
+      console.log('Fetching public sale data...');
+      const web3 = getWeb3Instance();
 
       const contract = new web3.eth.Contract(
         coin100PublicSaleContractAbi,
@@ -244,6 +190,7 @@ export const fetchPublicSaleData = createAsyncThunk<PublicSaleData>(
         validateContractAddress(tokenAddress, 'Token Contract')
       );
 
+      console.log('Fetching contract state...');
       const [
         startTimeStr,
         endTimeStr,
@@ -253,37 +200,55 @@ export const fetchPublicSaleData = createAsyncThunk<PublicSaleData>(
         treasury,
         isPaused,
       ] = await Promise.all([
-        contract.methods.startTime().call() as Promise<string>,
-        contract.methods.endTime().call() as Promise<string>,
-        contract.methods.finalized().call() as Promise<boolean>,
-        tokenContract.methods
-          .balanceOf(publicSaleAddress)
-          .call() as Promise<string>,
-        tokenContract.methods.totalSupply().call() as Promise<string>,
-        contract.methods.treasury().call() as Promise<string>,
-        contract.methods.paused().call() as Promise<boolean>,
+        executeContractCall(() =>
+          contract.methods.startTime().call()
+        ) as Promise<string>,
+        executeContractCall(() =>
+          contract.methods.endTime().call()
+        ) as Promise<string>,
+        executeContractCall(() =>
+          contract.methods.finalized().call()
+        ) as Promise<boolean>,
+        executeContractCall(() =>
+          tokenContract.methods.balanceOf(publicSaleAddress).call()
+        ) as Promise<string>,
+        executeContractCall(() =>
+          tokenContract.methods.totalSupply().call()
+        ) as Promise<string>,
+        executeContractCall(() =>
+          contract.methods.treasury().call()
+        ) as Promise<string>,
+        executeContractCall(() =>
+          contract.methods.paused().call()
+        ) as Promise<boolean>,
       ]);
 
       const now = Math.floor(Date.now() / 1000);
       const startTime = Number(startTimeStr);
       const endTime = Number(endTimeStr);
 
-      // Convert token amounts from wei to ether, handling the decimals correctly
+      console.log('Contract state:', {
+        startTime,
+        endTime,
+        finalized,
+        contractBalance,
+        totalSupply,
+        treasury,
+        isPaused,
+      });
+
+      // Convert token amounts from wei to ether
       const remainingTokens = web3.utils.fromWei(contractBalance, 'ether');
       const totalSupplyEther = web3.utils.fromWei(totalSupply, 'ether');
       const totalSold = (
         Number(totalSupplyEther) - Number(remainingTokens)
       ).toString();
 
-      // Check if sale is active - sale is active if:
-      // 1. Current time is after start time
-      // 2. Current time is before end time
-      // 3. Sale is not finalized
-      // 4. Sale is not paused
+      // Check if sale is active
       const isSaleActive =
         now >= startTime && now <= endTime && !finalized && !isPaused;
 
-      const result: PublicSaleData = {
+      return {
         startTime,
         endTime,
         isFinalized: finalized,
@@ -293,8 +258,6 @@ export const fetchPublicSaleData = createAsyncThunk<PublicSaleData>(
         treasuryAddress: treasury,
         isPaused,
       };
-
-      return result;
     } catch (error) {
       console.error('Error fetching public sale data:', error);
       throw error;
@@ -307,7 +270,8 @@ export const fetchAllowedTokens = createAsyncThunk(
   'publicSale/fetchAllowedTokens',
   async (_, { getState }) => {
     try {
-      const web3 = new Web3(POLYGON_RPC);
+      console.log('Starting fetchAllowedTokens...');
+      const web3 = getWeb3Instance();
       const contract = new web3.eth.Contract(
         coin100PublicSaleContractAbi,
         validateContractAddress(publicSaleAddress, 'Public Sale Contract')
@@ -317,36 +281,81 @@ export const fetchAllowedTokens = createAsyncThunk(
       const { address: walletAddress } = state.wallet;
       console.log('Fetching allowed tokens for wallet:', walletAddress);
 
-      const allowedTokens = (await contract.methods
-        .getAllowedTokens()
-        .call()) as ContractAllowedToken[];
+      // Get all allowed tokens in one call
+      const allowedTokens = (await executeContractCall(() =>
+        contract.methods.getAllowedTokens().call()
+      )) as AllowedToken[];
+
+      console.log('Raw allowed tokens from contract:', allowedTokens);
 
       const tokens: USDCToken[] = await Promise.all(
-        allowedTokens.map(async (token: ContractAllowedToken) => {
+        allowedTokens.map(async (token) => {
+          // Token data is already available in the response
+          const tokenAddress = token.token;
+          const name = token.name;
+          const symbol = token.symbol;
+          const decimals = Number(token.decimals);
+          const rate = token.rate;
+
+          console.log('Token details:', {
+            address: tokenAddress,
+            name,
+            symbol,
+            decimals,
+            rate,
+          });
+
           let balance = '0';
           if (walletAddress) {
-            balance = await fetchTokenBalance(
-              web3,
-              token.token,
-              walletAddress,
-              Number(token.decimals)
+            const tokenContract = new web3.eth.Contract(
+              [
+                {
+                  constant: true,
+                  inputs: [{ name: '_owner', type: 'address' }],
+                  name: 'balanceOf',
+                  outputs: [{ name: 'balance', type: 'uint256' }],
+                  type: 'function',
+                },
+              ] as AbiItem[],
+              tokenAddress
             );
+
+            balance = (await executeContractCall(() =>
+              tokenContract.methods.balanceOf(walletAddress).call()
+            )) as string;
+
+            // Convert balance to decimal format based on token decimals
+            balance = (Number(balance) / Math.pow(10, decimals)).toString();
+            console.log('Fetched balance for token:', {
+              token: symbol,
+              balance,
+              decimals,
+            });
           }
 
-          // Convert rate to decimal format (rate is in wei)
-          const rateInEther = web3.utils.fromWei(token.rate, 'ether');
+          // Convert rate to decimal format based on token decimals
+          const rateInDecimal = (
+            Number(rate) / Math.pow(10, decimals)
+          ).toString();
+          console.log('Converted rate:', {
+            token: symbol,
+            rawRate: rate,
+            decimals,
+            rateInDecimal,
+          });
 
           return {
-            address: token.token,
-            name: token.name,
-            symbol: token.symbol,
-            decimals: Number(token.decimals),
+            address: tokenAddress,
+            name,
+            symbol,
+            decimals,
             balance,
-            rate: rateInEther,
+            rate: rateInDecimal,
           };
         })
       );
 
+      console.log('Final processed tokens:', tokens);
       return tokens;
     } catch (error) {
       console.error('Error in fetchAllowedTokens:', error);
@@ -378,7 +387,11 @@ export const connectWallet = createAsyncThunk(
       throw new Error('No accounts found');
     }
 
-    await dispatch(fetchAllowedTokens());
+    // After wallet connection, fetch both public sale data and allowed tokens
+    await Promise.all([
+      dispatch(fetchPublicSaleData()),
+      dispatch(fetchAllowedTokens()),
+    ]);
 
     return {};
   }

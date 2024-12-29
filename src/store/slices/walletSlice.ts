@@ -1,36 +1,28 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import Web3 from 'web3';
-
-// Extend Window interface to include ethereum
-declare global {
-  interface Window {
-    ethereum?: {
-      request: (args: {
-        method: string;
-        params?: unknown[];
-      }) => Promise<unknown>;
-      on: (event: string, callback: (params?: unknown) => void) => void;
-      removeListener: (
-        event: string,
-        callback: (params?: unknown) => void
-      ) => void;
-      selectedAddress?: string;
-      chainId?: string;
-      isMetaMask?: boolean;
-    };
-  }
-}
-
-// Constants
-const POLYGON_RPC = 'https://polygon-rpc.com';
+import {
+  executeContractCall,
+  getWeb3Instance,
+  RPC_ENDPOINTS,
+  POLYGON_CHAIN_ID,
+} from '../../utils/web3Utils';
+import type { EthereumProvider } from '../../types/ethereum';
+import { AbiItem } from 'web3-utils';
 
 // Types
+interface TokenBalance {
+  address: string;
+  symbol: string;
+  balance: string;
+  decimals: number;
+}
+
 interface WalletState {
   address: string;
   chainId: string;
   isConnected: boolean;
   isConnecting: boolean;
   error: string | null;
+  tokenBalances: { [address: string]: TokenBalance };
 }
 
 // Initial state
@@ -40,30 +32,32 @@ const initialState: WalletState = {
   isConnected: false,
   isConnecting: false,
   error: null,
+  tokenBalances: {},
 };
 
 // Type Guard for MetaMask Errors
-interface MetaMaskError extends Error {
+interface MetaMaskError {
   code: number;
+  message: string;
 }
 
 function isMetaMaskError(error: unknown): error is MetaMaskError {
   return (
-    typeof error === 'object' &&
     error !== null &&
+    typeof error === 'object' &&
     'code' in error &&
-    typeof (error as { code?: unknown }).code === 'number'
+    typeof (error as MetaMaskError).code === 'number' &&
+    'message' in error &&
+    typeof (error as MetaMaskError).message === 'string'
   );
 }
 
-// Helper function to get Web3 instance
-export const getWeb3Instance = (): Web3 => {
+// Helper function to validate ethereum provider
+const validateEthereumProvider = (): EthereumProvider => {
   if (!window.ethereum) {
-    console.log('Using public RPC for read operations');
-    return new Web3(POLYGON_RPC);
+    throw new Error('MetaMask is not installed');
   }
-  console.log('Using wallet provider for transactions');
-  return new Web3(window.ethereum);
+  return window.ethereum;
 };
 
 /**
@@ -76,56 +70,59 @@ export const switchToPolygonNetwork = createAsyncThunk<
 >('wallet/switchToPolygonNetwork', async (_, { rejectWithValue }) => {
   try {
     console.log('Switching to Polygon network...');
-    if (!window.ethereum) {
-      throw new Error('MetaMask is not installed');
-    }
+    const ethereum = validateEthereumProvider();
 
-    const chainId = '0x89'; // Polygon Mainnet
-    console.log('Target chainId:', chainId);
+    console.log('Target chainId:', POLYGON_CHAIN_ID);
 
-    await window.ethereum.request({
-      method: 'wallet_switchEthereumChain',
-      params: [{ chainId }],
+    await executeContractCall(async () => {
+      const result = await ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: POLYGON_CHAIN_ID }],
+      });
+      return result;
     });
     console.log('Successfully switched to Polygon network');
   } catch (error) {
     console.log('Error switching network:', error);
     // If the chain isn't added, attempt to add it
     if (isMetaMaskError(error) && error.code === 4902) {
-      if (!window.ethereum) {
-        throw new Error('MetaMask is not installed');
-      }
       try {
+        const ethereum = validateEthereumProvider();
         console.log('Adding Polygon network...');
-        await window.ethereum.request({
-          method: 'wallet_addEthereumChain',
-          params: [
-            {
-              chainId: '0x89',
-              chainName: 'Polygon Mainnet',
-              nativeCurrency: {
-                name: 'MATIC',
-                symbol: 'MATIC',
-                decimals: 18,
+        await executeContractCall(async () => {
+          const result = await ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [
+              {
+                chainId: POLYGON_CHAIN_ID,
+                chainName: 'Polygon Mainnet',
+                nativeCurrency: {
+                  name: 'MATIC',
+                  symbol: 'MATIC',
+                  decimals: 18,
+                },
+                rpcUrls: RPC_ENDPOINTS,
+                blockExplorerUrls: ['https://polygonscan.com/'],
               },
-              rpcUrls: ['https://polygon-rpc.com/'],
-              blockExplorerUrls: ['https://polygonscan.com/'],
-            },
-          ],
+            ],
+          });
+          return result;
         });
         console.log('Successfully added Polygon network');
-      } catch (addError) {
+      } catch (addError: unknown) {
         console.error('Error adding Polygon network:', addError);
-        const msg =
-          addError instanceof Error
+        return rejectWithValue(
+          isMetaMaskError(addError)
             ? addError.message
-            : 'Failed to add Polygon network';
-        return rejectWithValue(msg);
+            : 'Failed to add Polygon network'
+        );
       }
-    } else if (error instanceof Error) {
-      return rejectWithValue(error.message || 'Failed to switch to Polygon');
     } else {
-      return rejectWithValue('Failed to switch to Polygon network');
+      return rejectWithValue(
+        isMetaMaskError(error)
+          ? error.message
+          : 'Failed to switch to Polygon network'
+      );
     }
   }
 });
@@ -140,12 +137,13 @@ export const connectWallet = createAsyncThunk<
 >('wallet/connect', async (_, { dispatch, rejectWithValue }) => {
   try {
     console.log('Connecting wallet...');
-    if (!window.ethereum) {
-      throw new Error('MetaMask is not installed');
-    }
+    const ethereum = validateEthereumProvider();
 
-    const accountsResult = await window.ethereum.request({
-      method: 'eth_requestAccounts',
+    const accountsResult = await executeContractCall(async () => {
+      const result = await ethereum.request({
+        method: 'eth_requestAccounts',
+      });
+      return result;
     });
 
     if (!Array.isArray(accountsResult) || accountsResult.length === 0) {
@@ -155,25 +153,141 @@ export const connectWallet = createAsyncThunk<
     const accounts = accountsResult as string[];
     console.log('Connected account:', accounts[0]);
 
-    const chainIdResult = await window.ethereum.request({
-      method: 'eth_chainId',
+    const chainIdResult = await executeContractCall(async () => {
+      const result = await ethereum.request({
+        method: 'eth_chainId',
+      });
+      return result;
     });
     const chainId = chainIdResult as string;
     console.log('Current chainId:', chainId);
 
-    if (chainId !== '0x89') {
+    if (chainId !== POLYGON_CHAIN_ID) {
       console.log('Wrong network, switching to Polygon...');
       await dispatch(switchToPolygonNetwork()).unwrap();
     }
 
-    return { address: accounts[0], chainId: '0x89' };
+    // Initialize Web3 instance after successful connection
+    getWeb3Instance();
+
+    return { address: accounts[0], chainId: POLYGON_CHAIN_ID };
   } catch (error) {
     console.error('Error connecting wallet:', error);
-    const msg =
-      error instanceof Error ? error.message : 'Failed to connect wallet';
-    return rejectWithValue(msg);
+    return rejectWithValue(
+      isMetaMaskError(error) ? error.message : 'Failed to connect wallet'
+    );
   }
 });
+
+// Helper function to fetch token balance
+const fetchTokenBalance = async (
+  web3: ReturnType<typeof getWeb3Instance>,
+  tokenAddress: string,
+  walletAddress: string,
+  decimals: number
+): Promise<string> => {
+  try {
+    console.log('Fetching balance for:', {
+      tokenAddress,
+      walletAddress,
+      decimals,
+    });
+
+    const tokenContract = new web3.eth.Contract(
+      [
+        {
+          constant: true,
+          inputs: [{ name: '_owner', type: 'address' }],
+          name: 'balanceOf',
+          outputs: [{ name: 'balance', type: 'uint256' }],
+          type: 'function',
+        },
+      ] as AbiItem[],
+      tokenAddress
+    );
+
+    const balance = (await executeContractCall(() =>
+      tokenContract.methods.balanceOf(walletAddress).call()
+    )) as string;
+
+    console.log('Raw balance:', balance);
+
+    // Convert based on token decimals
+    const divisor = BigInt(10) ** BigInt(decimals);
+    const balanceBigInt = BigInt(balance);
+    const formattedBalance = (
+      (balanceBigInt * BigInt(1000)) /
+      divisor /
+      BigInt(1000)
+    ).toString();
+
+    console.log('Formatted balance:', {
+      rawBalance: balance,
+      decimals,
+      formattedBalance,
+    });
+
+    return formattedBalance;
+  } catch (error) {
+    console.error('Error fetching token balance:', error);
+    return '0';
+  }
+};
+
+// Fetch token balances
+export const fetchTokenBalances = createAsyncThunk(
+  'wallet/fetchTokenBalances',
+  async (
+    tokens: { address: string; symbol: string; decimals: number }[],
+    { getState }
+  ) => {
+    try {
+      const web3 = getWeb3Instance();
+      const state = getState() as { wallet: WalletState };
+      const { address: walletAddress } = state.wallet;
+
+      if (!walletAddress) {
+        throw new Error('No wallet connected');
+      }
+
+      console.log('Fetching balances for tokens:', tokens);
+
+      const balances = await Promise.all(
+        tokens.map(async (token) => {
+          const balance = await fetchTokenBalance(
+            web3,
+            token.address,
+            walletAddress,
+            token.decimals
+          );
+
+          return {
+            address: token.address,
+            symbol: token.symbol,
+            balance,
+            decimals: token.decimals,
+          };
+        })
+      );
+
+      console.log('Fetched balances:', balances);
+
+      // Convert array to object for easier lookup
+      const balanceMap = balances.reduce(
+        (acc, token) => {
+          acc[token.address] = token;
+          return acc;
+        },
+        {} as { [address: string]: TokenBalance }
+      );
+
+      return balanceMap;
+    } catch (error) {
+      console.error('Error fetching token balances:', error);
+      throw error;
+    }
+  }
+);
 
 // Wallet Slice
 const walletSlice = createSlice({
@@ -185,6 +299,7 @@ const walletSlice = createSlice({
       state.chainId = '';
       state.isConnected = false;
       state.error = null;
+      state.tokenBalances = {};
     },
   },
   extraReducers: (builder) => {
@@ -209,6 +324,13 @@ const walletSlice = createSlice({
       })
       .addCase(switchToPolygonNetwork.rejected, (state, action) => {
         state.error = action.payload ?? 'Failed to switch network';
+      })
+      // Fetch Token Balances
+      .addCase(fetchTokenBalances.fulfilled, (state, action) => {
+        state.tokenBalances = action.payload;
+      })
+      .addCase(fetchTokenBalances.rejected, (state, action) => {
+        state.error = action.error.message || 'Failed to fetch token balances';
       });
   },
 });

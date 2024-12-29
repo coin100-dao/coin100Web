@@ -1,204 +1,199 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import Web3 from 'web3';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { executeContractCall, getWeb3Instance } from '../../utils/web3Utils';
 import { fetchContractAddresses } from '../../services/github';
+import type { AbiParameter } from 'web3';
 
 // Constants
-const POLYGON_RPC = 'https://polygon-rpc.com'; // Public Polygon RPC
-const BLOCKS_TO_FETCH = 50000; // Look back further
-const BATCH_SIZE = 10; // Process 10 events at a time
-const BATCH_DELAY = 300; // 300ms delay between batches
+const BLOCKS_TO_FETCH = 50000; // Look back 50k blocks by default
 
-// Cache for block timestamps
-const blockTimestampCache = new Map<number, number>();
-
-// Helper function to get block timestamp with caching
-const getBlockTimestamp = async (
-  web3: Web3,
-  blockNumber: number
-): Promise<number> => {
-  if (blockTimestampCache.has(blockNumber)) {
-    return blockTimestampCache.get(blockNumber)!;
-  }
-  const block = await web3.eth.getBlock(blockNumber);
-  const timestamp = Number(block?.timestamp || 0);
-  blockTimestampCache.set(blockNumber, timestamp);
-  return timestamp;
-};
-
-// Helper function to process in batches
-const processBatch = async <T, R>(
-  items: T[],
-  batchSize: number,
-  processor: (items: T[]) => Promise<R[]>
-): Promise<R[]> => {
-  const results: R[] = [];
-  for (let i = 0; i < items.length; i += batchSize) {
-    const batch = items.slice(i, i + batchSize);
-    try {
-      const batchResults = await processor(batch);
-      results.push(...batchResults);
-      if (i + batchSize < items.length) {
-        await new Promise((resolve) => setTimeout(resolve, BATCH_DELAY));
-      }
-    } catch (error) {
-      console.error('Error processing batch:', error);
-      // Continue with next batch instead of failing completely
-    }
-  }
-  return results;
-};
-
-// Types for Web3 events
-interface TransferEvent {
-  from: string;
-  to: string;
-  amount: string;
-  timestamp: number;
+// Types
+export interface TransferEvent {
+  returnValues: {
+    from: string;
+    to: string;
+    value: string;
+  };
   transactionHash: string;
   blockNumber: number;
+  event: string;
+  signature: string;
+  address: string;
 }
 
-interface DecodedTransferLog {
-  from: string;
-  to: string;
-  value: string;
-}
-
-interface Web3TransactionLog {
-  blockNumber: bigint;
+interface Web3Log {
+  address: string;
   data: string;
   topics: string[];
+  blockNumber: bigint;
   transactionHash: string;
+  logIndex: bigint;
+  blockHash: string;
+  transactionIndex: bigint;
+  removed: boolean;
 }
 
 interface ActivityState {
   loading: boolean;
   error: string | null;
   transfers: TransferEvent[];
-  lastBlock: string;
-  oldestLoadedBlock: string;
+  lastBlock: number;
+  oldestLoadedBlock: number;
   hasMore: boolean;
 }
 
-interface FetchTransfersResult {
-  transfers: TransferEvent[];
-  lastBlock: string;
-  oldestLoadedBlock: string;
-  hasMore: boolean;
-}
-
+// Initial state
 const initialState: ActivityState = {
   loading: false,
   error: null,
   transfers: [],
-  lastBlock: '0',
-  oldestLoadedBlock: '0',
+  lastBlock: 0,
+  oldestLoadedBlock: 0,
   hasMore: true,
 };
 
+// Helper function to calculate block range
+const calculateBlockRange = async (
+  web3: ReturnType<typeof getWeb3Instance>,
+  lastLoadedBlock: number
+) => {
+  const currentBlockBigInt = await web3.eth.getBlockNumber();
+  const currentBlock = Number(currentBlockBigInt);
+
+  if (lastLoadedBlock === 0) {
+    // First load - fetch last BLOCKS_TO_FETCH blocks
+    const fromBlock = Math.max(currentBlock - BLOCKS_TO_FETCH, 0);
+    return {
+      fromBlock,
+      toBlock: currentBlock,
+      hasMore: fromBlock > 0,
+    };
+  }
+
+  // Subsequent loads - fetch from last loaded block
+  return {
+    fromBlock: Math.max(lastLoadedBlock - BLOCKS_TO_FETCH, 0),
+    toBlock: lastLoadedBlock,
+    hasMore: lastLoadedBlock > BLOCKS_TO_FETCH,
+  };
+};
+
+interface TransferEventsResult {
+  events: TransferEvent[];
+  lastBlock: number;
+  oldestLoadedBlock: number;
+  hasMore: boolean;
+}
+
 // Fetch transfer events
-export const fetchTransferEvents = createAsyncThunk<FetchTransfersResult, void>(
-  'coin100Activity/fetchTransfers',
-  async (_, { getState }) => {
-    try {
-      const web3 = new Web3(POLYGON_RPC);
-      const addresses = await fetchContractAddresses();
+export const fetchTransferEvents = createAsyncThunk<
+  TransferEventsResult,
+  { fromBlock?: number; toBlock?: number } | undefined,
+  { state: { coin100Activity: ActivityState } }
+>('activity/fetchTransferEvents', async (params = {}, { getState }) => {
+  try {
+    console.log('Starting fetchTransferEvents with params:', params);
+    const web3 = getWeb3Instance();
 
-      const currentBlock = await web3.eth.getBlockNumber();
-      const state = getState() as { coin100Activity: ActivityState };
+    // Get addresses from GitHub
+    const addresses = await fetchContractAddresses();
+    const tokenAddress = addresses.c100TokenAddress;
 
-      // Calculate block range
-      const fromBlock =
-        state.coin100Activity.lastBlock === '0'
-          ? Math.max(Number(currentBlock) - BLOCKS_TO_FETCH, 0).toString()
-          : state.coin100Activity.lastBlock;
+    console.log('Current state:', {
+      tokenAddress,
+      web3Connected: web3.eth.currentProvider !== null,
+    });
 
-      // Check if contract exists
-      const code = await web3.eth.getCode(addresses.c100TokenAddress);
+    if (!tokenAddress) {
+      throw new Error('Token address not configured');
+    }
 
-      if (code === '0x') {
-        throw new Error('Contract not found at the specified address');
-      }
+    // Get the last block from state
+    const state = getState();
+    const { lastBlock } = state.coin100Activity;
 
-      // Generate Transfer event signature
-      const transferEventSignature = web3.utils.sha3(
-        'Transfer(address,address,uint256)'
-      );
-      if (!transferEventSignature) {
-        throw new Error('Failed to generate transfer event signature');
-      }
+    // Calculate block range if not provided
+    const blockRange =
+      params.fromBlock !== undefined && params.toBlock !== undefined
+        ? {
+            fromBlock: params.fromBlock,
+            toBlock: params.toBlock,
+            hasMore: false,
+          }
+        : await calculateBlockRange(web3, lastBlock);
 
-      const rawLogs = await web3.eth.getPastLogs({
-        address: addresses.c100TokenAddress,
-        fromBlock: Number(fromBlock),
-        toBlock: 'latest',
+    console.log('Using block range:', blockRange);
+
+    const transferEventSignature = web3.utils.sha3(
+      'Transfer(address,address,uint256)'
+    );
+
+    if (!transferEventSignature) {
+      throw new Error('Failed to generate transfer event signature');
+    }
+
+    const logs = (await executeContractCall(() =>
+      web3.eth.getPastLogs({
+        address: tokenAddress,
         topics: [transferEventSignature],
-      });
+        fromBlock: blockRange.fromBlock,
+        toBlock: blockRange.toBlock,
+      })
+    )) as Web3Log[];
 
-      // Process events in batches
-      const transfers = await processBatch(
-        rawLogs,
-        BATCH_SIZE,
-        async (batchLogs) => {
-          const batchTransfers: TransferEvent[] = await Promise.all(
-            batchLogs.map(async (rawLog) => {
-              const log = rawLog as unknown as Web3TransactionLog;
-              const blockNumber = Number(log.blockNumber);
-              const timestamp = await getBlockTimestamp(web3, blockNumber);
+    console.log('Found logs:', logs.length);
 
-              const decodedLog = web3.eth.abi.decodeLog(
-                [
-                  { type: 'address', name: 'from', indexed: true },
-                  { type: 'address', name: 'to', indexed: true },
-                  { type: 'uint256', name: 'value' },
-                ],
-                log.data,
-                log.topics.slice(1)
-              ) as unknown as DecodedTransferLog;
-
-              return {
-                from: decodedLog.from,
-                to: decodedLog.to,
-                amount: web3.utils.fromWei(decodedLog.value, 'ether'),
-                timestamp,
-                transactionHash: log.transactionHash,
-                blockNumber,
-              };
-            })
-          );
-          return batchTransfers;
-        }
+    const events = logs.map((log) => {
+      const decodedLog = web3.eth.abi.decodeLog(
+        [
+          { type: 'address', name: 'from', indexed: true },
+          { type: 'address', name: 'to', indexed: true },
+          { type: 'uint256', name: 'value' },
+        ] as AbiParameter[],
+        log.data,
+        log.topics.slice(1)
       );
 
-      const oldestBlock =
-        transfers.length > 0
-          ? Math.min(...transfers.map((t) => t.blockNumber))
-          : Number(fromBlock);
+      // Convert BigInt value to string
+      const value =
+        typeof decodedLog.value === 'bigint'
+          ? decodedLog.value.toString()
+          : decodedLog.value;
 
       return {
-        transfers,
-        lastBlock: currentBlock.toString(),
-        oldestLoadedBlock: oldestBlock.toString(),
-        hasMore: oldestBlock > 0,
-      };
-    } catch (error) {
-      console.error('Error fetching transfer events:', error);
-      throw error;
-    }
-  }
-);
+        returnValues: {
+          from: decodedLog.from,
+          to: decodedLog.to,
+          value,
+        },
+        transactionHash: log.transactionHash,
+        blockNumber: Number(log.blockNumber),
+        event: 'Transfer',
+        signature: transferEventSignature,
+        address: log.address,
+      } as TransferEvent;
+    });
 
+    // Sort events by block number in descending order
+    events.sort((a, b) => b.blockNumber - a.blockNumber);
+
+    return {
+      events,
+      lastBlock: blockRange.toBlock,
+      oldestLoadedBlock: blockRange.fromBlock,
+      hasMore: blockRange.hasMore,
+    };
+  } catch (error) {
+    console.error('Error in fetchTransferEvents:', error);
+    throw error;
+  }
+});
+
+// Activity Slice
 const coin100ActivitySlice = createSlice({
-  name: 'coin100Activity',
+  name: 'activity',
   initialState,
   reducers: {
-    clearTransfers: (state) => {
-      state.transfers = [];
-      state.lastBlock = '0';
-      state.oldestLoadedBlock = '0';
-      state.hasMore = true;
-      blockTimestampCache.clear();
-    },
+    resetActivityState: () => initialState,
   },
   extraReducers: (builder) => {
     builder
@@ -206,33 +201,30 @@ const coin100ActivitySlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(
-        fetchTransferEvents.fulfilled,
-        (state, action: PayloadAction<FetchTransfersResult>) => {
-          state.loading = false;
-          // Remove duplicates based on transactionHash
-          const uniqueTransfers = [
-            ...state.transfers,
-            ...action.payload.transfers,
-          ].reduce((acc, current) => {
-            const x = acc.find(
-              (item) => item.transactionHash === current.transactionHash
-            );
-            if (!x) {
-              return acc.concat([current]);
-            } else {
-              return acc;
-            }
-          }, [] as TransferEvent[]);
-
-          state.transfers = uniqueTransfers.sort(
-            (a, b) => b.timestamp - a.timestamp
+      .addCase(fetchTransferEvents.fulfilled, (state, action) => {
+        state.loading = false;
+        // Remove duplicates when adding new events
+        const uniqueEvents = [
+          ...state.transfers,
+          ...action.payload.events,
+        ].reduce((acc, current) => {
+          const exists = acc.find(
+            (item) => item.transactionHash === current.transactionHash
           );
-          state.lastBlock = action.payload.lastBlock;
-          state.oldestLoadedBlock = action.payload.oldestLoadedBlock;
-          state.hasMore = action.payload.hasMore;
-        }
-      )
+          if (!exists) {
+            acc.push(current);
+          }
+          return acc;
+        }, [] as TransferEvent[]);
+
+        // Sort by block number in descending order
+        state.transfers = uniqueEvents.sort(
+          (a, b) => b.blockNumber - a.blockNumber
+        );
+        state.lastBlock = action.payload.lastBlock;
+        state.oldestLoadedBlock = action.payload.oldestLoadedBlock;
+        state.hasMore = action.payload.hasMore;
+      })
       .addCase(fetchTransferEvents.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Failed to fetch transfer events';
@@ -240,5 +232,5 @@ const coin100ActivitySlice = createSlice({
   },
 });
 
-export const { clearTransfers } = coin100ActivitySlice.actions;
+export const { resetActivityState } = coin100ActivitySlice.actions;
 export default coin100ActivitySlice.reducer;
