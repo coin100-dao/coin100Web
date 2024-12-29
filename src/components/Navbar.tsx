@@ -5,7 +5,6 @@ import {
   AppBar,
   Box,
   Toolbar,
-  Typography,
   Button,
   IconButton,
   Dialog,
@@ -15,11 +14,10 @@ import {
   useTheme,
   useMediaQuery,
   List,
-  ListItemText,
-  ListItemIcon,
   CircularProgress,
   Drawer,
   ListItemButton,
+  ListItemText,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -31,12 +29,10 @@ import {
 import { Link as RouterLink } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { RootState } from '../store/store';
-import {
-  disconnectWallet,
-  connectAndFetchBalance,
-} from '../store/slices/web3Slice';
+import { disconnectWallet } from '../store/slices/walletSlice';
 import MetaMaskIcon from '../assets/MetaMask_Fox.png';
 import PolygonIcon from '../assets/polygon-matic-logo.svg';
+import MetaMaskPopup from './wallet/MetaMaskPopup';
 
 interface NavbarProps {
   toggleTheme: () => void;
@@ -45,28 +41,22 @@ interface NavbarProps {
 const Navbar: React.FC<NavbarProps> = ({ toggleTheme }) => {
   const theme = useTheme();
   const dispatch = useAppDispatch();
-  const { walletAddress, loading } = useAppSelector(
-    (state: RootState) => state.web3
+  const { address, isConnecting } = useAppSelector(
+    (state: RootState) => state.wallet
   );
 
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [walletDialogOpen, setWalletDialogOpen] = React.useState(false);
-  const [walletSelectDialogOpen, setWalletSelectDialogOpen] =
-    React.useState(false);
+  const [connectDialogOpen, setConnectDialogOpen] = React.useState(false);
 
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const handleWalletClick = () => {
-    if (walletAddress) {
+    if (address) {
       setWalletDialogOpen(true);
     } else {
-      setWalletSelectDialogOpen(true);
+      setConnectDialogOpen(true);
     }
-  };
-
-  const handleWalletSelect = async () => {
-    setWalletSelectDialogOpen(false);
-    await dispatch(connectAndFetchBalance());
   };
 
   const handleDisconnect = () => {
@@ -120,56 +110,41 @@ const Navbar: React.FC<NavbarProps> = ({ toggleTheme }) => {
       <AppBar position="static" elevation={0}>
         <Toolbar>
           {/* Left Side */}
-          <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
-            {isMobile && (
-              <IconButton
-                color="inherit"
-                edge="start"
-                onClick={() => setMobileMenuOpen(true)}
-                sx={{ mr: 2 }}
-              >
-                <MenuIcon />
-              </IconButton>
-            )}
-
-            <Typography
-              variant="h6"
-              component={RouterLink}
-              to="/"
-              sx={{
-                textDecoration: 'none',
-                color: 'inherit',
-                fontWeight: 'bold',
-                display: { xs: 'none', sm: 'block' },
-              }}
+          {isMobile ? (
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              onClick={() => setMobileMenuOpen(true)}
+              edge="start"
+              sx={{ mr: 2 }}
             >
-              COIN100
-            </Typography>
-
-            {!isMobile && (
-              <Box sx={{ display: 'flex', gap: 2, ml: 2 }}>
-                {pages.map((page) => (
-                  <Button
-                    key={page.name}
-                    color="inherit"
-                    component={RouterLink}
-                    to={page.path}
-                  >
-                    {page.name}
-                  </Button>
-                ))}
-              </Box>
-            )}
-          </Box>
+              <MenuIcon />
+            </IconButton>
+          ) : (
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              {pages.map((page) => (
+                <Button
+                  key={page.name}
+                  component={RouterLink}
+                  to={page.path}
+                  color="inherit"
+                  sx={{ mx: 1 }}
+                >
+                  {page.name}
+                </Button>
+              ))}
+            </Box>
+          )}
 
           {/* Right Side */}
+          <Box sx={{ flexGrow: 1 }} />
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Button
               variant="outlined"
               color="inherit"
               onClick={handleWalletClick}
               startIcon={
-                loading ? null : walletAddress ? (
+                isConnecting ? null : address ? (
                   <Box
                     component="img"
                     src={MetaMaskIcon}
@@ -180,14 +155,14 @@ const Navbar: React.FC<NavbarProps> = ({ toggleTheme }) => {
                   <AccountBalanceWallet />
                 )
               }
-              disabled={loading}
+              disabled={isConnecting}
               sx={{ ml: 1 }}
             >
-              {loading ? (
+              {isConnecting ? (
                 <CircularProgress size={20} color="inherit" />
-              ) : walletAddress ? (
+              ) : address ? (
                 <>
-                  {truncateAddress(walletAddress)}
+                  {truncateAddress(address)}
                   <Box
                     component="img"
                     src={PolygonIcon}
@@ -232,7 +207,7 @@ const Navbar: React.FC<NavbarProps> = ({ toggleTheme }) => {
           <DialogContentText>
             <strong>Connected Address:</strong>
             <br />
-            {walletAddress}
+            {address}
           </DialogContentText>
           <Box sx={{ mt: 2 }}>
             <Button
@@ -247,38 +222,11 @@ const Navbar: React.FC<NavbarProps> = ({ toggleTheme }) => {
         </DialogContent>
       </Dialog>
 
-      {/* Wallet Selection Dialog */}
-      <Dialog
-        open={walletSelectDialogOpen}
-        onClose={() => setWalletSelectDialogOpen(false)}
-        maxWidth="xs"
-        fullWidth
-      >
-        <DialogTitle>
-          Select Wallet
-          <IconButton
-            onClick={() => setWalletSelectDialogOpen(false)}
-            sx={{ position: 'absolute', right: 8, top: 8 }}
-          >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent>
-          <List>
-            <ListItemButton onClick={handleWalletSelect}>
-              <ListItemIcon>
-                <Box
-                  component="img"
-                  src={MetaMaskIcon}
-                  alt="MetaMask"
-                  sx={{ width: 32, height: 32 }}
-                />
-              </ListItemIcon>
-              <ListItemText primary="MetaMask" />
-            </ListItemButton>
-          </List>
-        </DialogContent>
-      </Dialog>
+      {/* MetaMask Popup */}
+      <MetaMaskPopup
+        open={connectDialogOpen}
+        onClose={() => setConnectDialogOpen(false)}
+      />
     </>
   );
 };

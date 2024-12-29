@@ -16,6 +16,13 @@ let publicSaleAddress: string = '';
 let coin100ContractAbi: AbiItem[] = [];
 let coin100PublicSaleContractAbi: AbiItem[] = [];
 
+// Define a minimal provider interface that matches window.ethereum
+interface EthereumProvider {
+  request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
+  on: (event: string, callback: (params?: unknown) => void) => void;
+  removeListener: (event: string, callback: (params?: unknown) => void) => void;
+}
+
 interface USDCToken {
   address: string;
   name: string;
@@ -38,7 +45,6 @@ interface PublicSaleState {
   isInitialized: boolean;
   isPaused: boolean;
   treasuryAddress: string;
-  walletAddress: string;
   allowedTokens: USDCToken[];
   selectedToken: USDCToken | null;
   purchaseState: {
@@ -64,7 +70,6 @@ const initialState: PublicSaleState = {
   isInitialized: false,
   isPaused: false,
   treasuryAddress: '',
-  walletAddress: '',
   allowedTokens: [],
   selectedToken: null,
   purchaseState: {
@@ -90,13 +95,14 @@ const validateContractAddress = (
   return address;
 };
 
-const getWeb3Instance = (): Web3 => {
+// Helper function to get Web3 instance
+export const getWeb3Instance = (): Web3 => {
   // For contract reads, use the public RPC
   if (!window.ethereum) {
     return new Web3(POLYGON_RPC);
   }
   // For transactions, use the connected wallet
-  return new Web3(window.ethereum);
+  return new Web3(window.ethereum as EthereumProvider);
 };
 
 // Helper function to get token balance
@@ -106,26 +112,70 @@ const fetchTokenBalance = async (
   walletAddress: string,
   decimals: number
 ): Promise<string> => {
-  const tokenContract = new web3.eth.Contract(
-    [
-      {
-        constant: true,
-        inputs: [{ name: '_owner', type: 'address' }],
-        name: 'balanceOf',
-        outputs: [{ name: 'balance', type: 'uint256' }],
-        type: 'function',
-      },
-    ],
-    tokenAddress
-  );
+  try {
+    console.log('Fetching balance for:', {
+      tokenAddress,
+      walletAddress,
+      decimals,
+    });
 
-  const balance = (await tokenContract.methods
-    .balanceOf(walletAddress)
-    .call()) as string;
+    const tokenContract = new web3.eth.Contract(
+      [
+        {
+          constant: true,
+          inputs: [{ name: '_owner', type: 'address' }],
+          name: 'balanceOf',
+          outputs: [{ name: 'balance', type: 'uint256' }],
+          type: 'function',
+        },
+      ] as AbiItem[],
+      tokenAddress
+    );
 
-  // Convert based on token decimals
-  const divisor = BigInt(10) ** BigInt(decimals);
-  return (BigInt(balance) / divisor).toString();
+    const balance = (await tokenContract.methods
+      .balanceOf(walletAddress)
+      .call()) as string;
+
+    console.log('Raw balance:', balance);
+
+    // Convert based on token decimals
+    const formattedBalance = fromTokenDecimals(balance, decimals);
+    console.log('Formatted balance:', formattedBalance);
+
+    return formattedBalance;
+  } catch (error) {
+    console.error('Error fetching token balance:', error);
+    return '0';
+  }
+};
+
+// Helper function to convert from smallest unit to decimal
+const fromTokenDecimals = (amount: string, decimals: number): string => {
+  try {
+    console.log('Converting from token decimals:', { amount, decimals });
+    const divisor = BigInt(10) ** BigInt(decimals);
+    const result = (BigInt(amount) * BigInt(1000)) / divisor / BigInt(1000);
+    console.log('Conversion result:', result.toString());
+    return result.toString();
+  } catch (error) {
+    console.error('Error converting from token decimals:', error);
+    return '0';
+  }
+};
+
+// Helper function to convert to smallest unit
+const toTokenDecimals = (amount: string, decimals: number): string => {
+  try {
+    console.log('Converting to token decimals:', { amount, decimals });
+    // Convert to base unit (e.g., cents for USDC)
+    const baseAmount = Math.floor(Number(amount) * Math.pow(10, decimals));
+    const result = BigInt(baseAmount).toString();
+    console.log('Conversion result:', result);
+    return result;
+  } catch (error) {
+    console.error('Error converting to token decimals:', error);
+    return '0';
+  }
 };
 
 // Contract types
@@ -263,8 +313,10 @@ export const fetchAllowedTokens = createAsyncThunk(
         validateContractAddress(publicSaleAddress, 'Public Sale Contract')
       );
 
-      const state = getState() as { publicSale: PublicSaleState };
-      const { walletAddress } = state.publicSale;
+      const state = getState() as { wallet: { address: string } };
+      const { address: walletAddress } = state.wallet;
+      console.log('Fetching allowed tokens for wallet:', walletAddress);
+
       const allowedTokens = (await contract.methods
         .getAllowedTokens()
         .call()) as ContractAllowedToken[];
@@ -312,11 +364,6 @@ export const calculateC100Amount = (
   // So to get C100 amount: tokenAmount / rate
   if (Number(rate) === 0) return '0';
   const c100Amount = (Number(tokenAmount) / Number(rate)).toString();
-  console.log('Calculating C100 amount:', {
-    tokenAmount,
-    rate,
-    c100Amount,
-  });
   return c100Amount;
 };
 
@@ -331,11 +378,9 @@ export const connectWallet = createAsyncThunk(
       throw new Error('No accounts found');
     }
 
-    const walletAddress = accounts[0];
-
     await dispatch(fetchAllowedTokens());
 
-    return { walletAddress };
+    return {};
   }
 );
 
@@ -350,131 +395,203 @@ interface PublicSaleData {
   isPaused: boolean;
 }
 
-// Add new action to check USDC allowance
+// Check USDC allowance
 export const checkUsdcAllowance = createAsyncThunk(
   'publicSale/checkAllowance',
   async ({ usdcAmount }: { usdcAmount: string }, { getState }) => {
-    const web3 = getWeb3Instance();
-    const state = getState() as { publicSale: PublicSaleState };
-    const { selectedToken, walletAddress } = state.publicSale;
+    try {
+      const web3 = getWeb3Instance();
+      const state = getState() as {
+        publicSale: PublicSaleState;
+        wallet: { address: string };
+      };
+      const { selectedToken } = state.publicSale;
+      const { address: walletAddress } = state.wallet;
 
-    if (!walletAddress) {
-      throw new Error('No wallet connected');
+      if (!walletAddress) {
+        throw new Error('No wallet connected');
+      }
+
+      if (!selectedToken) {
+        throw new Error('No token selected');
+      }
+
+      console.log('Checking allowance for:', {
+        tokenAddress: selectedToken.address,
+        amount: usdcAmount,
+        decimals: selectedToken.decimals,
+        walletAddress,
+      });
+
+      const tokenContract = new web3.eth.Contract(
+        [
+          {
+            constant: true,
+            inputs: [
+              { name: '_owner', type: 'address' },
+              { name: '_spender', type: 'address' },
+            ],
+            name: 'allowance',
+            outputs: [{ name: '', type: 'uint256' }],
+            type: 'function',
+          },
+        ],
+        selectedToken.address
+      );
+
+      // Convert amount to smallest unit
+      const amountInSmallestUnit = toTokenDecimals(
+        usdcAmount,
+        selectedToken.decimals
+      );
+      console.log('Amount in smallest unit:', amountInSmallestUnit);
+
+      const allowance = (await tokenContract.methods
+        .allowance(walletAddress, publicSaleAddress)
+        .call()) as string;
+
+      console.log('Current allowance:', allowance);
+
+      return {
+        hasAllowance: BigInt(allowance) >= BigInt(amountInSmallestUnit),
+        requiredAmount: amountInSmallestUnit,
+      };
+    } catch (error) {
+      console.error('Error checking allowance:', error);
+      throw error;
     }
-
-    if (!selectedToken) {
-      throw new Error('No token selected');
-    }
-
-    const tokenContract = new web3.eth.Contract(
-      [
-        {
-          constant: true,
-          inputs: [
-            { name: '_owner', type: 'address' },
-            { name: '_spender', type: 'address' },
-          ],
-          name: 'allowance',
-          outputs: [{ name: '', type: 'uint256' }],
-          type: 'function',
-        },
-      ],
-      selectedToken.address
-    );
-
-    const divisor = BigInt(10) ** BigInt(selectedToken.decimals);
-    const amountInSmallestUnit =
-      (BigInt(Math.floor(Number(usdcAmount) * 1e6)) * divisor) / BigInt(1e6);
-
-    const allowance = (await tokenContract.methods
-      .allowance(walletAddress, publicSaleAddress)
-      .call()) as string;
-
-    return {
-      hasAllowance: BigInt(allowance) >= amountInSmallestUnit,
-      requiredAmount: amountInSmallestUnit.toString(),
-    };
   }
 );
 
-// Split approve and buy into separate actions
+// Approve USDC spending
 export const approveUsdcSpending = createAsyncThunk(
   'publicSale/approveSpending',
   async ({ usdcAmount }: { usdcAmount: string }, { getState }) => {
-    const web3 = getWeb3Instance();
-    const state = getState() as { publicSale: PublicSaleState };
-    const { selectedToken, walletAddress } = state.publicSale;
+    try {
+      const web3 = getWeb3Instance();
+      const state = getState() as {
+        publicSale: PublicSaleState;
+        wallet: { address: string };
+      };
+      const { selectedToken } = state.publicSale;
+      const { address: walletAddress } = state.wallet;
 
-    if (!walletAddress) {
-      throw new Error('No wallet connected');
+      if (!walletAddress) {
+        throw new Error('No wallet connected');
+      }
+
+      if (!selectedToken) {
+        throw new Error('No token selected');
+      }
+
+      console.log('Approving spending for:', {
+        tokenAddress: selectedToken.address,
+        amount: usdcAmount,
+        decimals: selectedToken.decimals,
+        walletAddress,
+      });
+
+      // Convert amount to smallest unit
+      const amountInSmallestUnit = toTokenDecimals(
+        usdcAmount,
+        selectedToken.decimals
+      );
+      console.log('Amount to approve in smallest unit:', amountInSmallestUnit);
+
+      const tokenContract = new web3.eth.Contract(
+        [
+          {
+            constant: false,
+            inputs: [
+              { name: '_spender', type: 'address' },
+              { name: '_value', type: 'uint256' },
+            ],
+            name: 'approve',
+            outputs: [{ name: '', type: 'bool' }],
+            payable: false,
+            stateMutability: 'nonpayable',
+            type: 'function',
+          },
+        ],
+        selectedToken.address
+      );
+
+      const tx = await tokenContract.methods
+        .approve(publicSaleAddress, amountInSmallestUnit)
+        .send({ from: walletAddress });
+
+      console.log('Approval transaction:', tx);
+
+      return { transactionHash: tx.transactionHash };
+    } catch (error) {
+      console.error('Error approving spending:', error);
+      throw error;
     }
-
-    if (!selectedToken) {
-      throw new Error('No token selected');
-    }
-
-    const divisor = BigInt(10) ** BigInt(selectedToken.decimals);
-    const amountInSmallestUnit =
-      (BigInt(Math.floor(Number(usdcAmount) * 1e6)) * divisor) / BigInt(1e6);
-
-    const tokenContract = new web3.eth.Contract(
-      [
-        {
-          constant: false,
-          inputs: [
-            { name: '_spender', type: 'address' },
-            { name: '_value', type: 'uint256' },
-          ],
-          name: 'approve',
-          outputs: [{ name: '', type: 'bool' }],
-          payable: false,
-          stateMutability: 'nonpayable',
-          type: 'function',
-        },
-      ],
-      selectedToken.address
-    );
-
-    const tx = await tokenContract.methods
-      .approve(publicSaleAddress, amountInSmallestUnit.toString())
-      .send({ from: walletAddress });
-
-    return { transactionHash: tx.transactionHash };
   }
 );
 
+// Buy C100 tokens
 export const buyC100Tokens = createAsyncThunk(
   'publicSale/buyTokens',
   async ({ usdcAmount }: { usdcAmount: string }, { dispatch, getState }) => {
-    const web3 = getWeb3Instance();
-    const state = getState() as { publicSale: PublicSaleState };
-    const { selectedToken, walletAddress } = state.publicSale;
+    try {
+      const web3 = getWeb3Instance();
+      const state = getState() as {
+        publicSale: PublicSaleState;
+        wallet: { address: string };
+      };
+      const { selectedToken } = state.publicSale;
+      const { address: walletAddress } = state.wallet;
 
-    if (!walletAddress) {
-      throw new Error('No wallet connected');
+      if (!walletAddress) {
+        throw new Error('No wallet connected');
+      }
+
+      if (!selectedToken) {
+        throw new Error('No token selected');
+      }
+
+      console.log('Buying tokens with:', {
+        tokenAddress: selectedToken.address,
+        amount: usdcAmount,
+        decimals: selectedToken.decimals,
+        walletAddress,
+      });
+
+      const contract = new web3.eth.Contract(
+        coin100PublicSaleContractAbi,
+        validateContractAddress(publicSaleAddress, 'Public Sale Contract')
+      );
+
+      // Convert amount to smallest unit
+      const amountInSmallestUnit = toTokenDecimals(
+        usdcAmount,
+        selectedToken.decimals
+      );
+      console.log('Amount in smallest unit:', amountInSmallestUnit);
+
+      console.log('Calling buyWithToken with:', {
+        tokenAddress: selectedToken.address,
+        amount: amountInSmallestUnit,
+      });
+
+      const tx = await contract.methods
+        .buyWithToken(selectedToken.address, amountInSmallestUnit)
+        .send({ from: walletAddress });
+
+      console.log('Purchase transaction:', tx);
+
+      // Refresh data after successful purchase
+      await Promise.all([
+        dispatch(fetchPublicSaleData()),
+        dispatch(fetchAllowedTokens()),
+      ]);
+
+      return { transactionHash: tx.transactionHash };
+    } catch (error) {
+      console.error('Error buying tokens:', error);
+      throw error;
     }
-
-    if (!selectedToken) {
-      throw new Error('No token selected');
-    }
-
-    const contract = new web3.eth.Contract(
-      coin100PublicSaleContractAbi,
-      validateContractAddress(publicSaleAddress, 'Public Sale Contract')
-    );
-
-    const divisor = BigInt(10) ** BigInt(selectedToken.decimals);
-    const amountInSmallestUnit =
-      (BigInt(Math.floor(Number(usdcAmount) * 1e6)) * divisor) / BigInt(1e6);
-
-    const tx = await contract.methods
-      .buyTokens(selectedToken.address, amountInSmallestUnit.toString())
-      .send({ from: walletAddress });
-
-    // Refresh sale data after successful purchase
-    await dispatch(fetchPublicSaleData());
-
-    return { transactionHash: tx.transactionHash };
   }
 );
 
@@ -540,9 +657,8 @@ const publicSaleSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(connectWallet.fulfilled, (state, action) => {
+      .addCase(connectWallet.fulfilled, (state) => {
         state.loading = false;
-        state.walletAddress = action.payload.walletAddress;
       })
       .addCase(connectWallet.rejected, (state, action) => {
         state.loading = false;
