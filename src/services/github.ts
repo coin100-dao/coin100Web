@@ -2,7 +2,7 @@ import axios from 'axios';
 import { AbiItem } from 'web3-utils';
 
 const GITHUB_RAW_BASE_URL =
-  'https://raw.githubusercontent.com/coin100-dao/coin100Web3/master';
+  'https://raw.githubusercontent.com/coin100-dao/.github/main';
 
 interface ContractAddresses {
   c100TokenAddress: string;
@@ -15,12 +15,9 @@ export const fetchContractABI = async (
   try {
     const fileName =
       contractType === 'c100' ? 'c100-abi.json' : 'c100-public-sale-abi.json';
-    const response = await axios.get(
-      `${GITHUB_RAW_BASE_URL}/contract-abi/${fileName}`,
-      {
-        transformResponse: [(data) => data],
-      }
-    );
+    const response = await axios.get(`${GITHUB_RAW_BASE_URL}/${fileName}`, {
+      transformResponse: [(data) => data],
+    });
 
     const parsedData = JSON.parse(response.data);
     if (!Array.isArray(parsedData)) {
