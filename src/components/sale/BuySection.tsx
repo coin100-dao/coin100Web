@@ -85,10 +85,13 @@ export function BuySection() {
   // Calculate C100 amount when token amount changes
   useEffect(() => {
     if (selectedToken && tokenAmount) {
-      const amount = calculateC100Amount(
-        tokenAmount,
-        selectedToken.rate || '0'
-      );
+      // Convert rate to decimal (e.g., "1000000" with 6 decimals becomes 0.001)
+      const rateInDecimal = selectedToken.rate
+        ? (
+            Number(selectedToken.rate) / Math.pow(10, selectedToken.decimals)
+          ).toString()
+        : '0';
+      const amount = calculateC100Amount(tokenAmount, rateInDecimal);
       setC100Amount(amount);
     } else {
       setC100Amount('');
@@ -368,7 +371,14 @@ export function BuySection() {
               <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                 <Typography color="text.secondary">Rate:</Typography>
                 <Typography>
-                  1 C100 = {selectedToken.rate} {selectedToken.symbol}
+                  1 C100 ={' '}
+                  {selectedToken.rate
+                    ? (
+                        Number(selectedToken.rate) /
+                        Math.pow(10, selectedToken.decimals)
+                      ).toFixed(6)
+                    : '0'}{' '}
+                  {selectedToken.symbol}
                 </Typography>
               </Box>
             </Box>

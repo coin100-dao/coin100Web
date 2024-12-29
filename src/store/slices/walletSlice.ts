@@ -7,6 +7,15 @@ import {
 } from '../../utils/web3Utils';
 import type { EthereumProvider } from '../../types/ethereum';
 import { AbiItem } from 'web3-utils';
+import { fetchContractAddresses } from '../../services/github';
+
+interface AllowedToken {
+  token: string;
+  name: string;
+  symbol: string;
+  decimals: string;
+  rate: string;
+}
 
 // Types
 interface TokenBalance {
@@ -169,6 +178,59 @@ export const connectWallet = createAsyncThunk<
 
     // Initialize Web3 instance after successful connection
     getWeb3Instance();
+
+    // After successful connection, fetch token balances
+    try {
+      // Get the list of allowed tokens from the public sale contract
+      const web3 = getWeb3Instance();
+      const addresses = await fetchContractAddresses();
+
+      // Get the ABI from the public sale contract
+      const publicSaleAbi = [
+        {
+          constant: true,
+          inputs: [],
+          name: 'getAllowedTokens',
+          outputs: [
+            {
+              components: [
+                { name: 'token', type: 'address' },
+                { name: 'name', type: 'string' },
+                { name: 'symbol', type: 'string' },
+                { name: 'decimals', type: 'uint8' },
+                { name: 'rate', type: 'uint256' },
+              ],
+              name: '',
+              type: 'tuple[]',
+            },
+          ],
+          payable: false,
+          stateMutability: 'view',
+          type: 'function',
+        },
+      ] as AbiItem[];
+
+      const contract = new web3.eth.Contract(
+        publicSaleAbi,
+        addresses.publicSaleAddress
+      );
+
+      const allowedTokens = (await executeContractCall(() =>
+        contract.methods.getAllowedTokens().call()
+      )) as AllowedToken[];
+
+      // Map tokens to the format expected by fetchTokenBalances
+      const tokenList = allowedTokens.map((token) => ({
+        address: token.token,
+        symbol: token.symbol,
+        decimals: Number(token.decimals),
+      }));
+
+      // Fetch balances for all allowed tokens
+      await dispatch(fetchTokenBalances(tokenList)).unwrap();
+    } catch (error) {
+      console.error('Failed to fetch initial token balances:', error);
+    }
 
     return { address: accounts[0], chainId: POLYGON_CHAIN_ID };
   } catch (error) {

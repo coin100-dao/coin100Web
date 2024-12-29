@@ -17,6 +17,7 @@ import {
   fetchPublicSaleData,
   initializeContractData,
 } from '../store/slices/publicSaleSlice';
+import { connectWallet } from '../store/slices/walletSlice';
 import { BuySection } from '../components/sale/BuySection';
 import SaleInfo from '../components/sale/SaleInfo';
 import Stats from '../components/sale/Stats';
@@ -101,9 +102,15 @@ const PublicSale: React.FC = () => {
     setConnectDialogOpen(true);
   };
 
-  const handleConnectSuccess = () => {
-    console.log('Wallet connected successfully, fetching data...');
-    dispatch(fetchPublicSaleData());
+  const handleConnectSuccess = async () => {
+    try {
+      await dispatch(connectWallet()).unwrap();
+      setConnectDialogOpen(false);
+      console.log('Wallet connected successfully, fetching data...');
+      dispatch(fetchPublicSaleData());
+    } catch (error) {
+      console.error('Failed to connect wallet:', error);
+    }
   };
 
   return (
