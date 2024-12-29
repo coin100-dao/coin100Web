@@ -1,3 +1,4 @@
+// src/store/slices/publicSaleSlice.ts
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { AbiItem } from 'web3-utils';
 import {
@@ -109,7 +110,6 @@ const toTokenDecimals = (amount: string, decimals: number): string => {
     // Convert to base unit (e.g., cents for USDC)
     const baseAmount = Math.floor(Number(amount) * Math.pow(10, decimals));
     const result = baseAmount.toString();
-
     return result;
   } catch (error) {
     console.error('Error converting to token decimals:', error);
@@ -223,7 +223,7 @@ export const fetchPublicSaleData = createAsyncThunk<PublicSaleData>(
       const startTime = Number(startTimeStr);
       const endTime = Number(endTimeStr);
 
-      // Convert token amounts from wei to ether
+      // Convert token amounts from wei to ether (assuming C100 has 18 decimals)
       const remainingTokens = web3.utils.fromWei(contractBalance, 'ether');
       const totalSupplyEther = web3.utils.fromWei(totalSupply, 'ether');
       const totalSold = (
@@ -252,7 +252,7 @@ export const fetchPublicSaleData = createAsyncThunk<PublicSaleData>(
 );
 
 // Fetch allowed tokens from contract
-export const fetchAllowedTokens = createAsyncThunk(
+export const fetchAllowedTokens = createAsyncThunk<USDCToken[]>(
   'publicSale/fetchAllowedTokens',
   async (_, { getState }) => {
     try {
@@ -270,14 +270,43 @@ export const fetchAllowedTokens = createAsyncThunk(
         contract.methods.getAllowedTokens().call()
       )) as AllowedToken[];
 
-      const tokens: USDCToken[] = await Promise.all(
+      console.log('Raw allowed tokens from contract:', allowedTokens);
+
+      const tokens: (USDCToken | null)[] = await Promise.all(
         allowedTokens.map(async (token) => {
+          // **Exclude C100 from allowed tokens**
+          if (token.symbol.toUpperCase() === 'C100') {
+            console.warn(
+              'C100 token detected in allowed tokens. Excluding from list.'
+            );
+            return null;
+          }
+
+          // **Ensure that only USDC.e is included**
+          if (
+            token.symbol.toUpperCase() !== 'USDC' &&
+            token.symbol.toUpperCase() !== 'USDC.E'
+          ) {
+            console.warn(
+              `Token ${token.symbol} is not supported. Excluding from list.`
+            );
+            return null;
+          }
+
           // Token data is already available in the response
           const tokenAddress = token.token;
           const name = token.name;
           const symbol = token.symbol;
           const decimals = Number(token.decimals);
-          const rate = token.rate;
+          const rate = token.rate.toString(); // Convert BigInt to string
+
+          console.log(`Token ${symbol} details:`, {
+            address: tokenAddress,
+            name,
+            decimals,
+            rawRate: rate,
+            rateInDecimal: (Number(rate) / 1e18).toString(),
+          });
 
           let balance = '0';
           if (walletAddress) {
@@ -302,23 +331,24 @@ export const fetchAllowedTokens = createAsyncThunk(
             }
           }
 
-          // Convert rate to decimal format based on token decimals
-          // The rate from contract is in the format: 1e15 (0.001 * 1e18)
-          // We need to convert it to 0.001 by dividing by 1e18
-          const rateInDecimal = (Number(rate) / Math.pow(10, 18)).toString();
-
           return {
             address: tokenAddress,
             name,
             symbol,
             decimals,
             balance,
-            rate: rateInDecimal,
+            rate, // Now storing the rate as a string
           };
         })
       );
 
-      return tokens;
+      // **Filter out any null values (excluded tokens)**
+      const filteredTokens = tokens.filter(
+        (token): token is USDCToken => token !== null
+      );
+
+      console.log('Processed tokens with rates:', filteredTokens);
+      return filteredTokens;
     } catch (error) {
       console.error('Error in fetchAllowedTokens:', error);
       throw error;
@@ -331,22 +361,32 @@ export const calculateC100Amount = (
   tokenAmount: string,
   rate: string
 ): string => {
-  // The rate is price per 1 C100 (e.g., 0.001 USDC per C100)
-  // So to get C100 amount: tokenAmount / rate
   if (Number(rate) === 0) return '0';
 
-  // For example:
-  // If user inputs 1 USDC and rate is 0.001 USDC per C100
-  // Then they should receive 1/0.001 = 1000 C100 tokens
-  const c100Amount = (Number(tokenAmount) / Number(rate)).toString();
+  try {
+    // Convert input amount to smallest unit based on USDC.e's decimals (18)
+    const amountInSmallestUnit = BigInt(Math.floor(Number(tokenAmount) * 1e18));
 
-  // Format the number to avoid scientific notation and round to 6 decimal places
-  const formattedAmount = Number(c100Amount).toLocaleString('fullwide', {
-    useGrouping: false,
-    maximumFractionDigits: 6,
-  });
+    // c100Amount = (paymentAmount * rate) / 1e18
+    const c100AmountInWei =
+      (amountInSmallestUnit * BigInt(rate)) / BigInt(1e18);
 
-  return formattedAmount;
+    console.log('C100 calculation:', {
+      inputAmount: tokenAmount,
+      rate,
+      amountInSmallestUnit: amountInSmallestUnit.toString(),
+      c100AmountInWei: c100AmountInWei.toString(),
+    });
+
+    const web3 = getWeb3Instance();
+    // Convert to standard unit (from Wei)
+    const c100Amount = web3.utils.fromWei(c100AmountInWei.toString(), 'ether');
+
+    return c100Amount;
+  } catch (error) {
+    console.error('Error calculating C100 amount:', error);
+    return '0';
+  }
 };
 
 // Connect wallet function
@@ -475,7 +515,7 @@ export const approveUsdcSpending = createAsyncThunk(
   'publicSale/approveSpending',
   async ({ usdcAmount }: { usdcAmount: string }, { getState }) => {
     try {
-      const web3 = await getWeb3Instance();
+      const web3 = getWeb3Instance();
       const state = getState() as {
         publicSale: PublicSaleState;
         wallet: { address: string };
@@ -491,10 +531,17 @@ export const approveUsdcSpending = createAsyncThunk(
         throw new Error('No token selected');
       }
 
+      // Convert amount to smallest unit based on USDC.e's decimals (18)
       const amountInSmallestUnit = toTokenDecimals(
         usdcAmount,
         selectedToken.decimals
       );
+
+      console.log('Approving exact amount:', {
+        inputAmount: usdcAmount,
+        amountInSmallestUnit,
+        decimals: selectedToken.decimals,
+      });
 
       // Create contract instance with standard ERC20 ABI
       const tokenContract = new web3.eth.Contract(
@@ -505,17 +552,6 @@ export const approveUsdcSpending = createAsyncThunk(
       // Get current gas price
       const gasPrice = await web3.eth.getGasPrice();
 
-      // First, reset allowance to 0
-      const resetTx = await tokenContract.methods
-        .approve(publicSaleAddress, '0')
-        .send({
-          from: walletAddress,
-          gasPrice: Math.floor(Number(gasPrice) * 1.1).toString(),
-        });
-
-      // Wait for the reset transaction to be mined
-      await web3.eth.getTransactionReceipt(resetTx.transactionHash);
-
       // Estimate gas for approval
       const estimatedGas = await tokenContract.methods
         .approve(publicSaleAddress, amountInSmallestUnit)
@@ -524,7 +560,7 @@ export const approveUsdcSpending = createAsyncThunk(
       // Add 20% buffer to gas estimate
       const gasLimit = Math.floor(Number(estimatedGas) * 1.2).toString();
 
-      // Send approval transaction
+      // Send approval transaction with exact amount
       const tx = await tokenContract.methods
         .approve(publicSaleAddress, amountInSmallestUnit)
         .send({
@@ -682,6 +718,7 @@ export const buyC100Tokens = createAsyncThunk(
       await Promise.all([
         dispatch(fetchPublicSaleData()),
         dispatch(fetchAllowedTokens()),
+        dispatch(checkVestingSchedule()),
       ]);
 
       return {
@@ -701,7 +738,7 @@ export const selectToken = createAsyncThunk(
   async (tokenAddress: string, { getState }) => {
     const state = getState() as { publicSale: PublicSaleState };
     const selectedToken = state.publicSale.allowedTokens.find(
-      (token) => token.address === tokenAddress
+      (token) => token.address.toLowerCase() === tokenAddress.toLowerCase()
     );
     if (!selectedToken) {
       throw new Error('Invalid token selected');
@@ -711,7 +748,7 @@ export const selectToken = createAsyncThunk(
 );
 
 // Check vesting schedule
-export const checkVestingSchedule = createAsyncThunk(
+export const checkVestingSchedule = createAsyncThunk<VestingSchedule[]>(
   'publicSale/checkVesting',
   async (_, { getState }) => {
     try {
@@ -725,29 +762,62 @@ export const checkVestingSchedule = createAsyncThunk(
         throw new Error('No wallet connected');
       }
 
+      console.log('Checking vesting schedule for wallet:', walletAddress);
       const contract = new web3.eth.Contract(
         coin100PublicSaleContractAbi,
         validateContractAddress(publicSaleAddress, 'Public Sale Contract')
       );
 
-      // Get the vesting schedule directly
-      const schedule = (await contract.methods
-        .vestings(walletAddress, 0)
-        .call()) as {
-        amount: string;
-        releaseTime: string;
-      };
+      // Get user's total purchases to know how many vesting schedules to check
+      const userPurchases = await contract.methods
+        .userPurchases(walletAddress)
+        .call();
+      console.log('Total user purchases:', userPurchases);
 
       const vestingSchedules: VestingSchedule[] = [];
+      let index = 0;
+      let hasMore = true;
 
-      if (schedule && schedule.amount !== '0') {
-        vestingSchedules.push({
-          amount: web3.utils.fromWei(schedule.amount, 'ether'),
-          releaseTime: Number(schedule.releaseTime),
-          isClaimable: Date.now() / 1000 >= Number(schedule.releaseTime),
-        });
+      // Keep checking vesting schedules until we find one with amount = 0
+      while (hasMore) {
+        try {
+          const schedule = (await contract.methods
+            .vestings(walletAddress, index)
+            .call()) as {
+            amount: string;
+            releaseTime: string;
+          };
+          console.log(`Raw vesting schedule at index ${index}:`, schedule);
+
+          if (schedule && schedule.amount !== '0') {
+            // **Correct conversion using 'ether' to handle 18 decimals**
+            const c100Amount = web3.utils.fromWei(schedule.amount, 'ether');
+
+            console.log(`Vesting schedule at index ${index}:`, {
+              rawAmount: schedule.amount,
+              c100Amount: c100Amount,
+              releaseTime: new Date(
+                Number(schedule.releaseTime) * 1000
+              ).toLocaleString(),
+            });
+
+            vestingSchedules.push({
+              amount: c100Amount, // e.g., '1000'
+              releaseTime: Number(schedule.releaseTime),
+              isClaimable: Date.now() / 1000 >= Number(schedule.releaseTime),
+            });
+            index++;
+          } else {
+            hasMore = false;
+          }
+        } catch {
+          // If we get an error, assume there are no more vesting schedules
+          console.log('No more vesting schedules found at index:', index);
+          hasMore = false;
+        }
       }
 
+      console.log('Final vesting schedules:', vestingSchedules);
       return vestingSchedules;
     } catch (error) {
       console.error('Error checking vesting schedule:', error);

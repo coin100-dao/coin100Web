@@ -9,11 +9,9 @@ import {
   useTheme,
   Grid,
   Chip,
-  Divider,
 } from '@mui/material';
 import { AccessTime, CheckCircle, Error, Pause } from '@mui/icons-material';
 import { format, formatDistanceToNow } from 'date-fns';
-import ActivityLog from './ActivityLog';
 
 const SaleInfo: React.FC = () => {
   const theme = useTheme();
@@ -159,10 +157,6 @@ const SaleInfo: React.FC = () => {
             </Typography>
           </Grid>
         </Grid>
-
-        <Divider sx={{ my: 3 }} />
-
-        <ActivityLog />
       </CardContent>
     </Card>
   );

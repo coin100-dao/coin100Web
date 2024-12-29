@@ -1,3 +1,4 @@
+// src/utils/web3Utils.ts
 import Web3 from 'web3';
 import { MetaMaskInpageProvider } from '@metamask/providers';
 
@@ -5,12 +6,7 @@ import { MetaMaskInpageProvider } from '@metamask/providers';
 export const POLYGON_CHAIN_ID = '0x89'; // Polygon Mainnet Chain ID
 
 // RPC endpoints with fallbacks, ordered by reliability
-export const RPC_ENDPOINTS = [
-  'https://polygon-rpc.com',
-  'https://polygon.llamarpc.com',
-  'https://polygon-bor-rpc.publicnode.com',
-  'https://polygon.meowrpc.com',
-];
+export const RPC_ENDPOINTS = ['https://polygon-rpc.com'];
 
 interface RpcState {
   currentRpcIndex: number;

@@ -1,3 +1,4 @@
+// src/store/slices/walletSlice.ts
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { MetaMaskInpageProvider } from '@metamask/providers';
 import { executeContractCall } from '../../utils/web3Utils';
