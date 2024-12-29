@@ -4,6 +4,7 @@ import { AbiItem } from 'web3-utils';
 import {
   fetchContractABI,
   fetchContractAddresses,
+  ContractAddresses,
 } from '../../services/github';
 
 // Initialize contract data
@@ -18,25 +19,8 @@ interface USDCToken {
   symbol: string;
   decimals: number;
   balance: string;
+  rate?: string; // Rate for token/C100 conversion
 }
-
-// Available USDC tokens
-export const USDC_TOKENS: USDCToken[] = [
-  {
-    address: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174',
-    name: 'USD Coin (PoS)',
-    symbol: 'USDC',
-    decimals: 6,
-    balance: '0',
-  },
-  {
-    address: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359',
-    name: 'USD Coin',
-    symbol: 'USDC',
-    decimals: 6,
-    balance: '0',
-  },
-];
 
 // Types
 interface PublicSaleState {
@@ -52,8 +36,8 @@ interface PublicSaleState {
   isPaused: boolean;
   treasuryAddress: string;
   walletAddress: string;
-  usdcTokens: USDCToken[];
-  selectedUsdcToken: USDCToken;
+  allowedTokens: USDCToken[];
+  selectedToken: USDCToken | null;
   purchaseState: {
     isApproving: boolean;
     isBuying: boolean;
@@ -63,6 +47,32 @@ interface PublicSaleState {
     purchaseHash: string;
   };
 }
+
+// Initial state
+const initialState: PublicSaleState = {
+  loading: false,
+  error: null,
+  startTime: 0,
+  endTime: 0,
+  isFinalized: false,
+  totalSold: '0',
+  remainingTokens: '0',
+  isSaleActive: false,
+  isInitialized: false,
+  isPaused: false,
+  treasuryAddress: '',
+  walletAddress: '',
+  allowedTokens: [],
+  selectedToken: null,
+  purchaseState: {
+    isApproving: false,
+    isBuying: false,
+    approvalError: null,
+    purchaseError: null,
+    approvalHash: '',
+    purchaseHash: '',
+  },
+};
 
 // Helper functions
 const validateContractAddress = (
@@ -84,13 +94,14 @@ const getWeb3Instance = (): Web3 => {
   return new Web3(window.ethereum);
 };
 
-// Helper function to get USDC balance
-const fetchUsdcBalance = async (
+// Helper function to get token balance
+const fetchTokenBalance = async (
   web3: Web3,
   tokenAddress: string,
-  walletAddress: string
+  walletAddress: string,
+  decimals: number
 ): Promise<string> => {
-  const usdcContract = new web3.eth.Contract(
+  const tokenContract = new web3.eth.Contract(
     [
       {
         constant: true,
@@ -103,48 +114,125 @@ const fetchUsdcBalance = async (
     tokenAddress
   );
 
-  const balance = (await usdcContract.methods
+  const balance = (await tokenContract.methods
     .balanceOf(walletAddress)
     .call()) as string;
-  return web3.utils.fromWei(balance, 'mwei'); // USDC has 6 decimals
+
+  // Convert based on token decimals
+  const divisor = BigInt(10) ** BigInt(decimals);
+  return (BigInt(balance) / divisor).toString();
 };
 
-// Calculate C100 amount from USDC amount
-export const calculateC100Amount = (usdcAmount: string): string => {
-  const c100Amount = (Number(usdcAmount) * 1000).toString();
+// Helper function to get token info
+const fetchTokenInfo = async (
+  web3: Web3,
+  tokenAddress: string
+): Promise<{ name: string; symbol: string; decimals: number }> => {
+  const tokenContract = new web3.eth.Contract(
+    [
+      {
+        constant: true,
+        inputs: [],
+        name: 'name',
+        outputs: [{ name: '', type: 'string' }],
+        type: 'function',
+      },
+      {
+        constant: true,
+        inputs: [],
+        name: 'symbol',
+        outputs: [{ name: '', type: 'string' }],
+        type: 'function',
+      },
+      {
+        constant: true,
+        inputs: [],
+        name: 'decimals',
+        outputs: [{ name: '', type: 'uint8' }],
+        type: 'function',
+      },
+    ],
+    tokenAddress
+  );
+
+  const [name, symbol, decimals] = await Promise.all([
+    tokenContract.methods.name().call() as Promise<string>,
+    tokenContract.methods.symbol().call() as Promise<string>,
+    tokenContract.methods.decimals().call() as Promise<number>,
+  ]);
+
+  return { name, symbol, decimals };
+};
+
+// Fetch allowed tokens from contract
+export const fetchAllowedTokens = createAsyncThunk(
+  'publicSale/fetchAllowedTokens',
+  async (_, { getState }) => {
+    const web3 = getWeb3Instance();
+    const contract = new web3.eth.Contract(
+      coin100PublicSaleContractAbi,
+      validateContractAddress(publicSaleAddress, 'Public Sale Contract')
+    );
+
+    const state = getState() as { publicSale: PublicSaleState };
+    const { walletAddress } = state.publicSale;
+
+    // Get allowed tokens count
+    const tokenCount = Number(
+      await contract.methods.getAllowedTokensLength().call()
+    );
+    const tokens: USDCToken[] = [];
+
+    // Fetch each token's info
+    for (let i = 0; i < tokenCount; i++) {
+      const tokenAddress = (await contract.methods
+        .allowedTokens(i)
+        .call()) as string;
+      const rate = (await contract.methods
+        .getTokenRate(tokenAddress)
+        .call()) as string;
+      const tokenInfo = await fetchTokenInfo(web3, tokenAddress);
+
+      let balance = '0';
+      if (walletAddress) {
+        balance = await fetchTokenBalance(
+          web3,
+          tokenAddress,
+          walletAddress,
+          tokenInfo.decimals
+        );
+      }
+
+      // Convert rate to decimal format (rate is in wei)
+      const rateInEther = web3.utils.fromWei(rate, 'ether');
+
+      tokens.push({
+        address: tokenAddress,
+        name: tokenInfo.name,
+        symbol: tokenInfo.symbol,
+        decimals: tokenInfo.decimals,
+        balance,
+        rate: rateInEther,
+      });
+    }
+
+    return tokens;
+  }
+);
+
+// Calculate C100 amount from token amount
+export const calculateC100Amount = (
+  tokenAmount: string,
+  rate: string
+): string => {
+  const c100Amount = (Number(tokenAmount) * Number(rate)).toString();
   return c100Amount;
-};
-
-// Initial state
-const initialState: PublicSaleState = {
-  loading: false,
-  error: null,
-  startTime: 0,
-  endTime: 0,
-  isFinalized: false,
-  totalSold: '0',
-  remainingTokens: '0',
-  isSaleActive: false,
-  isInitialized: false,
-  isPaused: false,
-  treasuryAddress: '',
-  walletAddress: '',
-  usdcTokens: USDC_TOKENS,
-  selectedUsdcToken: USDC_TOKENS[0],
-  purchaseState: {
-    isApproving: false,
-    isBuying: false,
-    approvalError: null,
-    purchaseError: null,
-    approvalHash: '',
-    purchaseHash: '',
-  },
 };
 
 // Connect wallet function
 export const connectWallet = createAsyncThunk(
   'publicSale/connectWallet',
-  async () => {
+  async (_, { dispatch }) => {
     const web3 = getWeb3Instance();
     const accounts = await web3.eth.requestAccounts();
 
@@ -154,35 +242,16 @@ export const connectWallet = createAsyncThunk(
 
     const walletAddress = accounts[0];
 
-    // Fetch balances for all USDC tokens
-    const balancePromises = USDC_TOKENS.map((token) =>
-      fetchUsdcBalance(web3, token.address, walletAddress)
-    );
+    // After connecting wallet, fetch allowed tokens to get their balances
+    await dispatch(fetchAllowedTokens());
 
-    const balances = await Promise.all(balancePromises);
-
-    // Update tokens with balances
-    const updatedTokens = USDC_TOKENS.map((token, index) => ({
-      ...token,
-      balance: balances[index],
-    }));
-
-    // Find the token with the highest balance to set as default
-    const defaultToken = updatedTokens.reduce((prev, current) =>
-      Number(current.balance) > Number(prev.balance) ? current : prev
-    );
-
-    return {
-      walletAddress,
-      usdcTokens: updatedTokens,
-      selectedUsdcToken: defaultToken,
-    };
+    return { walletAddress };
   }
 );
 
 // Initialize contract data
 export const initializeContractData = createAsyncThunk<
-  { tokenAddress: string; publicSaleAddress: string },
+  ContractAddresses,
   void,
   { rejectValue: string }
 >('publicSale/initializeContractData', async (_, { rejectWithValue }) => {
@@ -199,7 +268,7 @@ export const initializeContractData = createAsyncThunk<
     coin100ContractAbi = c100Abi;
     coin100PublicSaleContractAbi = publicSaleAbi;
 
-    return { tokenAddress, publicSaleAddress };
+    return addresses;
   } catch (error) {
     return rejectWithValue(
       error instanceof Error
@@ -282,13 +351,17 @@ export const checkUsdcAllowance = createAsyncThunk(
   async ({ usdcAmount }: { usdcAmount: string }, { getState }) => {
     const web3 = getWeb3Instance();
     const state = getState() as { publicSale: PublicSaleState };
-    const { selectedUsdcToken, walletAddress } = state.publicSale;
+    const { selectedToken, walletAddress } = state.publicSale;
 
     if (!walletAddress) {
       throw new Error('No wallet connected');
     }
 
-    const usdcContract = new web3.eth.Contract(
+    if (!selectedToken) {
+      throw new Error('No token selected');
+    }
+
+    const tokenContract = new web3.eth.Contract(
       [
         {
           constant: true,
@@ -301,17 +374,20 @@ export const checkUsdcAllowance = createAsyncThunk(
           type: 'function',
         },
       ],
-      selectedUsdcToken.address
+      selectedToken.address
     );
 
-    const usdcAmountWei = web3.utils.toWei(usdcAmount, 'mwei');
-    const allowance = (await usdcContract.methods
+    const divisor = BigInt(10) ** BigInt(selectedToken.decimals);
+    const amountInSmallestUnit =
+      (BigInt(Math.floor(Number(usdcAmount) * 1e6)) * divisor) / BigInt(1e6);
+
+    const allowance = (await tokenContract.methods
       .allowance(walletAddress, publicSaleAddress)
       .call()) as string;
 
     return {
-      hasAllowance: BigInt(allowance) >= BigInt(usdcAmountWei),
-      requiredAmount: usdcAmountWei,
+      hasAllowance: BigInt(allowance) >= amountInSmallestUnit,
+      requiredAmount: amountInSmallestUnit.toString(),
     };
   }
 );
@@ -322,14 +398,21 @@ export const approveUsdcSpending = createAsyncThunk(
   async ({ usdcAmount }: { usdcAmount: string }, { getState }) => {
     const web3 = getWeb3Instance();
     const state = getState() as { publicSale: PublicSaleState };
-    const { selectedUsdcToken, walletAddress } = state.publicSale;
+    const { selectedToken, walletAddress } = state.publicSale;
 
     if (!walletAddress) {
       throw new Error('No wallet connected');
     }
 
-    const usdcAmountWei = web3.utils.toWei(usdcAmount, 'mwei');
-    const usdcContract = new web3.eth.Contract(
+    if (!selectedToken) {
+      throw new Error('No token selected');
+    }
+
+    const divisor = BigInt(10) ** BigInt(selectedToken.decimals);
+    const amountInSmallestUnit =
+      (BigInt(Math.floor(Number(usdcAmount) * 1e6)) * divisor) / BigInt(1e6);
+
+    const tokenContract = new web3.eth.Contract(
       [
         {
           constant: false,
@@ -344,11 +427,11 @@ export const approveUsdcSpending = createAsyncThunk(
           type: 'function',
         },
       ],
-      selectedUsdcToken.address
+      selectedToken.address
     );
 
-    const tx = await usdcContract.methods
-      .approve(publicSaleAddress, usdcAmountWei)
+    const tx = await tokenContract.methods
+      .approve(publicSaleAddress, amountInSmallestUnit.toString())
       .send({ from: walletAddress });
 
     return { transactionHash: tx.transactionHash };
@@ -360,10 +443,14 @@ export const buyC100Tokens = createAsyncThunk(
   async ({ usdcAmount }: { usdcAmount: string }, { dispatch, getState }) => {
     const web3 = getWeb3Instance();
     const state = getState() as { publicSale: PublicSaleState };
-    const { walletAddress } = state.publicSale;
+    const { selectedToken, walletAddress } = state.publicSale;
 
     if (!walletAddress) {
       throw new Error('No wallet connected');
+    }
+
+    if (!selectedToken) {
+      throw new Error('No token selected');
     }
 
     const contract = new web3.eth.Contract(
@@ -371,9 +458,12 @@ export const buyC100Tokens = createAsyncThunk(
       validateContractAddress(publicSaleAddress, 'Public Sale Contract')
     );
 
-    const usdcAmountWei = web3.utils.toWei(usdcAmount, 'mwei');
+    const divisor = BigInt(10) ** BigInt(selectedToken.decimals);
+    const amountInSmallestUnit =
+      (BigInt(Math.floor(Number(usdcAmount) * 1e6)) * divisor) / BigInt(1e6);
+
     const tx = await contract.methods
-      .buyTokens(usdcAmountWei)
+      .buyTokens(selectedToken.address, amountInSmallestUnit.toString())
       .send({ from: walletAddress });
 
     // Refresh sale data after successful purchase
@@ -383,16 +473,16 @@ export const buyC100Tokens = createAsyncThunk(
   }
 );
 
-// Select USDC token
-export const selectUsdcToken = createAsyncThunk(
-  'publicSale/selectUsdcToken',
+// Select token
+export const selectToken = createAsyncThunk(
+  'publicSale/selectToken',
   async (tokenAddress: string, { getState }) => {
     const state = getState() as { publicSale: PublicSaleState };
-    const selectedToken = state.publicSale.usdcTokens.find(
+    const selectedToken = state.publicSale.allowedTokens.find(
       (token) => token.address === tokenAddress
     );
     if (!selectedToken) {
-      throw new Error('Invalid USDC token selected');
+      throw new Error('Invalid token selected');
     }
     return selectedToken;
   }
@@ -423,25 +513,21 @@ const publicSaleSlice = createSlice({
         state.error = action.payload ?? 'Failed to initialize contract data';
       })
 
-      // Fetch Public Sale Data
-      .addCase(fetchPublicSaleData.pending, (state) => {
+      // Fetch Allowed Tokens
+      .addCase(fetchAllowedTokens.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchPublicSaleData.fulfilled, (state, action) => {
+      .addCase(fetchAllowedTokens.fulfilled, (state, action) => {
         state.loading = false;
-        state.startTime = action.payload.startTime;
-        state.endTime = action.payload.endTime;
-        state.isFinalized = action.payload.isFinalized;
-        state.totalSold = action.payload.totalSold;
-        state.remainingTokens = action.payload.remainingTokens;
-        state.isSaleActive = action.payload.isSaleActive;
-        state.treasuryAddress = action.payload.treasuryAddress;
-        state.isPaused = action.payload.isPaused;
+        state.allowedTokens = action.payload;
+        if (action.payload.length > 0 && !state.selectedToken) {
+          state.selectedToken = action.payload[0];
+        }
       })
-      .addCase(fetchPublicSaleData.rejected, (state, action) => {
+      .addCase(fetchAllowedTokens.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Failed to fetch sale data';
+        state.error = action.error.message || 'Failed to fetch allowed tokens';
       })
 
       // Connect Wallet
@@ -452,17 +538,15 @@ const publicSaleSlice = createSlice({
       .addCase(connectWallet.fulfilled, (state, action) => {
         state.loading = false;
         state.walletAddress = action.payload.walletAddress;
-        state.usdcTokens = action.payload.usdcTokens;
-        state.selectedUsdcToken = action.payload.selectedUsdcToken;
       })
       .addCase(connectWallet.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Failed to connect wallet';
       })
 
-      // Select USDC Token
-      .addCase(selectUsdcToken.fulfilled, (state, action) => {
-        state.selectedUsdcToken = action.payload;
+      // Select Token
+      .addCase(selectToken.fulfilled, (state, action) => {
+        state.selectedToken = action.payload;
       })
 
       // Approve USDC Spending
