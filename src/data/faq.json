@@ -109,6 +109,16 @@
           "id": 20,
           "question": "What happens if the Polygon network experiences high congestion?",
           "answer": "While Polygon is designed for high throughput and low fees, extreme congestion could delay transactions, including rebases. Governance and technical teams monitor network health to mitigate such issues."
+        },
+        {
+          "id": 104,
+          "question": "Can the liquidity pool be changed after deployment?",
+          "answer": "Yes, admins or governance can set or update approved liquidity pool addresses as needed to ensure continued fee allocation integrity."
+        },
+        {
+          "id": 105,
+          "question": "How are fees allocated if there are no approved liquidity pools?",
+          "answer": "If no approved liquidity pools are set, all LP fees are allocated to the treasury to prevent any loss. This ensures fees remain captured for project use."
         }
       ]
     },
@@ -190,6 +200,16 @@
           "id": 35,
           "question": "How are fees allocated if there is no liquidity pool?",
           "answer": "If no liquidity pool is set, the entire transaction fee is allocated to the treasury, ensuring that fees are still collected and utilized effectively."
+        },
+        {
+          "id": 110,
+          "question": "How are token burns executed?",
+          "answer": "Admins can burn tokens from the treasury by transferring them to a burn address. Transaction details are transparently recorded on-chain."
+        },
+        {
+          "id": 111,
+          "question": "Can transaction fees be disabled?",
+          "answer": "Currently, transaction fees are enabled by default, but future governance can adjust or disable them if the community votes to do so."
         }
       ]
     },
@@ -246,6 +266,11 @@
           "id": 45,
           "question": "Can the rebasing mechanism be exploited?",
           "answer": "The rebasing mechanism is governed by secure, audited smart contracts and decentralized governance. Any changes to the rebase logic require community approval, minimizing the risk of exploitation."
+        },
+        {
+          "id": 103,
+          "question": "How is the rebase frequency determined?",
+          "answer": "The rebase frequency is predefined and can be adjusted by governance in the future to meet community needs. Initially, it may be set to a daily schedule or any interval chosen by the admins."
         }
       ]
     },
@@ -312,6 +337,11 @@
           "id": 57,
           "question": "How are unsold tokens handled post-ICO?",
           "answer": "Unsold tokens are burned, reducing the total supply and ensuring that only actively held tokens remain in circulation."
+        },
+        {
+          "id": 107,
+          "question": "How are unsold tokens handled post-ICO (new detail)?",
+          "answer": "After the sale ends, any genuinely unsold tokens are burned during finalization, preserving supply integrity by reflecting only actively held or vested tokens."
         }
       ]
     },
@@ -424,6 +454,21 @@
           "id": 77,
           "question": "What measures prevent exploitation of the rebase mechanism?",
           "answer": "The rebase mechanism is governed by secure, audited smart contracts and decentralized governance. Any changes to the rebase logic require community approval, ensuring transparency and reducing the risk of exploitation."
+        },
+        {
+          "id": 106,
+          "question": "What ensures the security of fee allocations?",
+          "answer": "The contract uses OpenZeppelin’s `SafeERC20` for secure token transfers, `EnumerableSet` for managing approved pools, and includes reentrancy guards to protect against attacks."
+        },
+        {
+          "id": 109,
+          "question": "What if an approved liquidity pool becomes compromised?",
+          "answer": "Governance can remove the compromised pool and add a secure, trusted pool to ensure continued fee allocation integrity."
+        },
+        {
+          "id": 112,
+          "question": "What measures are in place to prevent abuse of the burn function?",
+          "answer": "Only authorized admins or governance can execute token burns, ensuring controlled and transparent supply management."
         }
       ]
     },
@@ -465,6 +510,11 @@
           "id": 84,
           "question": "Can the treasury address be updated?",
           "answer": "Yes, admins or governance can update the treasury address as needed to ensure secure and effective fund management."
+        },
+        {
+          "id": 108,
+          "question": "Can the treasury be updated after deployment?",
+          "answer": "Yes, admins can update the treasury address to a new address as needed. This allows for flexible treasury management over the project's lifespan."
         }
       ]
     },
