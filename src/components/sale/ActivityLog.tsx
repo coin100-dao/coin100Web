@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../store/store';
-import { fetchTransferEvents } from '../../store/slices/coin100ActivitySlice';
 import {
   Box,
   Card,
@@ -9,270 +8,198 @@ import {
   Typography,
   List,
   ListItem,
+  ListItemText,
   CircularProgress,
+  Button,
   Link,
   useTheme,
-  Alert,
-  Stack,
-  IconButton,
-  Tooltip,
+  Divider,
 } from '@mui/material';
-import { formatDistanceToNow } from 'date-fns';
-import {
-  SwapHoriz,
-  CallMade,
-  CallReceived,
-  OpenInNew,
-} from '@mui/icons-material';
+import { fetchTransferEvents } from '../../store/slices/coin100ActivitySlice';
+import { ArrowForward, SwapHoriz } from '@mui/icons-material';
+import Web3 from 'web3';
+import { TransferEvent } from '../../store/slices/coin100ActivitySlice';
 
 const ActivityLog: React.FC = () => {
   const theme = useTheme();
   const dispatch = useDispatch<AppDispatch>();
-  const { transfers, loading, error } = useSelector(
-    (state: RootState) => state.coin100Activity
+
+  const { transfers, loading, error, hasMore, oldestLoadedBlock } = useSelector(
+    (state: RootState) => {
+      return state.coin100Activity;
+    }
   );
+  const { isConnected } = useSelector((state: RootState) => {
+    return state.wallet;
+  });
 
   useEffect(() => {
-    console.log('Fetching transfer events...');
-    dispatch(fetchTransferEvents());
-    const interval = setInterval(() => {
-      dispatch(fetchTransferEvents());
-    }, 30000); // Refresh every 30 seconds
+    if (isConnected) {
+      dispatch(fetchTransferEvents({}));
+    }
+  }, [dispatch, isConnected]);
 
-    return () => clearInterval(interval);
-  }, [dispatch]);
+  const handleLoadMore = () => {
+    if (hasMore && !loading) {
+      dispatch(fetchTransferEvents({ fromBlock: oldestLoadedBlock }));
+    }
+  };
 
-  const formatAddress = (address: string) => {
+  const formatAmount = (amount: string): string => {
+    try {
+      const amountInEther = Web3.utils.fromWei(amount, 'ether');
+      return Number(amountInEther).toFixed(2);
+    } catch (error) {
+      console.error('Error formatting amount:', error, amount);
+      return '0.00';
+    }
+  };
+
+  const shortenAddress = (address: string): string => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
+  if (!isConnected) {
+    return (
+      <Card
+        sx={{
+          background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.background.default} 100%)`,
+          boxShadow: theme.shadows[10],
+        }}
+      >
+        <CardContent>
+          <Typography variant="h6" gutterBottom>
+            Activity Log
+          </Typography>
+          <Typography color="textSecondary">
+            Connect your wallet to view transaction history
+          </Typography>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card
-      elevation={0}
       sx={{
-        background: `linear-gradient(135deg, ${theme.palette.background.paper}90 0%, ${theme.palette.background.paper}60 100%)`,
-        backdropFilter: 'blur(10px)',
-        border: `1px solid ${theme.palette.divider}`,
-        borderRadius: 2,
-        '& .MuiCardContent-root': {
-          p: 0,
-        },
+        background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.background.default} 100%)`,
+        boxShadow: theme.shadows[10],
       }}
     >
       <CardContent>
-        {loading && (
-          <Box display="flex" justifyContent="center" my={3}>
-            <CircularProgress size={24} thickness={4} />
-          </Box>
-        )}
+        <Typography variant="h6" gutterBottom>
+          Activity Log
+        </Typography>
+
         {error && (
-          <Alert
-            severity="error"
-            sx={{
-              m: 2,
-              borderRadius: 1,
-            }}
-          >
+          <Typography color="error" sx={{ mb: 2 }}>
             {error}
-          </Alert>
+          </Typography>
         )}
-        {!loading && transfers.length === 0 ? (
-          <Alert
-            severity="info"
-            sx={{
-              m: 2,
-              borderRadius: 1,
-            }}
-          >
-            No transactions found.
-          </Alert>
-        ) : (
-          <List
-            sx={{
-              maxHeight: 400,
-              overflow: 'auto',
-              '&::-webkit-scrollbar': {
-                width: '8px',
-              },
-              '&::-webkit-scrollbar-track': {
-                background: 'transparent',
-              },
-              '&::-webkit-scrollbar-thumb': {
-                background: theme.palette.divider,
-                borderRadius: '4px',
-              },
-              '&::-webkit-scrollbar-thumb:hover': {
-                background: theme.palette.action.hover,
-              },
-            }}
-          >
-            {transfers.map((transfer, index) => (
-              <ListItem
-                key={`${transfer.transactionHash}-${index}`}
-                sx={{
-                  borderBottom: `1px solid ${theme.palette.divider}`,
-                  '&:last-child': { borderBottom: 'none' },
-                  py: 1.5,
-                  px: 2,
-                  transition: 'all 0.2s ease-in-out',
-                  '&:hover': {
-                    backgroundColor: `${theme.palette.action.hover}40`,
-                  },
-                }}
-              >
-                <Stack
-                  direction="row"
-                  alignItems="center"
-                  spacing={2}
-                  width="100%"
+
+        <List sx={{ width: '100%' }}>
+          {transfers.map((transfer: TransferEvent, index: number) => {
+            return (
+              <React.Fragment key={transfer.transactionHash}>
+                <ListItem
+                  alignItems="flex-start"
+                  sx={{
+                    flexDirection: 'column',
+                    gap: 1,
+                  }}
                 >
                   <Box
                     sx={{
-                      minWidth: 140,
                       display: 'flex',
                       alignItems: 'center',
+                      width: '100%',
                       gap: 1,
                     }}
                   >
-                    <SwapHoriz
-                      sx={{
-                        color: theme.palette.primary.main,
-                        backgroundColor: `${theme.palette.primary.main}20`,
-                        p: 0.5,
-                        borderRadius: 1,
-                      }}
+                    <SwapHoriz color="action" />
+                    <ListItemText
+                      primary={
+                        <Typography variant="body2">
+                          {formatAmount(transfer.returnValues.value)} C100
+                        </Typography>
+                      }
+                      secondary={
+                        <Box
+                          component="span"
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                            flexWrap: 'wrap',
+                          }}
+                        >
+                          <Typography
+                            variant="caption"
+                            color="textSecondary"
+                            component="span"
+                          >
+                            From: {shortenAddress(transfer.returnValues.from)}
+                          </Typography>
+                          <ArrowForward
+                            sx={{ fontSize: 12, color: 'text.secondary' }}
+                          />
+                          <Typography
+                            variant="caption"
+                            color="textSecondary"
+                            component="span"
+                          >
+                            To: {shortenAddress(transfer.returnValues.to)}
+                          </Typography>
+                        </Box>
+                      }
                     />
-                    <Typography
-                      variant="body2"
+                    <Link
+                      href={`https://polygonscan.com/tx/${transfer.transactionHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       sx={{
-                        fontWeight: 600,
-                        fontFamily: 'monospace',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        color: 'primary.main',
+                        typography: 'caption',
                       }}
                     >
-                      {transfer.amount} C100
-                    </Typography>
+                      View
+                      <ArrowForward sx={{ ml: 0.5 }} fontSize="small" />
+                    </Link>
                   </Box>
+                </ListItem>
+                {index < transfers.length - 1 && (
+                  <Divider variant="inset" component="li" />
+                )}
+              </React.Fragment>
+            );
+          })}
+        </List>
 
-                  <Stack
-                    direction="row"
-                    alignItems="center"
-                    spacing={1}
-                    sx={{
-                      flex: 1,
-                      backgroundColor: `${theme.palette.background.paper}60`,
-                      borderRadius: 1,
-                      py: 0.5,
-                      px: 1,
-                    }}
-                  >
-                    <Tooltip title="From Address">
-                      <Box
-                        sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
-                      >
-                        <CallMade
-                          sx={{
-                            fontSize: 14,
-                            color: theme.palette.success.main,
-                          }}
-                        />
-                        <Link
-                          href={`https://polygonscan.com/address/${transfer.from}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          sx={{
-                            color: theme.palette.text.secondary,
-                            textDecoration: 'none',
-                            fontFamily: 'monospace',
-                            '&:hover': {
-                              color: theme.palette.primary.main,
-                              textDecoration: 'underline',
-                            },
-                          }}
-                        >
-                          {formatAddress(transfer.from)}
-                        </Link>
-                      </Box>
-                    </Tooltip>
+        {loading && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
+            <CircularProgress size={24} />
+          </Box>
+        )}
 
-                    <Box
-                      sx={{
-                        mx: 1,
-                        color: theme.palette.text.disabled,
-                        fontSize: '1.2rem',
-                      }}
-                    >
-                      →
-                    </Box>
+        {hasMore && !loading && transfers.length > 0 && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+            <Button
+              onClick={handleLoadMore}
+              variant="outlined"
+              size="small"
+              disabled={loading}
+            >
+              Load More
+            </Button>
+          </Box>
+        )}
 
-                    <Tooltip title="To Address">
-                      <Box
-                        sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
-                      >
-                        <CallReceived
-                          sx={{ fontSize: 14, color: theme.palette.error.main }}
-                        />
-                        <Link
-                          href={`https://polygonscan.com/address/${transfer.to}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          sx={{
-                            color: theme.palette.text.secondary,
-                            textDecoration: 'none',
-                            fontFamily: 'monospace',
-                            '&:hover': {
-                              color: theme.palette.primary.main,
-                              textDecoration: 'underline',
-                            },
-                          }}
-                        >
-                          {formatAddress(transfer.to)}
-                        </Link>
-                      </Box>
-                    </Tooltip>
-                  </Stack>
-
-                  <Stack
-                    direction="row"
-                    alignItems="center"
-                    spacing={2}
-                    sx={{
-                      ml: 'auto',
-                      minWidth: 180,
-                    }}
-                  >
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: theme.palette.text.secondary,
-                        fontStyle: 'italic',
-                      }}
-                    >
-                      {formatDistanceToNow(transfer.timestamp * 1000, {
-                        addSuffix: true,
-                      })}
-                    </Typography>
-                    <Tooltip title="View on PolygonScan">
-                      <IconButton
-                        component={Link}
-                        href={`https://polygonscan.com/tx/${transfer.transactionHash}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        size="small"
-                        sx={{
-                          color: theme.palette.primary.main,
-                          '&:hover': {
-                            backgroundColor: `${theme.palette.primary.main}20`,
-                          },
-                        }}
-                      >
-                        <OpenInNew sx={{ fontSize: 16 }} />
-                      </IconButton>
-                    </Tooltip>
-                  </Stack>
-                </Stack>
-              </ListItem>
-            ))}
-          </List>
+        {!loading && transfers.length === 0 && (
+          <Typography color="textSecondary" align="center" sx={{ my: 2 }}>
+            No transactions found.
+          </Typography>
         )}
       </CardContent>
     </Card>

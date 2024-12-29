@@ -10,22 +10,20 @@ import {
   PURGE,
   REGISTER,
 } from 'redux-persist';
-import coingeckoReducer from './slices/coingeckoSlice';
 import globalReducer from './slices/globalSlice';
 import coin100Reducer from './slices/coin100Slice';
-import web3Reducer from './slices/web3Slice';
 import publicSaleReducer from './slices/publicSaleSlice';
 import coin100ActivityReducer from './slices/coin100ActivitySlice';
+import walletReducer from './slices/walletSlice';
 
 // Configure the Redux store
 export const store = configureStore({
   reducer: {
-    coingecko: coingeckoReducer,
     global: globalReducer,
     coin100: coin100Reducer,
-    web3: web3Reducer,
     publicSale: publicSaleReducer,
     coin100Activity: coin100ActivityReducer,
+    wallet: walletReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

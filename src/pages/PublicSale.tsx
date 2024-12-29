@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../store/store';
 import {
@@ -17,60 +17,72 @@ import {
   fetchPublicSaleData,
   initializeContractData,
 } from '../store/slices/publicSaleSlice';
-import { connectWallet } from '../store/slices/web3Slice';
-import BuySection from '../components/sale/BuySection';
+import { connectWallet } from '../store/slices/walletSlice';
+import { BuySection } from '../components/sale/BuySection';
 import SaleInfo from '../components/sale/SaleInfo';
 import Stats from '../components/sale/Stats';
 import ActivityLog from '../components/sale/ActivityLog';
 import { AccountBalanceWallet } from '@mui/icons-material';
+import MetaMaskPopup from '../components/wallet/MetaMaskPopup';
 
 const PublicSale: React.FC = () => {
   const theme = useTheme();
   const dispatch = useDispatch<AppDispatch>();
+  const [connectDialogOpen, setConnectDialogOpen] = useState(false);
 
-  const {
-    loading: saleLoading,
-    error: saleError,
-    isInitialized,
-  } = useSelector((state: RootState) => state.publicSale);
-
-  const {
-    walletAddress,
-    loading: walletLoading,
-    error: walletError,
-  } = useSelector((state: RootState) => state.web3);
+  const { loading, error, isInitialized } = useSelector(
+    (state: RootState) => state.publicSale
+  );
+  const { address: walletAddress, isConnected } = useSelector(
+    (state: RootState) => state.wallet
+  );
 
   useEffect(() => {
     const init = async () => {
       try {
-        await dispatch(initializeContractData()).unwrap();
+        if (!isInitialized) {
+          await dispatch(initializeContractData()).unwrap();
+        }
+
+        // After initialization, try to fetch data if wallet is connected
+        if (isConnected && walletAddress) {
+          dispatch(fetchPublicSaleData());
+        }
       } catch (error) {
         console.error('Failed to initialize contract data:', error);
       }
     };
     init();
-  }, [dispatch]);
+  }, [dispatch, isInitialized, walletAddress, isConnected]);
 
   useEffect(() => {
-    if (isInitialized && walletAddress) {
+    if (isInitialized && isConnected && walletAddress) {
       dispatch(fetchPublicSaleData());
+
+      // Set up interval
       const interval = setInterval(() => {
         dispatch(fetchPublicSaleData());
       }, 15000);
-      return () => clearInterval(interval);
-    }
-  }, [dispatch, walletAddress, isInitialized]);
 
-  const handleConnectWallet = async () => {
-    try {
-      await dispatch(connectWallet()).unwrap();
-    } catch (err) {
-      console.error(err);
+      return () => {
+        clearInterval(interval);
+      };
     }
+  }, [dispatch, walletAddress, isInitialized, isConnected]);
+
+  const handleConnectClick = () => {
+    setConnectDialogOpen(true);
   };
 
-  const loading = saleLoading || walletLoading;
-  const error = saleError || walletError;
+  const handleConnectSuccess = async () => {
+    try {
+      await dispatch(connectWallet()).unwrap();
+      setConnectDialogOpen(false);
+      dispatch(fetchPublicSaleData());
+    } catch (error) {
+      console.error('Failed to connect wallet:', error);
+    }
+  };
 
   return (
     <Box
@@ -132,73 +144,63 @@ const PublicSale: React.FC = () => {
           )}
         </Box>
 
-        {!walletAddress ? (
+        {!isConnected ? (
           <Card
             sx={{
               maxWidth: 600,
               mx: 'auto',
-              mb: 4,
-              background: `linear-gradient(135deg, ${theme.palette.background.paper}80 0%, ${theme.palette.background.paper}40 100%)`,
-              backdropFilter: 'blur(10px)',
-              border: `1px solid ${theme.palette.primary.dark}40`,
+              textAlign: 'center',
+              p: 4,
+              background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.background.default} 100%)`,
+              boxShadow: theme.shadows[10],
             }}
           >
-            <CardContent sx={{ textAlign: 'center', py: 4 }}>
-              <AccountBalanceWallet
-                sx={{ fontSize: 48, color: theme.palette.primary.main, mb: 2 }}
-              />
+            <CardContent>
               <Typography variant="h5" gutterBottom>
                 Connect Your Wallet
               </Typography>
-              <Typography color="textSecondary" sx={{ mb: 3 }}>
-                Connect your wallet to participate in the COIN100 public sale
+              <Typography color="textSecondary" paragraph>
+                Please connect your wallet to participate in the COIN100 public
+                sale.
               </Typography>
               <Button
                 variant="contained"
                 size="large"
-                onClick={handleConnectWallet}
+                onClick={handleConnectClick}
+                startIcon={<AccountBalanceWallet />}
                 disabled={loading}
-                sx={{
-                  borderRadius: 2,
-                  textTransform: 'none',
-                  px: 4,
-                  background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-                }}
               >
-                {loading ? 'Connecting...' : 'Connect Wallet'}
+                Connect Wallet
               </Button>
             </CardContent>
           </Card>
         ) : (
           <Grid container spacing={4}>
-            {/* Stats Section */}
+            <Grid item xs={12} md={8}>
+              <BuySection />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <SaleInfo />
+            </Grid>
             <Grid item xs={12}>
+              <Divider sx={{ my: 4 }} />
+            </Grid>
+            <Grid item xs={12} md={6}>
               <Stats />
             </Grid>
-
-            {/* Main Content Grid */}
-            <Grid container item spacing={4}>
-              <Grid item xs={12} md={6}>
-                <BuySection />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <SaleInfo />
-              </Grid>
-            </Grid>
-
-            {/* Activity Log Section */}
-            <Grid item xs={12}>
-              <Box mt={4}>
-                <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
-                  Recent Transactions
-                </Typography>
-                <Divider sx={{ mb: 3 }} />
-                <ActivityLog />
-              </Box>
+            <Grid item xs={12} md={6}>
+              <ActivityLog />
             </Grid>
           </Grid>
         )}
       </Container>
+
+      {/* MetaMask Popup */}
+      <MetaMaskPopup
+        open={connectDialogOpen}
+        onClose={() => setConnectDialogOpen(false)}
+        onSuccess={handleConnectSuccess}
+      />
     </Box>
   );
 };

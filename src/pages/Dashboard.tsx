@@ -1,13 +1,12 @@
 // src/pages/Dashboard.tsx
 import React, { useEffect } from 'react';
 import { Box, Grid } from '@mui/material';
-import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { useAppDispatch } from '../store/hooks';
 import { fetchTotalMarketCap } from '../store/slices/coin100Slice';
-import { TotalMarketCap, WalletBalance } from '../components/dashboard';
+import { TotalMarketCap } from '../components/dashboard';
 
 const Dashboard: React.FC = () => {
   const dispatch = useAppDispatch();
-  const walletAddress = useAppSelector((state) => state.web3.walletAddress);
 
   useEffect(() => {
     // Initial fetch
@@ -42,10 +41,6 @@ const Dashboard: React.FC = () => {
       {/* Top Section */}
       <Box sx={{ flex: 1, minHeight: 0 }}>
         <Grid container spacing={{ xs: 1, sm: 2 }} sx={{ height: '100%' }}>
-          {/* Wallet Section */}
-          <Grid item xs={12} sm={12} md={2.4}>
-            <WalletBalance isWalletConnected={!!walletAddress} />
-          </Grid>
           {/* Market Cap Chart */}
           <Grid item xs={12} sm={12} md={9.6}>
             <TotalMarketCap />
