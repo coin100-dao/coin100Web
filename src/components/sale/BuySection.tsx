@@ -49,7 +49,11 @@ export const BuySection: React.FC = () => {
 
   useEffect(() => {
     if (selectedToken && amount) {
-      const c100 = calculateC100Amount(amount, selectedToken.rate || '0');
+      const c100 = calculateC100Amount(
+        amount,
+        selectedToken.rate || '0',
+        selectedToken.decimals
+      );
       setC100Amount(c100);
 
       // Check allowance whenever amount or token changes
