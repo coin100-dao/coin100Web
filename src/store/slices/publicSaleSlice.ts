@@ -359,24 +359,20 @@ export const fetchAllowedTokens = createAsyncThunk<USDCToken[]>(
 // Calculate C100 amount from token amount
 export const calculateC100Amount = (
   tokenAmount: string,
-  rate: string
+  rate: string,
+  tokenDecimals: number
 ): string => {
   if (Number(rate) === 0) return '0';
 
   try {
-    // Convert input amount to smallest unit based on USDC.e's decimals (18)
-    const amountInSmallestUnit = BigInt(Math.floor(Number(tokenAmount) * 1e18));
+    // Convert input amount to smallest unit based on payment token's decimals (6 for USDC.e)
+    const amountInSmallestUnit = BigInt(
+      Math.floor(Number(tokenAmount) * Math.pow(10, tokenDecimals))
+    );
 
-    // c100Amount = (paymentAmount * rate) / 1e18
+    // c100Amount = (paymentAmount * 1e18) / rate
     const c100AmountInWei =
-      (amountInSmallestUnit * BigInt(rate)) / BigInt(1e18);
-
-    console.log('C100 calculation:', {
-      inputAmount: tokenAmount,
-      rate,
-      amountInSmallestUnit: amountInSmallestUnit.toString(),
-      c100AmountInWei: c100AmountInWei.toString(),
-    });
+      (amountInSmallestUnit * BigInt(1e18)) / BigInt(rate);
 
     const web3 = getWeb3Instance();
     // Convert to standard unit (from Wei)
