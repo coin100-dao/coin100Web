@@ -106,7 +106,6 @@ const checkRpcHealth = async (
 
 // Periodic health checks
 setInterval(async () => {
-  console.log('Running periodic RPC health checks...');
   const healthChecks = RPC_ENDPOINTS.map((url, index) =>
     checkRpcHealth(url, index)
   );
@@ -129,10 +128,6 @@ setInterval(async () => {
 
     if (fastestEndpoint !== undefined) {
       rpcState.currentRpcIndex = fastestEndpoint;
-      console.log(
-        'Switched to faster RPC endpoint:',
-        RPC_ENDPOINTS[fastestEndpoint]
-      );
     }
   }
 }, HEALTH_CHECK_INTERVAL);
@@ -140,13 +135,11 @@ setInterval(async () => {
 export const getWeb3Instance = (): Web3 => {
   // For transactions, use the connected wallet
   if (window.ethereum) {
-    console.log('Using wallet provider for transactions');
     return new Web3(window.ethereum);
   }
 
   // For contract reads, use the public RPC with fallback
   const rpcUrl = RPC_ENDPOINTS[rpcState.currentRpcIndex];
-  console.log('Using public RPC for read operations:', rpcUrl);
   return new Web3(rpcUrl);
 };
 
@@ -210,15 +203,8 @@ export const handleRpcError = async (error: RpcError): Promise<Web3> => {
 
         rpcState.currentRpcIndex = fastestEndpoint;
         rpcState.consecutiveFailures = 0;
-        console.log(
-          'Switching to faster RPC endpoint:',
-          RPC_ENDPOINTS[fastestEndpoint]
-        );
       } else {
         // If we don't have enough healthy endpoints, trigger immediate health check
-        console.log(
-          'Not enough healthy endpoints, running immediate health check...'
-        );
         const healthChecks = RPC_ENDPOINTS.map((url, index) =>
           checkRpcHealth(url, index)
         );

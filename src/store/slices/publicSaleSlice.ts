@@ -98,11 +98,10 @@ const validateContractAddress = (
 // Helper function to convert to smallest unit
 const toTokenDecimals = (amount: string, decimals: number): string => {
   try {
-    console.log('Converting to token decimals:', { amount, decimals });
     // Convert to base unit (e.g., cents for USDC)
     const baseAmount = Math.floor(Number(amount) * Math.pow(10, decimals));
     const result = baseAmount.toString();
-    console.log('Conversion result:', result);
+
     return result;
   } catch (error) {
     console.error('Error converting to token decimals:', error);
@@ -119,13 +118,10 @@ export const initializeContractData = createAsyncThunk<
   'publicSale/initializeContractData',
   async (_, { dispatch, rejectWithValue }) => {
     try {
-      console.log('Initializing contract data...');
       const addresses = await fetchContractAddresses();
 
       tokenAddress = addresses.c100TokenAddress;
       publicSaleAddress = addresses.publicSaleAddress;
-
-      console.log('Fetched addresses:', { tokenAddress, publicSaleAddress });
 
       const [c100Abi, publicSaleAbi] = await Promise.all([
         fetchContractABI('c100'),
@@ -134,12 +130,6 @@ export const initializeContractData = createAsyncThunk<
 
       coin100ContractAbi = c100Abi;
       coin100PublicSaleContractAbi = publicSaleAbi;
-
-      console.log('Fetched ABIs:', {
-        tokenAbiLength: c100Abi.length,
-        saleAbiLength: publicSaleAbi.length,
-      });
-
       // Verify contracts exist
       const web3 = getWeb3Instance();
       const [tokenCode, saleCode] = await Promise.all([
@@ -178,7 +168,6 @@ export const fetchPublicSaleData = createAsyncThunk<PublicSaleData>(
   'publicSale/fetchData',
   async () => {
     try {
-      console.log('Fetching public sale data...');
       const web3 = getWeb3Instance();
 
       const contract = new web3.eth.Contract(
@@ -190,7 +179,6 @@ export const fetchPublicSaleData = createAsyncThunk<PublicSaleData>(
         validateContractAddress(tokenAddress, 'Token Contract')
       );
 
-      console.log('Fetching contract state...');
       const [
         startTimeStr,
         endTimeStr,
@@ -227,16 +215,6 @@ export const fetchPublicSaleData = createAsyncThunk<PublicSaleData>(
       const startTime = Number(startTimeStr);
       const endTime = Number(endTimeStr);
 
-      console.log('Contract state:', {
-        startTime,
-        endTime,
-        finalized,
-        contractBalance,
-        totalSupply,
-        treasury,
-        isPaused,
-      });
-
       // Convert token amounts from wei to ether
       const remainingTokens = web3.utils.fromWei(contractBalance, 'ether');
       const totalSupplyEther = web3.utils.fromWei(totalSupply, 'ether');
@@ -270,7 +248,6 @@ export const fetchAllowedTokens = createAsyncThunk(
   'publicSale/fetchAllowedTokens',
   async (_, { getState }) => {
     try {
-      console.log('Starting fetchAllowedTokens...');
       const web3 = getWeb3Instance();
       const contract = new web3.eth.Contract(
         coin100PublicSaleContractAbi,
@@ -279,14 +256,11 @@ export const fetchAllowedTokens = createAsyncThunk(
 
       const state = getState() as { wallet: { address: string } };
       const { address: walletAddress } = state.wallet;
-      console.log('Fetching allowed tokens for wallet:', walletAddress);
 
       // Get all allowed tokens in one call
       const allowedTokens = (await executeContractCall(() =>
         contract.methods.getAllowedTokens().call()
       )) as AllowedToken[];
-
-      console.log('Raw allowed tokens from contract:', allowedTokens);
 
       const tokens: USDCToken[] = await Promise.all(
         allowedTokens.map(async (token) => {
@@ -296,14 +270,6 @@ export const fetchAllowedTokens = createAsyncThunk(
           const symbol = token.symbol;
           const decimals = Number(token.decimals);
           const rate = token.rate;
-
-          console.log('Token details:', {
-            address: tokenAddress,
-            name,
-            symbol,
-            decimals,
-            rate,
-          });
 
           let balance = '0';
           if (walletAddress) {
@@ -326,23 +292,12 @@ export const fetchAllowedTokens = createAsyncThunk(
 
             // Convert balance to decimal format based on token decimals
             balance = (Number(balance) / Math.pow(10, decimals)).toString();
-            console.log('Fetched balance for token:', {
-              token: symbol,
-              balance,
-              decimals,
-            });
           }
 
           // Convert rate to decimal format based on token decimals
           const rateInDecimal = (
             Number(rate) / Math.pow(10, decimals)
           ).toString();
-          console.log('Converted rate:', {
-            token: symbol,
-            rawRate: rate,
-            decimals,
-            rateInDecimal,
-          });
 
           return {
             address: tokenAddress,
@@ -355,7 +310,6 @@ export const fetchAllowedTokens = createAsyncThunk(
         })
       );
 
-      console.log('Final processed tokens:', tokens);
       return tokens;
     } catch (error) {
       console.error('Error in fetchAllowedTokens:', error);
@@ -429,13 +383,6 @@ export const checkUsdcAllowance = createAsyncThunk(
         throw new Error('No token selected');
       }
 
-      console.log('Checking allowance for:', {
-        tokenAddress: selectedToken.address,
-        amount: usdcAmount,
-        decimals: selectedToken.decimals,
-        walletAddress,
-      });
-
       const tokenContract = new web3.eth.Contract(
         [
           {
@@ -457,13 +404,10 @@ export const checkUsdcAllowance = createAsyncThunk(
         usdcAmount,
         selectedToken.decimals
       );
-      console.log('Amount in smallest unit:', amountInSmallestUnit);
 
       const allowance = (await tokenContract.methods
         .allowance(walletAddress, publicSaleAddress)
         .call()) as string;
-
-      console.log('Current allowance:', allowance);
 
       return {
         hasAllowance: BigInt(allowance) >= BigInt(amountInSmallestUnit),
@@ -502,13 +446,14 @@ export const approveUsdcSpending = createAsyncThunk(
         selectedToken.decimals
       );
 
+      // Use standard ERC20 ABI for approval
       const tokenContract = new web3.eth.Contract(
         [
           {
             constant: false,
             inputs: [
-              { name: '_spender', type: 'address' },
-              { name: '_value', type: 'uint256' },
+              { name: 'spender', type: 'address' },
+              { name: 'amount', type: 'uint256' },
             ],
             name: 'approve',
             outputs: [{ name: '', type: 'bool' }],
@@ -520,14 +465,53 @@ export const approveUsdcSpending = createAsyncThunk(
         selectedToken.address
       );
 
+      // Get current gas price with a premium for faster confirmation
+      const gasPrice = await web3.eth.getGasPrice();
+      const gasPriceWithPremium = Math.floor(Number(gasPrice) * 1.2).toString();
+
+      // Estimate gas for approval
+      const estimatedGas = await tokenContract.methods
+        .approve(publicSaleAddress, amountInSmallestUnit)
+        .estimateGas({ from: walletAddress });
+
+      // Add 20% buffer to gas estimate
+      const gasLimit = Math.floor(Number(estimatedGas) * 1.2).toString();
+
+      // Send approval transaction with proper gas settings
       const tx = await tokenContract.methods
         .approve(publicSaleAddress, amountInSmallestUnit)
-        .send({ from: walletAddress });
+        .send({
+          from: walletAddress,
+          gas: gasLimit,
+          maxFeePerGas: gasPriceWithPremium,
+          maxPriorityFeePerGas: Math.floor(Number(gasPrice) * 0.5).toString(), // 50% of base fee for priority
+        });
 
-      // Wait for the transaction to be mined
-      const receipt = await web3.eth.getTransactionReceipt(tx.transactionHash);
-      if (!receipt || !receipt.status) {
-        throw new Error('Approval transaction failed');
+      // Wait for the transaction to be mined with timeout
+      let receipt = null;
+      const maxAttempts = 30; // 30 attempts * 2 seconds = 1 minute max wait
+      let attempts = 0;
+
+      while (!receipt && attempts < maxAttempts) {
+        try {
+          receipt = await web3.eth.getTransactionReceipt(tx.transactionHash);
+          if (receipt) {
+            if (!receipt.status) {
+              throw new Error('Approval transaction failed');
+            }
+            break;
+          }
+        } catch (error) {
+          console.warn('Error checking receipt:', error);
+        }
+        await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait 2 seconds between checks
+        attempts++;
+      }
+
+      if (!receipt) {
+        throw new Error(
+          'Transaction not confirmed after 1 minute. Please check your wallet or try again.'
+        );
       }
 
       return { transactionHash: tx.transactionHash };
@@ -559,96 +543,28 @@ export const buyC100Tokens = createAsyncThunk(
         throw new Error('No token selected');
       }
 
-      console.log('Buying tokens with:', {
-        tokenAddress: selectedToken.address,
-        amount: usdcAmount,
-        decimals: selectedToken.decimals,
-        walletAddress,
-      });
-
-      const contract = new web3.eth.Contract(
-        coin100PublicSaleContractAbi,
-        validateContractAddress(publicSaleAddress, 'Public Sale Contract')
-      );
-
-      // Check if sale is active
-      const [
-        startTime,
-        endTime,
-        isPaused,
-        lastPurchaseTime,
-        userPurchases,
-        maxUserCap,
-      ] = await Promise.all([
-        executeContractCall(() =>
-          contract.methods.startTime().call()
-        ) as Promise<string>,
-        executeContractCall(() =>
-          contract.methods.endTime().call()
-        ) as Promise<string>,
-        executeContractCall(() =>
-          contract.methods.paused().call()
-        ) as Promise<boolean>,
-        executeContractCall(() =>
-          contract.methods.lastPurchaseTime(walletAddress).call()
-        ) as Promise<string>,
-        executeContractCall(() =>
-          contract.methods.userPurchases(walletAddress).call()
-        ) as Promise<string>,
-        executeContractCall(() =>
-          contract.methods.maxUserCap().call()
-        ) as Promise<string>,
-      ]);
-
-      const now = Math.floor(Date.now() / 1000);
-      if (now < Number(startTime) || now > Number(endTime)) {
-        throw new Error('Sale is not active');
-      }
-
-      if (isPaused) {
-        throw new Error('Sale is paused');
-      }
-
-      // Check purchase delay (5 minutes by default)
-      const purchaseDelay = (await executeContractCall(() =>
-        contract.methods.purchaseDelay().call()
-      )) as string;
-
-      if (now < Number(lastPurchaseTime) + Number(purchaseDelay)) {
-        throw new Error(
-          `Please wait ${Math.ceil((Number(lastPurchaseTime) + Number(purchaseDelay) - now) / 60)} minutes before next purchase`
-        );
-      }
+      // Get current gas price with a premium for faster confirmation
+      const gasPrice = await web3.eth.getGasPrice();
+      const gasPriceWithPremium = Math.floor(Number(gasPrice) * 1.2).toString();
 
       // Convert amount to smallest unit
       const amountInSmallestUnit = toTokenDecimals(
         usdcAmount,
         selectedToken.decimals
       );
-      console.log('Amount in smallest unit:', amountInSmallestUnit);
 
-      // Calculate C100 amount
-      const c100Amount =
-        (BigInt(amountInSmallestUnit) * BigInt(1e18)) /
-        BigInt(selectedToken.rate || '0');
+      const contract = new web3.eth.Contract(
+        coin100PublicSaleContractAbi,
+        validateContractAddress(publicSaleAddress, 'Public Sale Contract')
+      );
 
-      // Check max user cap
-      if (BigInt(userPurchases) + c100Amount > BigInt(maxUserCap)) {
-        throw new Error('Purchase would exceed maximum allowed amount');
-      }
-
-      console.log('Calling buyWithToken with:', {
-        tokenAddress: selectedToken.address,
-        amount: amountInSmallestUnit,
-      });
-
-      // Estimate gas first
-      const gas = await contract.methods
+      // Estimate gas for purchase
+      const estimatedGas = await contract.methods
         .buyWithToken(selectedToken.address, amountInSmallestUnit)
         .estimateGas({ from: walletAddress });
 
       // Add 20% buffer to gas estimate
-      const gasLimit = Math.floor(Number(gas) * 1.2).toString();
+      const gasLimit = Math.floor(Number(estimatedGas) * 1.2).toString();
 
       // Send transaction with proper gas settings
       const tx = await contract.methods
@@ -656,14 +572,35 @@ export const buyC100Tokens = createAsyncThunk(
         .send({
           from: walletAddress,
           gas: gasLimit,
+          maxFeePerGas: gasPriceWithPremium,
+          maxPriorityFeePerGas: Math.floor(Number(gasPrice) * 0.5).toString(), // 50% of base fee for priority
         });
 
-      console.log('Purchase transaction:', tx);
+      // Wait for the transaction to be mined with timeout
+      let receipt = null;
+      const maxAttempts = 30; // 30 attempts * 2 seconds = 1 minute max wait
+      let attempts = 0;
 
-      // Wait for transaction confirmation
-      const receipt = await web3.eth.getTransactionReceipt(tx.transactionHash);
-      if (!receipt || !receipt.status) {
-        throw new Error('Transaction failed');
+      while (!receipt && attempts < maxAttempts) {
+        try {
+          receipt = await web3.eth.getTransactionReceipt(tx.transactionHash);
+          if (receipt) {
+            if (!receipt.status) {
+              throw new Error('Purchase transaction failed');
+            }
+            break;
+          }
+        } catch (error) {
+          console.warn('Error checking receipt:', error);
+        }
+        await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait 2 seconds between checks
+        attempts++;
+      }
+
+      if (!receipt) {
+        throw new Error(
+          'Transaction not confirmed after 1 minute. Please check your wallet or try again.'
+        );
       }
 
       // Refresh data after successful purchase

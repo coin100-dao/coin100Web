@@ -40,23 +40,12 @@ const PublicSale: React.FC = () => {
   useEffect(() => {
     const init = async () => {
       try {
-        console.log('Initializing PublicSale page...');
-        console.log('Current state:', {
-          isInitialized,
-          walletAddress,
-          isConnected,
-          loading,
-          error,
-        });
-
         if (!isInitialized) {
-          const result = await dispatch(initializeContractData()).unwrap();
-          console.log('Contract data initialized successfully:', result);
+          await dispatch(initializeContractData()).unwrap();
         }
 
         // After initialization, try to fetch data if wallet is connected
         if (isConnected && walletAddress) {
-          console.log('Wallet already connected, fetching initial data...');
           dispatch(fetchPublicSaleData());
         }
       } catch (error) {
@@ -68,33 +57,16 @@ const PublicSale: React.FC = () => {
 
   useEffect(() => {
     if (isInitialized && isConnected && walletAddress) {
-      console.log('Setting up data refresh...', {
-        isInitialized,
-        walletAddress,
-        isConnected,
-      });
-
-      // Initial fetch
-      console.log('Fetching initial public sale data...');
       dispatch(fetchPublicSaleData());
 
       // Set up interval
-      console.log('Setting up data refresh interval...');
       const interval = setInterval(() => {
-        console.log('Refreshing public sale data...');
         dispatch(fetchPublicSaleData());
       }, 15000);
 
       return () => {
-        console.log('Cleaning up data refresh interval...');
         clearInterval(interval);
       };
-    } else {
-      console.log('Not setting up refresh - conditions not met:', {
-        isInitialized,
-        walletAddress,
-        isConnected,
-      });
     }
   }, [dispatch, walletAddress, isInitialized, isConnected]);
 
@@ -106,7 +78,6 @@ const PublicSale: React.FC = () => {
     try {
       await dispatch(connectWallet()).unwrap();
       setConnectDialogOpen(false);
-      console.log('Wallet connected successfully, fetching data...');
       dispatch(fetchPublicSaleData());
     } catch (error) {
       console.error('Failed to connect wallet:', error);
