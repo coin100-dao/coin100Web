@@ -91,17 +91,11 @@ export const fetchTransferEvents = createAsyncThunk<
   { state: { coin100Activity: ActivityState } }
 >('activity/fetchTransferEvents', async (params = {}, { getState }) => {
   try {
-    console.log('Starting fetchTransferEvents with params:', params);
     const web3 = getWeb3Instance();
 
     // Get addresses from GitHub
     const addresses = await fetchContractAddresses();
     const tokenAddress = addresses.c100TokenAddress;
-
-    console.log('Current state:', {
-      tokenAddress,
-      web3Connected: web3.eth.currentProvider !== null,
-    });
 
     if (!tokenAddress) {
       throw new Error('Token address not configured');
@@ -121,8 +115,6 @@ export const fetchTransferEvents = createAsyncThunk<
           }
         : await calculateBlockRange(web3, lastBlock);
 
-    console.log('Using block range:', blockRange);
-
     const transferEventSignature = web3.utils.sha3(
       'Transfer(address,address,uint256)'
     );
@@ -139,8 +131,6 @@ export const fetchTransferEvents = createAsyncThunk<
         toBlock: blockRange.toBlock,
       })
     )) as Web3Log[];
-
-    console.log('Found logs:', logs.length);
 
     const events = logs.map((log) => {
       const decodedLog = web3.eth.abi.decodeLog(
