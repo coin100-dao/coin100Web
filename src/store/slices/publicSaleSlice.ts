@@ -270,8 +270,6 @@ export const fetchAllowedTokens = createAsyncThunk<USDCToken[]>(
         contract.methods.getAllowedTokens().call()
       )) as AllowedToken[];
 
-      console.log('Raw allowed tokens from contract:', allowedTokens);
-
       const tokens: (USDCToken | null)[] = await Promise.all(
         allowedTokens.map(async (token) => {
           // **Exclude C100 from allowed tokens**
@@ -299,14 +297,6 @@ export const fetchAllowedTokens = createAsyncThunk<USDCToken[]>(
           const symbol = token.symbol;
           const decimals = Number(token.decimals);
           const rate = token.rate.toString(); // Convert BigInt to string
-
-          console.log(`Token ${symbol} details:`, {
-            address: tokenAddress,
-            name,
-            decimals,
-            rawRate: rate,
-            rateInDecimal: (Number(rate) / 1e18).toString(),
-          });
 
           let balance = '0';
           if (walletAddress) {
@@ -347,7 +337,6 @@ export const fetchAllowedTokens = createAsyncThunk<USDCToken[]>(
         (token): token is USDCToken => token !== null
       );
 
-      console.log('Processed tokens with rates:', filteredTokens);
       return filteredTokens;
     } catch (error) {
       console.error('Error in fetchAllowedTokens:', error);
@@ -532,12 +521,6 @@ export const approveUsdcSpending = createAsyncThunk(
         usdcAmount,
         selectedToken.decimals
       );
-
-      console.log('Approving exact amount:', {
-        inputAmount: usdcAmount,
-        amountInSmallestUnit,
-        decimals: selectedToken.decimals,
-      });
 
       // Create contract instance with standard ERC20 ABI
       const tokenContract = new web3.eth.Contract(
@@ -758,17 +741,10 @@ export const checkVestingSchedule = createAsyncThunk<VestingSchedule[]>(
         throw new Error('No wallet connected');
       }
 
-      console.log('Checking vesting schedule for wallet:', walletAddress);
       const contract = new web3.eth.Contract(
         coin100PublicSaleContractAbi,
         validateContractAddress(publicSaleAddress, 'Public Sale Contract')
       );
-
-      // Get user's total purchases to know how many vesting schedules to check
-      const userPurchases = await contract.methods
-        .userPurchases(walletAddress)
-        .call();
-      console.log('Total user purchases:', userPurchases);
 
       const vestingSchedules: VestingSchedule[] = [];
       let index = 0;
@@ -783,19 +759,10 @@ export const checkVestingSchedule = createAsyncThunk<VestingSchedule[]>(
             amount: string;
             releaseTime: string;
           };
-          console.log(`Raw vesting schedule at index ${index}:`, schedule);
 
           if (schedule && schedule.amount !== '0') {
             // **Correct conversion using 'ether' to handle 18 decimals**
             const c100Amount = web3.utils.fromWei(schedule.amount, 'ether');
-
-            console.log(`Vesting schedule at index ${index}:`, {
-              rawAmount: schedule.amount,
-              c100Amount: c100Amount,
-              releaseTime: new Date(
-                Number(schedule.releaseTime) * 1000
-              ).toLocaleString(),
-            });
 
             vestingSchedules.push({
               amount: c100Amount, // e.g., '1000'
@@ -808,12 +775,10 @@ export const checkVestingSchedule = createAsyncThunk<VestingSchedule[]>(
           }
         } catch {
           // If we get an error, assume there are no more vesting schedules
-          console.log('No more vesting schedules found at index:', index);
           hasMore = false;
         }
       }
 
-      console.log('Final vesting schedules:', vestingSchedules);
       return vestingSchedules;
     } catch (error) {
       console.error('Error checking vesting schedule:', error);
