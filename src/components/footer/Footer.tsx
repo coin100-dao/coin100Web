@@ -109,7 +109,7 @@ const Footer = () => {
           </Grid>
           <Grid size={{ xs: 12, md: 4 }} sx={{ textAlign: 'center' }}>
             <Typography variant="body2" color="textSecondary">
-              &copy; 2024 COIN100. All rights reserved.
+              &copy; {new Date().getFullYear()} COIN100. All rights reserved.
             </Typography>
           </Grid>
         </Grid>

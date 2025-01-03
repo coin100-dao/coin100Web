@@ -145,8 +145,37 @@ export const BuySection: React.FC = () => {
             label="Select Token"
           >
             {allowedTokens.map((token) => (
-              <MenuItem key={token.address} value={token.address}>
-                {token.symbol}
+              <MenuItem
+                key={token.address}
+                value={token.address}
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                }}
+              >
+                <Box
+                  sx={{ display: 'flex', alignItems: 'center', width: '100%' }}
+                >
+                  <Typography>{token.symbol}</Typography>
+                  <Box sx={{ flexGrow: 1 }} />
+                  <Button
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      window.open(
+                        `https://polygonscan.com/token/${token.address}`,
+                        '_blank'
+                      );
+                    }}
+                    sx={{ ml: 1, fontSize: '0.75rem' }}
+                  >
+                    View on PolygonScan
+                  </Button>
+                </Box>
+                <Typography variant="caption" color="text.secondary">
+                  {token.address}
+                </Typography>
               </MenuItem>
             ))}
           </Select>

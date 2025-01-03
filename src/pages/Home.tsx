@@ -12,6 +12,9 @@ const Home = () => {
 
   return (
     <Box
+      component="main"
+      role="main"
+      aria-label="COIN100 - Decentralized Crypto Index Fund"
       sx={{
         background: theme.palette.background.default,
         minHeight: '100vh',
@@ -19,6 +22,8 @@ const Home = () => {
       }}
     >
       <Box
+        component="div"
+        aria-hidden="true"
         sx={{
           position: 'fixed',
           top: 0,
@@ -33,15 +38,20 @@ const Home = () => {
       />
 
       <Box
+        component="div"
         sx={{
           position: 'relative',
           zIndex: 1,
         }}
       >
-        <Hero />
+        <section aria-labelledby="hero-title">
+          <Hero />
+        </section>
 
-        <Box sx={{ position: 'relative' }} id="features">
+        <section aria-labelledby="features-title" id="features">
           <Box
+            component="div"
+            aria-hidden="true"
             sx={{
               position: 'absolute',
               top: 0,
@@ -54,10 +64,12 @@ const Home = () => {
             }}
           />
           <Features />
-        </Box>
+        </section>
 
-        <Box sx={{ position: 'relative' }}>
+        <section aria-labelledby="tokenomics-title" id="tokenomics">
           <Box
+            component="div"
+            aria-hidden="true"
             sx={{
               position: 'absolute',
               top: 0,
@@ -70,10 +82,12 @@ const Home = () => {
             }}
           />
           <Tokenomics />
-        </Box>
+        </section>
 
-        <Box sx={{ position: 'relative' }}>
+        <section aria-labelledby="technical-title" id="technical">
           <Box
+            component="div"
+            aria-hidden="true"
             sx={{
               position: 'absolute',
               top: 0,
@@ -86,10 +100,12 @@ const Home = () => {
             }}
           />
           <TechnicalArchitecture />
-        </Box>
+        </section>
 
-        <Box sx={{ position: 'relative' }}>
+        <section aria-labelledby="governance-title" id="governance">
           <Box
+            component="div"
+            aria-hidden="true"
             sx={{
               position: 'absolute',
               top: 0,
@@ -102,9 +118,12 @@ const Home = () => {
             }}
           />
           <Governance />
-        </Box>
-        <Box sx={{ position: 'relative' }}>
+        </section>
+
+        <section aria-labelledby="roadmap-title" id="roadmap">
           <Box
+            component="div"
+            aria-hidden="true"
             sx={{
               position: 'absolute',
               top: 0,
@@ -117,7 +136,7 @@ const Home = () => {
             }}
           />
           <Roadmap />
-        </Box>
+        </section>
       </Box>
     </Box>
   );

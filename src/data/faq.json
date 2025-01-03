@@ -619,6 +619,32 @@
           "answer": "Governance can vote on the allocation of liquidity rewards, adjusting the fixed percentage or introducing new incentive structures to align rewards with market conditions and community goals."
         }
       ]
+    },
+    {
+      "id": "contracts",
+      "name": "Contract Addresses",
+      "questions": [
+        {
+          "id": 113,
+          "question": "What is the C100 token contract address?",
+          "answer": "The C100 token contract is deployed at 0x3c5034f0b8e9ecb0aa13ef96adf9d97fb0107eec on the Polygon network."
+        },
+        {
+          "id": 114,
+          "question": "What is the Public Sale contract address?",
+          "answer": "The Public Sale contract is deployed at 0xaf4fc2742cea373ec18f17a601e64a74aeebb0cc on the Polygon network."
+        },
+        {
+          "id": 115,
+          "question": "Which USDC tokens are supported?",
+          "answer": "We support both USDC tokens on Polygon: USD Coin (PoS) (USDC.e) at 0x2791bca1f2de4661ed88a30c99a7a9449aa84174 and USD Coin (USDC) at 0x3c499c542cef5e3811e1192ce70d8cc03d5c3359."
+        },
+        {
+          "id": 116,
+          "question": "How do I verify the contract addresses?",
+          "answer": "You can verify all contract addresses on the Polygon blockchain explorer (PolygonScan) by searching for the addresses. Always ensure you're interacting with the correct contract addresses to maintain security."
+        }
+      ]
     }
   ]
 }
